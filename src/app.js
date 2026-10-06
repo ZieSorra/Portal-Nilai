@@ -142,19 +142,16 @@ async function loadEntryData() {
 }
 
 async function validateClassEnrollment(academicYearId, classId) {
-  const { data, error } = await supabase
-    .from("student_enrollments")
-    .select("id")
-    .eq("academic_year_id", academicYearId)
-    .eq("class_id", classId)
-    .eq("is_active", true)
-    .limit(1);
+  const { data, error } = await supabase.rpc("check_class_has_students", {
+    p_academic_year_id: academicYearId,
+    p_class_id: classId,
+  });
 
   if (error) {
     throw new Error("Gagal memeriksa data siswa kelas: " + error.message);
   }
 
-  return Array.isArray(data) && data.length > 0;
+  return data === true;
 }
 
 teacherForm.addEventListener("submit", async (event) => {
