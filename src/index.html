@@ -152,6 +152,62 @@
       </div>
     </section>
 
+    <section id="admin-page" class="page wide-page hidden">
+      <div class="card admin-card">
+        <div class="input-header">
+          <div>
+            <div class="brand">ZIESORRA</div>
+            <h2>Admin — Master Tahfidz</h2>
+            <p class="muted">Atur surah, rentang ayat, label penilaian, dan urutan materi Tahfidz.</p>
+          </div>
+          <button id="admin-logout-button" class="secondary-button" type="button">Keluar Admin</button>
+        </div>
+        <div class="admin-toolbar">
+          <label>Tahun Ajaran
+            <select id="admin-year-select"><option value="">Memuat...</option></select>
+          </label>
+          <label>Kelas
+            <select id="admin-class-select"><option value="">Memuat...</option></select>
+          </label>
+        </div>
+        <div id="admin-tahfidz-error" class="message error hidden"></div>
+        <div id="admin-tahfidz-success" class="message success hidden"></div>
+        <form id="tahfidz-form" class="tahfidz-form" novalidate>
+          <input id="tahfidz-edit-id" type="hidden" />
+          <label>Nama Surah
+            <input id="tahfidz-surah-name" type="text" placeholder="Contoh: Al-Mulk" required />
+          </label>
+          <label>Nomor Surah
+            <input id="tahfidz-surah-number" type="number" min="1" max="114" placeholder="67" required />
+          </label>
+          <label>Ayat Mulai
+            <input id="tahfidz-ayat-start" type="number" min="1" required />
+          </label>
+          <label>Ayat Akhir
+            <input id="tahfidz-ayat-end" type="number" min="1" required />
+          </label>
+          <label>Label Penilaian
+            <input id="tahfidz-assessment-label" type="text" placeholder="Sumatif 1" required />
+          </label>
+          <label>Urutan
+            <input id="tahfidz-sequence" type="number" min="1" value="1" required />
+          </label>
+          <div class="tahfidz-form-actions">
+            <button id="cancel-tahfidz-edit" type="button" class="secondary-button hidden">Batal Edit</button>
+            <button type="submit" class="primary-button">Simpan Materi</button>
+          </div>
+        </form>
+        <div class="table-wrap">
+          <table class="grade-table">
+            <thead><tr><th>No.</th><th>Surah</th><th>Ayat</th><th>Label</th><th>Urutan</th><th>Aksi</th></tr></thead>
+            <tbody id="tahfidz-table-body">
+              <tr><td colspan="6" class="empty-state">Pilih tahun ajaran dan kelas.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
     <div id="admin-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="admin-title">
       <div class="modal-panel">
         <button id="close-admin" class="close-button" type="button" aria-label="Tutup">×</button>
