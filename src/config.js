@@ -8,3 +8,7 @@ export const SUPABASE_CONFIG = {
   url: "https://myjqcwxloroeypnimvlx.supabase.co",
   anonKey: "sb_publishable_AMHmVKiyQvBPsfdB8yfmvw_WQbhvIuE",
 };
+
+export const ADMIN_CONFIG = {
+  email: "admin@ziesorra.com",
+};
