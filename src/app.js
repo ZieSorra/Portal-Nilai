@@ -624,6 +624,7 @@ async function openInputPage() {
 }
 
 subjectSelect.addEventListener("change", async () => {
+  clearImportPanel();
   try {
     await loadComponents(subjectSelect.value);
   } catch (error) {
@@ -632,6 +633,7 @@ subjectSelect.addEventListener("change", async () => {
 });
 
 componentSelect.addEventListener("change", async () => {
+  clearImportPanel();
   try {
     await loadMaterials(componentSelect.value);
     await loadGrades();
@@ -641,6 +643,7 @@ componentSelect.addEventListener("change", async () => {
 });
 
 materialSelect.addEventListener("change", async () => {
+  clearImportPanel();
   try {
     await loadGrades();
   } catch (error) {
