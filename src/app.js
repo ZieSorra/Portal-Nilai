@@ -1,3 +1,4 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { APP_CONFIG, SUPABASE_CONFIG } from "./config.js";
 import { getRandomQuote } from "./quotes.js";
 import {
@@ -27,6 +28,8 @@ const quoteText = document.querySelector("#quote-text");
 const quoteAuthor = document.querySelector("#quote-author");
 const inputGradeButton = document.querySelector("#input-grade-btn");
 const backButton = document.querySelector("#back-button");
+
+const supabase = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
 
 function showError(element, message) {
   element.textContent = message;
@@ -83,33 +86,78 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-function seedDemoData() {
+async function loadEntryData() {
   setSelectOptions(
     yearSelect,
-    [{ value: "demo-2026-2027", label: "2026/2027" }],
+    [],
+    "Memuat tahun ajaran..."
+  );
+  setSelectOptions(
+    classSelect,
+    [],
+    "Memuat kelas..."
+  );
+
+  const [{ data: years, error: yearsError }, { data: classes, error: classesError }] =
+    await Promise.all([
+      supabase
+        .from("academic_years")
+        .select("id,name")
+        .eq("is_active", true)
+        .order("name", { ascending: false }),
+      supabase
+        .from("classes")
+        .select("id,name")
+        .eq("is_active", true)
+        .order("name", { ascending: true }),
+    ]);
+
+  if (yearsError) {
+    throw new Error("Gagal memuat tahun ajaran: " + yearsError.message);
+  }
+
+  if (classesError) {
+    throw new Error("Gagal memuat kelas: " + classesError.message);
+  }
+
+  if (!years?.length) {
+    throw new Error("Belum ada tahun ajaran aktif.");
+  }
+
+  if (!classes?.length) {
+    throw new Error("Belum ada kelas aktif.");
+  }
+
+  setSelectOptions(
+    yearSelect,
+    years.map((item) => ({ value: item.id, label: item.name })),
     "Pilih tahun ajaran"
   );
 
   setSelectOptions(
     classSelect,
-    ["1A","1B","1C","2A","2B","2C","3A","3B","3C","4A","4B","4C","5A","5B","5C","6A","6B","6C"]
-      .map(name => ({ value: "demo-" + name, label: name })),
+    classes.map((item) => ({ value: item.id, label: item.name })),
     "Pilih kelas"
   );
 }
 
-async function loadEntryData() {
-  // Phase 2 foundation.
-  // Replace the demo loader with Supabase queries after SUPABASE_CONFIG is populated.
-  if (!SUPABASE_CONFIG.url || !SUPABASE_CONFIG.anonKey) {
-    seedDemoData();
-    return;
+async function validateClassEnrollment(academicYearId, classId) {
+  const { data, error } = await supabase
+    .from("student_enrollments")
+    .select("id")
+    .eq("academic_year_id", academicYearId)
+    .eq("class_id", classId)
+    .eq("is_active", true)
+    .limit(1);
+
+  if (error) {
+    throw new Error("Gagal memeriksa data siswa kelas: " + error.message);
   }
 
-  throw new Error("Supabase client wiring is intentionally pending in Phase 2.");
+  return Array.isArray(data) && data.length > 0;
 }
 
-teacherForm.addEventListener("submit", (event) => {
+teacherForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   clearError(entryError);
 
@@ -124,21 +172,37 @@ teacherForm.addEventListener("submit", (event) => {
     return;
   }
 
-  saveTeacherContext({
-    academicYearId,
-    academicYear,
-    semester,
-    classId,
-    className,
-  });
+  const submitButton = teacherForm.querySelector('button[type="submit"]');
+  submitButton.disabled = true;
+  submitButton.textContent = "Memeriksa...";
 
-  showWelcomePage({
-    academicYearId,
-    academicYear,
-    semester,
-    classId,
-    className,
-  });
+  try {
+    const hasStudents = await validateClassEnrollment(academicYearId, classId);
+
+    if (!hasStudents) {
+      showError(
+        entryError,
+        "Kelas ini belum memiliki data siswa aktif pada tahun ajaran yang dipilih."
+      );
+      return;
+    }
+
+    const context = {
+      academicYearId,
+      academicYear,
+      semester,
+      classId,
+      className,
+    };
+
+    saveTeacherContext(context);
+    showWelcomePage(context);
+  } catch (error) {
+    showError(entryError, error.message || "Gagal memeriksa kelas.");
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = "Masuk";
+  }
 });
 
 adminLink.addEventListener("click", () => {
@@ -158,11 +222,9 @@ document.querySelector("#cancel-admin").addEventListener("click", closeAdminModa
 adminForm.addEventListener("submit", (event) => {
   event.preventDefault();
   clearError(adminError);
-
-  // The admin verification is deliberately not hardcoded here.
   showError(
     adminError,
-    "Verifikasi admin akan dihubungkan ke mekanisme autentikasi yang aman sebelum produksi."
+    "Autentikasi admin belum diaktifkan. Jangan gunakan password asli di frontend."
   );
 });
 
@@ -172,7 +234,6 @@ backButton.addEventListener("click", () => {
 });
 
 inputGradeButton.addEventListener("click", () => {
-  // Phase 2 stops at navigation placeholder.
   window.alert("Menu Input Nilai akan dibangun pada fase berikutnya.");
 });
 
@@ -182,10 +243,21 @@ inputGradeButton.addEventListener("click", () => {
 
     const saved = getTeacherContext();
     if (saved?.academicYearId && saved?.semester && saved?.classId) {
-      yearSelect.value = saved.academicYearId;
-      semesterSelect.value = saved.semester;
-      classSelect.value = saved.classId;
-      showWelcomePage(saved);
+      const matchingYear = [...yearSelect.options].some(
+        (option) => option.value === saved.academicYearId
+      );
+      const matchingClass = [...classSelect.options].some(
+        (option) => option.value === saved.classId
+      );
+
+      if (matchingYear && matchingClass) {
+        yearSelect.value = saved.academicYearId;
+        semesterSelect.value = saved.semester;
+        classSelect.value = saved.classId;
+        showWelcomePage(saved);
+      } else {
+        clearTeacherContext();
+      }
     }
   } catch (error) {
     showError(entryError, error.message || "Gagal memuat data awal.");
