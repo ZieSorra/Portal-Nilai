@@ -1,6 +1,6 @@
 -- ZIESORRA Phase 3 — Admin Tahfidz write access
 -- Admin account used by the frontend:
--- admin@ziesorra.com
+-- hendaltezza@gmail.com
 --
 -- Run this once in Supabase SQL Editor after creating that Auth user.
 
@@ -11,12 +11,12 @@ create policy "admin_insert_tahfidz_materials"
 on public.tahfidz_materials
 for insert
 to authenticated
-with check (auth.email() = 'admin@ziesorra.com');
+with check (auth.email() = 'hendaltezza@gmail.com');
 
 drop policy if exists "admin_update_tahfidz_materials" on public.tahfidz_materials;
 create policy "admin_update_tahfidz_materials"
 on public.tahfidz_materials
 for update
 to authenticated
-using (auth.email() = 'admin@ziesorra.com')
-with check (auth.email() = 'admin@ziesorra.com');
+using (auth.email() = 'hendaltezza@gmail.com')
+with check (auth.email() = 'hendaltezza@gmail.com');
