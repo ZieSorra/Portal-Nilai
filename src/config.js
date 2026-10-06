@@ -5,6 +5,6 @@ export const APP_CONFIG = {
 };
 
 export const SUPABASE_CONFIG = {
-  url: "",
-  anonKey: "",
+  url: "https://myjqcwxloroeypnimvlx.supabase.co",
+  anonKey: "sb_publishable_AMHmVKiyQvBPsfdB8yfmvw_WQbhvIuE",
 };
