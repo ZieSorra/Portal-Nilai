@@ -14,36 +14,23 @@
         <div class="brand">ZIESORRA</div>
         <h1>Sistem Input Nilai</h1>
         <p class="muted">Pilih konteks penilaian untuk melanjutkan.</p>
-
         <form id="teacher-form" novalidate>
-          <label>
-            Tahun Ajaran
-            <select id="academic-year" required>
-              <option value="">Memuat...</option>
-            </select>
+          <label>Tahun Ajaran
+            <select id="academic-year" required><option value="">Memuat...</option></select>
           </label>
-
-          <label>
-            Semester
+          <label>Semester
             <select id="semester" required>
               <option value="">Pilih semester</option>
               <option value="Ganjil">Ganjil</option>
               <option value="Genap">Genap</option>
             </select>
           </label>
-
-          <label>
-            Kelas
-            <select id="class" required>
-              <option value="">Memuat...</option>
-            </select>
+          <label>Kelas
+            <select id="class" required><option value="">Memuat...</option></select>
           </label>
-
           <div id="entry-error" class="message error hidden"></div>
-
           <button type="submit" class="primary-button">Masuk</button>
         </form>
-
         <button id="admin-link" class="text-button" type="button">saya admin</button>
       </div>
     </section>
@@ -57,32 +44,80 @@
           </div>
           <span id="class-badge" class="badge"></span>
         </div>
-
         <div id="context-summary" class="context-summary"></div>
-
         <div class="quote">
           <p id="quote-text"></p>
           <span id="quote-author"></span>
         </div>
-
         <div class="menu-grid">
           <button type="button" class="menu-card active" id="input-grade-btn">
             <strong>Input Nilai</strong>
             <span>Masukkan nilai secara manual atau melalui file.</span>
           </button>
-
           <button type="button" class="menu-card disabled" disabled>
-            <strong>Leger</strong>
-            <span>Segera hadir</span>
+            <strong>Leger</strong><span>Segera hadir</span>
           </button>
-
           <button type="button" class="menu-card disabled" disabled>
-            <strong>Cetak Rapor</strong>
-            <span>Segera hadir</span>
+            <strong>Cetak Rapor</strong><span>Segera hadir</span>
           </button>
         </div>
-
         <button id="back-button" class="text-button" type="button">Ganti kelas</button>
+      </div>
+    </section>
+
+    <section id="input-page" class="page wide-page hidden">
+      <div class="card input-card">
+        <div class="input-header">
+          <div>
+            <div class="brand">ZIESORRA</div>
+            <h2>Input Nilai</h2>
+            <p id="input-context" class="muted"></p>
+          </div>
+          <button id="input-back-button" class="secondary-button" type="button">Kembali</button>
+        </div>
+
+        <div class="input-toolbar">
+          <label>Mata Pelajaran
+            <select id="subject-select">
+              <option value="">Memuat...</option>
+            </select>
+          </label>
+          <label>Komponen Penilaian
+            <select id="component-select" disabled>
+              <option value="">Pilih mata pelajaran</option>
+            </select>
+          </label>
+          <label id="material-field" class="hidden">Materi Tahfidz
+            <select id="material-select"></select>
+          </label>
+        </div>
+
+        <div class="input-mode-note">
+          <strong>Input manual</strong>
+          <span>Nilai 0–100. Nilai akhir/bobot belum dihitung pada tahap ini.</span>
+        </div>
+
+        <div id="input-error" class="message error hidden"></div>
+        <div id="input-success" class="message success hidden"></div>
+
+        <div class="table-wrap">
+          <table class="grade-table">
+            <thead>
+              <tr>
+                <th>No.</th>
+                <th>Nama Siswa</th>
+                <th>Nilai</th>
+              </tr>
+            </thead>
+            <tbody id="grade-table-body">
+              <tr><td colspan="3" class="empty-state">Pilih mata pelajaran dan komponen penilaian.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="input-actions">
+          <button id="save-grades-button" type="button" class="primary-button" disabled>Simpan Nilai</button>
+        </div>
       </div>
     </section>
 
@@ -91,15 +126,11 @@
         <button id="close-admin" class="close-button" type="button" aria-label="Tutup">×</button>
         <h2 id="admin-title">Akses Admin</h2>
         <p class="muted">Masukkan password admin untuk melanjutkan.</p>
-
         <form id="admin-form">
-          <label>
-            Password
+          <label>Password
             <input id="admin-password" type="password" autocomplete="current-password" required />
           </label>
-
           <div id="admin-error" class="message error hidden"></div>
-
           <div class="modal-actions">
             <button id="cancel-admin" type="button" class="secondary-button">Batal</button>
             <button type="submit" class="primary-button">Masuk</button>
@@ -107,10 +138,7 @@
         </form>
       </div>
     </div>
-
-    <div id="toast" class="toast hidden" role="status"></div>
   </main>
-
   <script type="module" src="./app.js"></script>
 </body>
 </html>
