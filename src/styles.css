@@ -39,7 +39,15 @@ button, select, input { font: inherit; }
 .input-header { display:flex; justify-content:space-between; align-items:flex-start; gap:20px; }
 .input-header h2 { margin-bottom:4px; }
 .input-toolbar { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-top:24px; }
-.input-mode-note { display:flex; gap:8px; align-items:center; margin:18px 0; padding:12px 14px; border-radius:12px; background:#f8fafc; color:#475569; font-size:.9rem; }
+.input-mode-note { display:flex; justify-content:space-between; gap:16px; align-items:center; margin:18px 0; padding:12px 14px; border-radius:12px; background:#f8fafc; color:#475569; font-size:.9rem; }
+.input-mode-note > div:first-child { display:grid; gap:3px; }
+.import-actions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.upload-button { cursor:pointer; display:inline-flex; align-items:center; justify-content:center; }
+.import-panel { margin-top:18px; padding:16px; border:1px solid #cbd5e1; border-radius:16px; background:#fff; }
+.import-head { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
+.import-head p { margin:5px 0 0; }
+.import-ok { color:#166534; font-weight:700; }
+.import-invalid { color:#b91c1c; font-weight:700; }
 .table-wrap { overflow:auto; border:1px solid #e2e8f0; border-radius:14px; margin-top:16px; }
 .grade-table { width:100%; border-collapse:collapse; min-width:620px; }
 .grade-table th, .grade-table td { padding:12px 14px; border-bottom:1px solid #e2e8f0; text-align:left; }
