@@ -48,6 +48,187 @@ let students = [];
 let currentComponents = [];
 let currentMaterials = [];
 let currentGrades = new Map();
+let pendingImportRows = [];
+
+function clearImportPanel() {
+  pendingImportRows = [];
+  document.querySelector("#import-panel").classList.add("hidden");
+  document.querySelector("#import-preview-body").innerHTML = "";
+  document.querySelector("#import-summary").textContent = "";
+  clearError(document.querySelector("#import-error"));
+  document.querySelector("#confirm-import-button").disabled = true;
+  document.querySelector("#grade-file-input").value = "";
+}
+
+function normalizeHeader(value) {
+  return String(value ?? "").trim().toLowerCase().replace(/\\s+/g, " ");
+}
+
+function normalizeName(value) {
+  return String(value ?? "").trim().toLowerCase().replace(/\\s+/g, " ");
+}
+
+function parseScore(value) {
+  if (value === null || value === undefined || String(value).trim() === "") return null;
+  const score = Number(String(value).replace(",", ".").trim());
+  return Number.isFinite(score) && score >= 0 && score <= 100 ? Number(score.toFixed(2)) : null;
+}
+
+function validateImportRows(rawRows) {
+  const importError = document.querySelector("#import-error");
+  clearError(importError);
+  const seen = new Set();
+  const enrolledByNis = new Map(students.filter(s => s.nis).map(s => [normalizeName(s.nis), s]));
+  const enrolledByName = new Map(students.map(s => [normalizeName(s.name), s]));
+
+  if (!rawRows.length) throw new Error("File tidak memiliki data.");
+  const headers = Object.keys(rawRows[0]).map(normalizeHeader);
+  if (!headers.includes("nilai")) throw new Error("Kolom wajib 'Nilai' tidak ditemukan.");
+  if (!headers.includes("nis") && !headers.includes("nama")) {
+    throw new Error("File harus memiliki kolom 'NIS' atau 'Nama'.");
+  }
+
+  return rawRows.map((raw, index) => {
+    const normalized = {};
+    for (const [key, value] of Object.entries(raw)) normalized[normalizeHeader(key)] = value;
+
+    const nis = String(normalized.nis ?? "").trim();
+    const name = String(normalized.nama ?? "").trim();
+    const student = (nis && enrolledByNis.get(normalizeName(nis))) || enrolledByName.get(normalizeName(name));
+    const score = parseScore(normalized.nilai);
+    const key = student?.enrollmentId ?? ("row-" + index);
+
+    let status = "OK";
+    if (!student) status = "Siswa tidak ditemukan di kelas aktif";
+    else if (seen.has(student.enrollmentId)) status = "Duplikat siswa";
+    else if (score === null) status = "Nilai tidak valid (0–100)";
+    seen.add(student?.enrollmentId ?? key);
+
+    return {
+      rowNumber: index + 2,
+      enrollmentId: student?.enrollmentId ?? null,
+      nis: student?.nis || nis,
+      name: student?.name || name,
+      score,
+      status,
+      valid: status === "OK",
+    };
+  });
+}
+
+function renderImportPreview(rows) {
+  const body = document.querySelector("#import-preview-body");
+  body.innerHTML = rows.map((row, index) => `
+    <tr>
+      <td>${index + 1}</td>
+      <td>${escapeHtml(row.nis)}</td>
+      <td>${escapeHtml(row.name)}</td>
+      <td>${row.score ?? ""}</td>
+      <td class="${row.valid ? "import-ok" : "import-invalid"}">${escapeHtml(row.status)}</td>
+    </tr>
+  `).join("");
+
+  const validCount = rows.filter(r => r.valid).length;
+  const invalidCount = rows.length - validCount;
+  document.querySelector("#import-summary").textContent =
+    validCount + " baris valid • " + invalidCount + " baris perlu diperbaiki.";
+  document.querySelector("#confirm-import-button").disabled = invalidCount > 0 || validCount === 0;
+}
+
+async function processImportFile(file) {
+  clearError(inputError);
+  inputSuccess.classList.add("hidden");
+  clearImportPanel();
+
+  if (!subjectSelect.value || !componentSelect.value) {
+    showError(inputError, "Pilih mata pelajaran dan komponen penilaian sebelum upload.");
+    return;
+  }
+
+  if (!window.XLSX) {
+    showError(inputError, "Modul pembaca Excel belum tersedia. Muat ulang halaman lalu coba lagi.");
+    return;
+  }
+
+  try {
+    const buffer = await file.arrayBuffer();
+    const workbook = window.XLSX.read(buffer, { type: "array" });
+    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rawRows = window.XLSX.utils.sheet_to_json(firstSheet, { defval: "" });
+    const rows = validateImportRows(rawRows);
+    pendingImportRows = rows;
+
+    document.querySelector("#import-panel").classList.remove("hidden");
+    renderImportPreview(rows);
+  } catch (error) {
+    showError(document.querySelector("#import-error"), error.message || "Gagal membaca file.");
+    document.querySelector("#import-panel").classList.remove("hidden");
+  }
+}
+
+async function confirmImport() {
+  if (!pendingImportRows.length || pendingImportRows.some(r => !r.valid)) return;
+
+  const componentId = componentSelect.value;
+  const component = currentComponents.find(item => item.id === componentId);
+  const materialId = component?.assessment_type === "tahfidz" ? materialSelect.value : null;
+
+  if (component?.assessment_type === "tahfidz" && !materialId) {
+    showError(document.querySelector("#import-error"), "Pilih materi Tahfidz terlebih dahulu.");
+    return;
+  }
+
+  const button = document.querySelector("#confirm-import-button");
+  button.disabled = true;
+  button.textContent = "Menyimpan...";
+
+  try {
+    for (const row of pendingImportRows) {
+      const existing = currentGrades.get(row.enrollmentId);
+      if (existing) {
+        const { error } = await supabase.from("grades").update({ score: row.score }).eq("id", existing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("grades").insert({
+          enrollment_id: row.enrollmentId,
+          semester: teacherContext.semester,
+          subject_id: subjectSelect.value,
+          assessment_component_id: componentId,
+          tahfidz_material_id: materialId,
+          score: row.score,
+        });
+        if (error) throw error;
+      }
+    }
+
+    await loadGrades();
+    showSuccess("Import berhasil disimpan.");
+    clearImportPanel();
+  } catch (error) {
+    showError(document.querySelector("#import-error"), "Gagal menyimpan import: " + error.message);
+    button.disabled = false;
+    button.textContent = "Konfirmasi & Simpan";
+  }
+}
+
+function downloadTemplate() {
+  if (!window.XLSX) {
+    showError(inputError, "Modul Excel belum tersedia. Muat ulang halaman lalu coba lagi.");
+    return;
+  }
+
+  const rows = students.map(student => ({
+    NIS: student.nis,
+    Nama: student.name,
+    Nilai: "",
+  }));
+
+  const worksheet = window.XLSX.utils.json_to_sheet(rows);
+  const workbook = window.XLSX.utils.book_new();
+  window.XLSX.utils.book_append_sheet(workbook, worksheet, "Nilai");
+  window.XLSX.writeFile(workbook, "Template-Input-Nilai.xlsx");
+}
+
 
 function showError(element, message) {
   element.textContent = message;
@@ -468,6 +649,15 @@ materialSelect.addEventListener("change", async () => {
 });
 
 saveGradesButton.addEventListener("click", saveGrades);
+
+document.querySelector("#grade-file-input").addEventListener("change", async (event) => {
+  const file = event.target.files?.[0];
+  if (file) await processImportFile(file);
+});
+
+document.querySelector("#confirm-import-button").addEventListener("click", confirmImport);
+document.querySelector("#cancel-import-button").addEventListener("click", clearImportPanel);
+document.querySelector("#download-template-button").addEventListener("click", downloadTemplate);
 
 inputGradeButton.addEventListener("click", openInputPage);
 
