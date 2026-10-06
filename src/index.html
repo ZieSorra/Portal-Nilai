@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#0f172a" />
   <title>ZIESORRA — Sistem Input Nilai</title>
   <link rel="stylesheet" href="./styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
   <main class="app-shell">
@@ -93,8 +94,38 @@
         </div>
 
         <div class="input-mode-note">
-          <strong>Input manual</strong>
-          <span>Nilai 0–100. Nilai akhir/bobot belum dihitung pada tahap ini.</span>
+          <div>
+            <strong>Input manual</strong>
+            <span>Nilai 0–100. Nilai akhir/bobot belum dihitung pada tahap ini.</span>
+          </div>
+          <div class="import-actions">
+            <button id="download-template-button" type="button" class="secondary-button">Download Template</button>
+            <label class="upload-button secondary-button" for="grade-file-input">Upload Excel/CSV
+              <input id="grade-file-input" type="file" accept=".xlsx,.xls,.csv" hidden />
+            </label>
+          </div>
+        </div>
+
+        <div id="import-panel" class="import-panel hidden">
+          <div class="import-head">
+            <div>
+              <strong>Preview Import</strong>
+              <p id="import-summary" class="muted"></p>
+            </div>
+            <button id="cancel-import-button" type="button" class="text-button">Batalkan</button>
+          </div>
+          <div id="import-error" class="message error hidden"></div>
+          <div class="table-wrap">
+            <table class="grade-table import-table">
+              <thead>
+                <tr><th>No.</th><th>NIS</th><th>Nama</th><th>Nilai</th><th>Status</th></tr>
+              </thead>
+              <tbody id="import-preview-body"></tbody>
+            </table>
+          </div>
+          <div class="input-actions">
+            <button id="confirm-import-button" type="button" class="primary-button" disabled>Konfirmasi & Simpan</button>
+          </div>
         </div>
 
         <div id="input-error" class="message error hidden"></div>
