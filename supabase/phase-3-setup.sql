@@ -96,7 +96,8 @@ cross join (
 where ay.is_active = true
   and c.is_active = true
   and s.is_active = true
-  and s.name not in ('Al-Qur’an', 'Fiqih Ibadah')
+  and s.subject_type <> 'quran'
+  and s.name <> 'Fiqih Ibadah'
   and not exists (
     select 1
     from public.assessment_components ac
@@ -135,7 +136,7 @@ cross join (
 where ay.is_active = true
   and c.is_active = true
   and s.is_active = true
-  and s.name = 'Al-Qur’an'
+  and s.subject_type = 'quran'
   and not exists (
     select 1
     from public.assessment_components ac
