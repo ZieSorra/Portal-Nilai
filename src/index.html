@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>ZIESORRA — Sistem Input Nilai</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section id="entry-page" class="page">
+      <div class="card entry-card">
+        <div class="brand">ZIESORRA</div>
+        <h1>Sistem Input Nilai</h1>
+        <p class="muted">Pilih konteks penilaian untuk melanjutkan.</p>
+
+        <form id="teacher-form" novalidate>
+          <label>
+            Tahun Ajaran
+            <select id="academic-year" required>
+              <option value="">Memuat...</option>
+            </select>
+          </label>
+
+          <label>
+            Semester
+            <select id="semester" required>
+              <option value="">Pilih semester</option>
+              <option value="Ganjil">Ganjil</option>
+              <option value="Genap">Genap</option>
+            </select>
+          </label>
+
+          <label>
+            Kelas
+            <select id="class" required>
+              <option value="">Memuat...</option>
+            </select>
+          </label>
+
+          <div id="entry-error" class="message error hidden"></div>
+
+          <button type="submit" class="primary-button">Masuk</button>
+        </form>
+
+        <button id="admin-link" class="text-button" type="button">saya admin</button>
+      </div>
+    </section>
+
+    <section id="welcome-page" class="page hidden">
+      <div class="card welcome-card">
+        <div class="welcome-top">
+          <div>
+            <div class="brand">ZIESORRA</div>
+            <h2>Selamat datang 👋</h2>
+          </div>
+          <span id="class-badge" class="badge"></span>
+        </div>
+
+        <div id="context-summary" class="context-summary"></div>
+
+        <div class="quote">
+          <p id="quote-text"></p>
+          <span id="quote-author"></span>
+        </div>
+
+        <div class="menu-grid">
+          <button type="button" class="menu-card active" id="input-grade-btn">
+            <strong>Input Nilai</strong>
+            <span>Masukkan nilai secara manual atau melalui file.</span>
+          </button>
+
+          <button type="button" class="menu-card disabled" disabled>
+            <strong>Leger</strong>
+            <span>Segera hadir</span>
+          </button>
+
+          <button type="button" class="menu-card disabled" disabled>
+            <strong>Cetak Rapor</strong>
+            <span>Segera hadir</span>
+          </button>
+        </div>
+
+        <button id="back-button" class="text-button" type="button">Ganti kelas</button>
+      </div>
+    </section>
+
+    <div id="admin-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="admin-title">
+      <div class="modal-panel">
+        <button id="close-admin" class="close-button" type="button" aria-label="Tutup">×</button>
+        <h2 id="admin-title">Akses Admin</h2>
+        <p class="muted">Masukkan password admin untuk melanjutkan.</p>
+
+        <form id="admin-form">
+          <label>
+            Password
+            <input id="admin-password" type="password" autocomplete="current-password" required />
+          </label>
+
+          <div id="admin-error" class="message error hidden"></div>
+
+          <div class="modal-actions">
+            <button id="cancel-admin" type="button" class="secondary-button">Batal</button>
+            <button type="submit" class="primary-button">Masuk</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="toast" class="toast hidden" role="status"></div>
+  </main>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
