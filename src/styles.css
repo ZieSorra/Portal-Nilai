@@ -57,6 +57,13 @@ button, select, input { font: inherit; }
 .empty-state { text-align:center !important; color:#64748b; padding:28px !important; }
 .input-actions { display:flex; justify-content:flex-end; margin-top:18px; }
 .success { background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; }
+.admin-card { width:100%; }
+.admin-toolbar { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:24px; }
+.tahfidz-form { display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; padding:18px; margin-top:18px; border:1px solid #e2e8f0; border-radius:16px; background:#f8fafc; }
+.tahfidz-form-actions { grid-column:1 / -1; display:flex; justify-content:flex-end; gap:8px; }
+.row-actions { display:flex; gap:6px; flex-wrap:wrap; }
+.danger-button { background:#fee2e2; color:#b91c1c; font-weight:700; }
+.student-meta { color:#64748b; font-size:.82rem; }
 
 .brand {
   font-size: .82rem;
@@ -237,7 +244,7 @@ button {
 }
 
 @media (max-width: 850px) {
-  .input-toolbar { grid-template-columns:1fr; }
+  .input-toolbar, .admin-toolbar, .tahfidz-form { grid-template-columns:1fr; }
   .input-header { flex-direction:column; }
 }
 @media (max-width: 700px) {
