@@ -24,6 +24,7 @@ button, select, input { font: inherit; }
 }
 
 .page { width: min(100%, 760px); }
+.wide-page { width: min(100%, 1100px); }
 
 .card {
   background: rgba(255,255,255,.96);
@@ -34,6 +35,20 @@ button, select, input { font: inherit; }
 }
 
 .entry-card { max-width: 520px; margin: 0 auto; }
+.input-card { margin: 0 auto; }
+.input-header { display:flex; justify-content:space-between; align-items:flex-start; gap:20px; }
+.input-header h2 { margin-bottom:4px; }
+.input-toolbar { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-top:24px; }
+.input-mode-note { display:flex; gap:8px; align-items:center; margin:18px 0; padding:12px 14px; border-radius:12px; background:#f8fafc; color:#475569; font-size:.9rem; }
+.table-wrap { overflow:auto; border:1px solid #e2e8f0; border-radius:14px; margin-top:16px; }
+.grade-table { width:100%; border-collapse:collapse; min-width:620px; }
+.grade-table th, .grade-table td { padding:12px 14px; border-bottom:1px solid #e2e8f0; text-align:left; }
+.grade-table th { background:#f8fafc; font-size:.85rem; }
+.grade-table tr:last-child td { border-bottom:0; }
+.score-input { width:120px; text-align:center; }
+.empty-state { text-align:center !important; color:#64748b; padding:28px !important; }
+.input-actions { display:flex; justify-content:flex-end; margin-top:18px; }
+.success { background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; }
 
 .brand {
   font-size: .82rem;
@@ -213,6 +228,10 @@ button {
   border-radius: 10px;
 }
 
+@media (max-width: 850px) {
+  .input-toolbar { grid-template-columns:1fr; }
+  .input-header { flex-direction:column; }
+}
 @media (max-width: 700px) {
   .menu-grid { grid-template-columns: 1fr; }
   .card { padding: 22px; }
