@@ -1,4 +1,3 @@
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import { APP_CONFIG, SUPABASE_CONFIG, ADMIN_CONFIG } from "./config.js";
 import { getRandomQuote } from "./quotes.js";
 import {
@@ -58,7 +57,7 @@ const tahfidzTableBody = document.querySelector("#tahfidz-table-body");
 const cancelTahfidzEdit = document.querySelector("#cancel-tahfidz-edit");
 const adminLogoutButton = document.querySelector("#admin-logout-button");
 
-const supabase = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+const supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
 
 let teacherContext = null;
 let students = [];
