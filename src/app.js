@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { APP_CONFIG, SUPABASE_CONFIG } from "./config.js";
+import { APP_CONFIG, SUPABASE_CONFIG, ADMIN_CONFIG } from "./config.js";
 import { getRandomQuote } from "./quotes.js";
 import {
   saveTeacherContext,
@@ -10,6 +10,7 @@ import {
 const entryPage = document.querySelector("#entry-page");
 const welcomePage = document.querySelector("#welcome-page");
 const inputPage = document.querySelector("#input-page");
+const adminPage = document.querySelector("#admin-page");
 
 const yearSelect = document.querySelector("#academic-year");
 const semesterSelect = document.querySelector("#semester");
@@ -41,6 +42,22 @@ const inputSuccess = document.querySelector("#input-success");
 const gradeTableBody = document.querySelector("#grade-table-body");
 const saveGradesButton = document.querySelector("#save-grades-button");
 
+const adminYearSelect = document.querySelector("#admin-year-select");
+const adminClassSelect = document.querySelector("#admin-class-select");
+const adminTahfidzError = document.querySelector("#admin-tahfidz-error");
+const adminTahfidzSuccess = document.querySelector("#admin-tahfidz-success");
+const tahfidzForm = document.querySelector("#tahfidz-form");
+const tahfidzEditId = document.querySelector("#tahfidz-edit-id");
+const tahfidzSurahName = document.querySelector("#tahfidz-surah-name");
+const tahfidzSurahNumber = document.querySelector("#tahfidz-surah-number");
+const tahfidzAyatStart = document.querySelector("#tahfidz-ayat-start");
+const tahfidzAyatEnd = document.querySelector("#tahfidz-ayat-end");
+const tahfidzAssessmentLabel = document.querySelector("#tahfidz-assessment-label");
+const tahfidzSequence = document.querySelector("#tahfidz-sequence");
+const tahfidzTableBody = document.querySelector("#tahfidz-table-body");
+const cancelTahfidzEdit = document.querySelector("#cancel-tahfidz-edit");
+const adminLogoutButton = document.querySelector("#admin-logout-button");
+
 const supabase = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
 
 let teacherContext = null;
@@ -49,6 +66,8 @@ let currentComponents = [];
 let currentMaterials = [];
 let currentGrades = new Map();
 let pendingImportRows = [];
+let adminTahfidzComponent = null;
+let adminTahfidzMaterials = [];
 
 function clearImportPanel() {
   pendingImportRows = [];
@@ -229,6 +248,203 @@ function downloadTemplate() {
   window.XLSX.writeFile(workbook, "Template-Input-Nilai.xlsx");
 }
 
+
+
+function showAdminPage() {
+  entryPage.classList.add("hidden");
+  welcomePage.classList.add("hidden");
+  inputPage.classList.add("hidden");
+  adminPage.classList.remove("hidden");
+}
+
+function resetTahfidzForm() {
+  tahfidzEditId.value = "";
+  tahfidzSurahName.value = "";
+  tahfidzSurahNumber.value = "";
+  tahfidzAyatStart.value = "";
+  tahfidzAyatEnd.value = "";
+  tahfidzAssessmentLabel.value = "";
+  tahfidzSequence.value = "1";
+  cancelTahfidzEdit.classList.add("hidden");
+}
+
+function clearAdminMessages() {
+  clearError(adminTahfidzError);
+  adminTahfidzSuccess.classList.add("hidden");
+}
+
+function adminError(message) {
+  showError(adminTahfidzError, message);
+}
+
+async function loadAdminSelectors() {
+  const [{ data: years, error: yearsError }, { data: classes, error: classesError }] =
+    await Promise.all([
+      supabase.from("academic_years").select("id,name").eq("is_active", true).order("name", { ascending: false }),
+      supabase.from("classes").select("id,name").eq("is_active", true).order("name", { ascending: true }),
+    ]);
+  if (yearsError) throw new Error("Gagal memuat tahun ajaran admin: " + yearsError.message);
+  if (classesError) throw new Error("Gagal memuat kelas admin: " + classesError.message);
+  setSelectOptions(adminYearSelect, (years ?? []).map(item => ({ value: item.id, label: item.name })), "Pilih tahun ajaran");
+  setSelectOptions(adminClassSelect, (classes ?? []).map(item => ({ value: item.id, label: item.name })), "Pilih kelas");
+}
+
+async function loadAdminTahfidz() {
+  clearAdminMessages();
+  resetTahfidzForm();
+  tahfidzTableBody.innerHTML = '<tr><td colspan="6" class="empty-state">Memuat materi...</td></tr>';
+  const yearId = adminYearSelect.value;
+  const classId = adminClassSelect.value;
+  if (!yearId || !classId) {
+    adminTahfidzComponent = null;
+    adminTahfidzMaterials = [];
+    tahfidzTableBody.innerHTML = '<tr><td colspan="6" class="empty-state">Pilih tahun ajaran dan kelas.</td></tr>';
+    return;
+  }
+
+  const { data: components, error: componentError } = await supabase
+    .from("assessment_components")
+    .select("id,name,assessment_type,sequence")
+    .eq("academic_year_id", yearId)
+    .eq("class_id", classId)
+    .eq("assessment_type", "tahfidz")
+    .eq("is_active", true)
+    .order("sequence", { ascending: true })
+    .limit(1);
+
+  if (componentError) throw new Error("Gagal memuat komponen Tahfidz: " + componentError.message);
+  adminTahfidzComponent = components?.[0] ?? null;
+
+  if (!adminTahfidzComponent) {
+    adminTahfidzMaterials = [];
+    tahfidzTableBody.innerHTML = '<tr><td colspan="6" class="empty-state">Komponen Tahfidz belum tersedia untuk kelas ini.</td></tr>';
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("tahfidz_materials")
+    .select("id,surah_name,surah_number,ayat_start,ayat_end,assessment_label,sequence,is_active")
+    .eq("assessment_component_id", adminTahfidzComponent.id)
+    .eq("is_active", true)
+    .order("sequence", { ascending: true });
+
+  if (error) throw new Error("Gagal memuat materi Tahfidz: " + error.message);
+  adminTahfidzMaterials = data ?? [];
+  renderAdminTahfidz();
+}
+
+function renderAdminTahfidz() {
+  if (!adminTahfidzMaterials.length) {
+    tahfidzTableBody.innerHTML = '<tr><td colspan="6" class="empty-state">Belum ada materi Tahfidz.</td></tr>';
+    return;
+  }
+  tahfidzTableBody.innerHTML = adminTahfidzMaterials.map((item, index) => `
+    <tr>
+      <td>${index + 1}</td>
+      <td>${escapeHtml(item.surah_name)}${item.surah_number ? ` <span class="student-meta">(${item.surah_number})</span>` : ""}</td>
+      <td>${item.ayat_start}–${item.ayat_end}</td>
+      <td>${escapeHtml(item.assessment_label)}</td>
+      <td>${item.sequence}</td>
+      <td><div class="row-actions">
+        <button type="button" class="secondary-button edit-tahfidz" data-id="${item.id}">Edit</button>
+        <button type="button" class="danger-button delete-tahfidz" data-id="${item.id}">Nonaktifkan</button>
+      </div></td>
+    </tr>
+  `).join("");
+  document.querySelectorAll(".edit-tahfidz").forEach(button => button.addEventListener("click", () => startTahfidzEdit(button.dataset.id)));
+  document.querySelectorAll(".delete-tahfidz").forEach(button => button.addEventListener("click", () => deactivateTahfidz(button.dataset.id)));
+}
+
+function startTahfidzEdit(id) {
+  const item = adminTahfidzMaterials.find(row => row.id === id);
+  if (!item) return;
+  tahfidzEditId.value = item.id;
+  tahfidzSurahName.value = item.surah_name;
+  tahfidzSurahNumber.value = item.surah_number ?? "";
+  tahfidzAyatStart.value = item.ayat_start;
+  tahfidzAyatEnd.value = item.ayat_end;
+  tahfidzAssessmentLabel.value = item.assessment_label;
+  tahfidzSequence.value = item.sequence;
+  cancelTahfidzEdit.classList.remove("hidden");
+  tahfidzSurahName.focus();
+}
+
+tahfidzForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  clearAdminMessages();
+  if (!adminTahfidzComponent) {
+    adminError("Pilih tahun ajaran dan kelas yang memiliki komponen Tahfidz.");
+    return;
+  }
+  const surahName = tahfidzSurahName.value.trim();
+  const surahNumber = Number(tahfidzSurahNumber.value);
+  const ayatStart = Number(tahfidzAyatStart.value);
+  const ayatEnd = Number(tahfidzAyatEnd.value);
+  const assessmentLabel = tahfidzAssessmentLabel.value.trim();
+  const sequence = Number(tahfidzSequence.value);
+  if (!surahName || !Number.isInteger(surahNumber) || surahNumber < 1 || surahNumber > 114 ||
+      !Number.isInteger(ayatStart) || ayatStart < 1 ||
+      !Number.isInteger(ayatEnd) || ayatEnd < ayatStart ||
+      !assessmentLabel || !Number.isInteger(sequence) || sequence < 1) {
+    adminError("Lengkapi data dengan benar. Ayat akhir harus sama atau lebih besar dari ayat mulai.");
+    return;
+  }
+  const payload = {
+    assessment_component_id: adminTahfidzComponent.id,
+    surah_name: surahName,
+    surah_number: surahNumber,
+    ayat_start: ayatStart,
+    ayat_end: ayatEnd,
+    assessment_label: assessmentLabel,
+    sequence,
+    is_active: true,
+  };
+  const id = tahfidzEditId.value;
+  const { error } = id
+    ? await supabase.from("tahfidz_materials").update(payload).eq("id", id)
+    : await supabase.from("tahfidz_materials").insert(payload);
+  if (error) {
+    adminError("Gagal menyimpan materi Tahfidz: " + error.message);
+    return;
+  }
+  adminTahfidzSuccess.textContent = id ? "Materi Tahfidz berhasil diperbarui." : "Materi Tahfidz berhasil ditambahkan.";
+  adminTahfidzSuccess.classList.remove("hidden");
+  resetTahfidzForm();
+  await loadAdminTahfidz();
+});
+
+cancelTahfidzEdit.addEventListener("click", resetTahfidzForm);
+
+async function deactivateTahfidz(id) {
+  const item = adminTahfidzMaterials.find(row => row.id === id);
+  if (!item) return;
+  if (!window.confirm("Nonaktifkan materi " + item.surah_name + " ayat " + item.ayat_start + "–" + item.ayat_end + "?")) return;
+  clearAdminMessages();
+  const { error } = await supabase.from("tahfidz_materials").update({ is_active: false }).eq("id", id);
+  if (error) {
+    adminError("Gagal menonaktifkan materi Tahfidz: " + error.message);
+    return;
+  }
+  adminTahfidzSuccess.textContent = "Materi Tahfidz berhasil dinonaktifkan.";
+  adminTahfidzSuccess.classList.remove("hidden");
+  await loadAdminTahfidz();
+}
+
+async function openAdminPage() {
+  try {
+    showAdminPage();
+    await loadAdminSelectors();
+    await loadAdminTahfidz();
+  } catch (error) {
+    adminError(error.message || "Gagal memuat halaman admin.");
+  }
+}
+
+async function adminLogout() {
+  await supabase.auth.signOut();
+  adminPage.classList.add("hidden");
+  showEntryPage();
+}
 
 function showError(element, message) {
   element.textContent = message;
@@ -727,11 +943,36 @@ function closeAdminModal() {
 document.querySelector("#close-admin").addEventListener("click", closeAdminModal);
 document.querySelector("#cancel-admin").addEventListener("click", closeAdminModal);
 
-adminForm.addEventListener("submit", (event) => {
+adminForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   clearError(adminError);
-  showError(adminError, "Autentikasi admin belum diaktifkan. Jangan gunakan password asli di frontend.");
+  const password = adminPassword.value;
+  if (!password) {
+    showError(adminError, "Masukkan password admin.");
+    return;
+  }
+  const submitButton = adminForm.querySelector('button[type="submit"]');
+  submitButton.disabled = true;
+  submitButton.textContent = "Memeriksa...";
+  try {
+    const { error } = await supabase.auth.signInWithPassword({
+      email: ADMIN_CONFIG.email,
+      password,
+    });
+    if (error) throw error;
+    closeAdminModal();
+    await openAdminPage();
+  } catch (error) {
+    showError(adminError, "Login admin gagal. Periksa password admin.");
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = "Masuk";
+  }
 });
+
+adminYearSelect.addEventListener("change", () => loadAdminTahfidz().catch(error => adminError(error.message)));
+adminClassSelect.addEventListener("change", () => loadAdminTahfidz().catch(error => adminError(error.message)));
+adminLogoutButton.addEventListener("click", adminLogout);
 
 backButton.addEventListener("click", () => {
   clearTeacherContext();
