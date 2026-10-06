@@ -10,5 +10,5 @@ export const SUPABASE_CONFIG = {
 };
 
 export const ADMIN_CONFIG = {
-  email: "admin@ziesorra.com",
+  email: "hendaltezza@gmail.com",
 };
