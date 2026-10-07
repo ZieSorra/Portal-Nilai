@@ -754,9 +754,9 @@ function renderStsReport(student) {
             <th rowspan="2">Nilai<br>Rata-rata</th>
           </tr>
           <tr>
-            <th>Nilai</th><th>Predikat</th>
-            <th>Nilai</th><th>Predikat</th>
-            <th>Nilai</th><th>Predikat</th>
+            <th>N</th><th>P</th>
+            <th>N</th><th>P</th>
+            <th>N</th><th>P</th>
           </tr>
         </thead>
         <tbody>${body || '<tr><td colspan="10" class="center">Belum ada nilai.</td></tr>'}</tbody>
@@ -835,7 +835,7 @@ function renderInternReport(student) {
       ${renderReportIdentity(student, "LAPORAN HASIL BELAJAR SISWA", "KURIKULUM INTERN SEKOLAH")}
       <table class="report-table report-intern-table">
         <thead>
-          <tr><th>No.</th><th>Muatan Pelajaran</th><th>Nilai</th><th>Predikat</th><th>Keterangan</th></tr>
+          <tr><th>No.</th><th>Muatan Pelajaran</th><th>N</th><th>P</th><th>Keterangan</th></tr>
         </thead>
         <tbody>${renderInternRows(rows) || '<tr><td colspan="5" class="center">Belum ada nilai.</td></tr>'}</tbody>
       </table>
