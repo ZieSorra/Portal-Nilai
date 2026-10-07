@@ -649,19 +649,33 @@ function renderStsReport(student) {
   const body = rows.map(row => {
     if (row.kind === "group") {
       number += 1;
-      const groupRows = row.children.map(child => {
-        return `
+      const isTahfidz = normalizeMaterialName(row.label) === "tahfidz";
+      const targetTotalRows = isTahfidz ? 7 : 1;
+      const targetChildren = Math.max(0, targetTotalRows - 1);
+      const sourceChildren = row.children ?? [];
+      const groupRows = [];
+
+      for (let index = 0; index < targetChildren; index += 1) {
+        const child = sourceChildren[index] ?? {
+          label: "",
+          s1: null,
+          s2: null,
+          sts: null,
+          total: null,
+          average: null,
+        };
+        groupRows.push(`
           <tr>
             <td></td>
-            <td class="subject indent-1">${escapeHtml(child.label)}</td>
+            <td class="subject indent-1">${escapeHtml(child.label || "")}</td>
             <td class="center">${reportPredicate(child.s1)}</td>
             <td class="center">${reportPredicate(child.s2)}</td>
             <td class="center">${reportPredicate(child.sts)}</td>
             <td class="center">${reportFormatNumber(child.total)}</td>
             <td class="center">${reportFormatNumber(child.average)}</td>
           </tr>
-        `;
-      }).join("");
+        `);
+      }
 
       return `
         <tr class="group-row">
@@ -669,7 +683,7 @@ function renderStsReport(student) {
           <td class="subject">${escapeHtml(row.label)}</td>
           <td></td><td></td><td></td><td></td><td></td>
         </tr>
-        ${groupRows}
+        ${groupRows.join("")}
       `;
     }
 
@@ -699,7 +713,6 @@ function renderStsReport(student) {
         <tbody>${body || '<tr><td colspan="7" class="center">Belum ada nilai.</td></tr>'}</tbody>
       </table>
       <div class="report-footer">
-        <div class="report-note">Predikat: A = 90–100, B = 80–89, C = 70–79, D = &lt;70.</div>
         <div class="report-date">Diberikan di : Larangan<br>Tanggal : ${reportFormatDate()}</div>
         ${renderReportSignatures()}
       </div>
@@ -708,26 +721,38 @@ function renderStsReport(student) {
 }
 
 
+
 function renderInternRows(rows) {
   let no = 0;
   return rows.map(row => {
     if (row.kind === "group") {
-      const children = row.children.map(child => `
-        <tr>
-          <td></td>
-          <td class="subject indent-1">${escapeHtml(child.label)}</td>
-          <td class="center">${reportFormatNumber(child.value)}</td>
-          <td class="center">${reportPredicate(child.value)}</td>
-          <td class="center">${reportDescription(child.value)}</td>
-        </tr>
-      `).join("");
       no += 1;
+      const isTahfidz = normalizeMaterialName(row.label) === "tahfidz";
+      const isFiqih = normalizeMaterialName(row.label) === "fiqih ibadah";
+      const targetTotalRows = isTahfidz ? 7 : isFiqih ? 6 : 1;
+      const targetChildren = Math.max(0, targetTotalRows - 1);
+      const sourceChildren = row.children ?? [];
+      const children = [];
+
+      for (let index = 0; index < targetChildren; index += 1) {
+        const child = sourceChildren[index] ?? { label: "", value: null };
+        children.push(`
+          <tr>
+            <td></td>
+            <td class="subject indent-1">${escapeHtml(child.label || "")}</td>
+            <td class="center">${reportFormatNumber(child.value)}</td>
+            <td class="center">${reportPredicate(child.value)}</td>
+            <td class="center">${reportDescription(child.value)}</td>
+          </tr>
+        `);
+      }
+
       return `
         <tr class="group-row">
           <td class="center">${no}</td>
           <td class="subject">${escapeHtml(row.label)}</td>
           <td></td><td></td><td></td>
-        </tr>${children}`;
+        </tr>${children.join("")}`;
     }
 
     no += 1;
@@ -742,6 +767,8 @@ function renderInternRows(rows) {
     `;
   }).join("");
 }
+
+
 
 function renderInternReport(student) {
   const rows = buildReportRows(student, "INTERN");
