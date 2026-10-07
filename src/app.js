@@ -467,87 +467,123 @@ function getReportFixedUnitScore(definition, unit, studentGrades, data, type) {
   };
 }
 
+const REPORT_STS_NATIONAL = [
+  { label: "Pendidikan Agama Islam", match: "pendidikanagamaislam" },
+  { label: "Pend. Kewarganegaraan", match: "pendidikanpancasila" },
+  { label: "Bahasa Indonesia", match: "bahasaindonesia" },
+  { label: "Matematika", match: "matematika" },
+  { label: "Ilmu Pengetahuan Alam dan Sosial", match: "ipas" },
+  { label: "Seni Budaya", match: "seni dan budaya" },
+  { label: "Pend. Jasmani, Olahraga, dan Kesehatan", match: "pjok" },
+  { label: "Bahasa Inggris", match: "bahasainggris" },
+  { label: "Budi Pekerti", match: "budipekerti" },
+];
+
+const REPORT_STS_INTERN = [
+  { label: "Aqidah Akhlak", type: "subject", match: "aqidahakhlak" },
+  { label: "Praktik Ibadah", type: "fiqih" },
+  { label: "Bahasa Arab", type: "subject", match: "bahasaarab" },
+  { label: "Komputer", type: "subject", match: "tik" },
+];
+
+function reportUnitByMatch(units, match) {
+  const normalized = String(match ?? "").replace(/[^a-z0-9]/gi, "").toLowerCase();
+  return units.find(unit =>
+    normalizeMaterialName(unit.label).replace(/[^a-z0-9]/g, "").includes(normalized)
+  ) || null;
+}
+
+function buildStsFixedRow(label, unit, studentGrades, materials) {
+  if (!unit) {
+    return { kind: "subject", label, s1: null, s2: null, sts: null, total: null, average: null };
+  }
+  const scores = calculateUnitSTS(unit, studentGrades, materials);
+  const values = [scores.s1, scores.s2, scores.sts].filter(value => value !== null);
+  return {
+    kind: "subject",
+    label,
+    s1: scores.s1,
+    s2: scores.s2,
+    sts: scores.sts,
+    total: values.length ? values.reduce((sum, value) => sum + value, 0) : null,
+    average: average(values),
+  };
+}
+
+function buildStsAlQuranRow(units, studentGrades, data) {
+  const tahfidzUnit = units.find(unit => unit.type === "tahfidz") || null;
+  const qiraahUnit = units.find(unit => normalizeMaterialName(unit.label).includes("qira'ah")) || null;
+  const kitabahUnit = units.find(unit => normalizeMaterialName(unit.label).includes("kitabah")) || null;
+
+  const tahfidzMaterials = data.materials
+    .filter(material => tahfidzUnit?.components.some(component => component.id === material.assessment_component_id))
+    .sort((a, b) => Number(a.sequence ?? 0) - Number(b.sequence ?? 0))
+    .slice(0, 5);
+
+  const tahfidzChildren = tahfidzMaterials.map(material => {
+    const s1 = getTahfidzMaterialScore(material, "Sumatif 1", studentGrades, data);
+    const s2 = getTahfidzMaterialScore(material, "Sumatif 2", studentGrades, data);
+    const sts = getTahfidzMaterialScore(material, "STS", studentGrades, data);
+    const values = [s1, s2, sts].filter(value => value !== null);
+    return {
+      label: material.surah_name + " " + formatTahfidzRange(material),
+      s1, s2, sts,
+      total: values.length ? values.reduce((sum, value) => sum + value, 0) : null,
+      average: average(values),
+    };
+  });
+
+  while (tahfidzChildren.length < 5) {
+    tahfidzChildren.push({ label: "", s1: null, s2: null, sts: null, total: null, average: null });
+  }
+
+  const qiraah = buildStsFixedRow("b. Qira'at", qiraahUnit, studentGrades, data.materials);
+  const kitabah = buildStsFixedRow("c. Kitabah", kitabahUnit, studentGrades, data.materials);
+
+  return {
+    kind: "group",
+    label: "Al-Qur'an:",
+    children: [
+      { label: "a. Tahfidz", s1: null, s2: null, sts: null, total: null, average: null },
+      ...tahfidzChildren,
+      qiraah,
+      kitabah,
+    ],
+  };
+}
+
 function buildReportRows(student, type) {
   const data = reportData;
   const studentGrades = getStudentReportGrades(student, data);
   const units = buildLegerUnits(data.subjects, data.components);
-  const definitions = type === "STS" ? REPORT_STS_SUBJECTS : REPORT_INTERN_SUBJECTS;
 
   if (type === "STS") {
-    const rows = [];
+    const rows = [{ kind: "section", label: "A. Kurikulum Nasional" }];
 
-    for (const definition of definitions) {
-      const unit = findReportUnit(definition, units);
+    for (const definition of REPORT_STS_NATIONAL) {
+      rows.push(buildStsFixedRow(
+        definition.label,
+        reportUnitByMatch(units, definition.match),
+        studentGrades,
+        data.materials
+      ));
+    }
 
-      if (definition.type === "tahfidz") {
-        const materialIds = new Set(
-          studentGrades
-            .filter(grade =>
-              unit?.components.some(component => component.id === grade.assessment_component_id) &&
-              grade.tahfidz_material_id
-            )
-            .map(grade => grade.tahfidz_material_id)
-        );
+    rows.push({ kind: "section", label: "A. Kurikulum Intern Sekolah" });
+    rows.push(buildStsAlQuranRow(units, studentGrades, data));
 
-        const materials = data.materials.filter(item =>
-          materialIds.has(item.id)
-        );
-
-        if (materials.length) {
-          rows.push({
-            kind: "group",
-            label: definition.label,
-            children: materials.map(material => {
-              const s1 = getTahfidzMaterialScore(material, "Sumatif 1", studentGrades, data);
-              const s2 = getTahfidzMaterialScore(material, "Sumatif 2", studentGrades, data);
-              const sts = getTahfidzMaterialScore(material, "STS", studentGrades, data);
-              const values = [s1, s2, sts].filter(value => value !== null);
-              return {
-                label: material.surah_name + " " + formatTahfidzRange(material),
-                s1, s2, sts,
-                total: values.length ? values.reduce((sum, value) => sum + value, 0) : null,
-                average: average(values),
-              };
-            }),
-          });
-        } else {
-          rows.push({
-            kind: "group",
-            label: definition.label,
-            children: [{ label: "", s1: null, s2: null, sts: null, total: null, average: null }],
-          });
-        }
-        continue;
-      }
-
-      if (definition.type === "fiqih") {
-        const children = unit
-          ? unit.components.map(component => {
-              const values = studentGrades
-                .filter(grade => grade.assessment_component_id === component.id && !grade.tahfidz_material_id)
-                .map(grade => Number(grade.score));
-              const s1 = average(values);
-              return { label: component.name, s1, s2: null, sts: null, total: s1, average: s1 };
-            })
-          : [];
-
-        if (children.length) {
-          rows.push({ kind: "group", label: definition.label, children });
-        } else {
-          rows.push({ kind: "subject", label: definition.label, s1: null, s2: null, sts: null, total: null, average: null });
-        }
-        continue;
-      }
-
-      rows.push(getReportFixedUnitScore(definition, unit, studentGrades, data, type));
+    for (const definition of REPORT_STS_INTERN) {
+      const unit = definition.type === "fiqih"
+        ? units.find(item => item.type === "fiqih") || null
+        : reportUnitByMatch(units, definition.match);
+      rows.push(buildStsFixedRow(definition.label, unit, studentGrades, data.materials));
     }
 
     return rows;
   }
 
   const rows = [];
-
-  for (const definition of definitions) {
+  for (const definition of REPORT_INTERN_SUBJECTS) {
     const unit = findReportUnit(definition, units);
 
     if (definition.type === "tahfidz") {
@@ -560,19 +596,20 @@ function buildReportRows(student, type) {
           .map(grade => grade.tahfidz_material_id)
       );
 
-      const materials = data.materials.filter(item =>
-        unit?.components.some(component => component.id === item.assessment_component_id) &&
-        (materialIds.has(item.id) || true)
-      );
+      const materials = data.materials
+        .filter(item => unit?.components.some(component => component.id === item.assessment_component_id))
+        .sort((a, b) => Number(a.sequence ?? 0) - Number(b.sequence ?? 0));
 
-      const children = materials.map(material => {
-        const s12 = getTahfidzMaterialScore(material, "Sumatif 1", studentGrades, data);
+      const children = materials.slice(0, 6).map(material => {
+        const s1 = getTahfidzMaterialScore(material, "Sumatif 1", studentGrades, data);
         const s2 = getTahfidzMaterialScore(material, "Sumatif 2", studentGrades, data);
         const s3 = getTahfidzMaterialScore(material, "Sumatif 3", studentGrades, data);
         const sts = getTahfidzMaterialScore(material, "STS", studentGrades, data);
         const sas = getTahfidzMaterialScore(material, "SAS", studentGrades, data);
-        const value = average([s12, s2, s3, sts, sas].filter(item => item !== null));
-        return { label: material.surah_name + " " + formatTahfidzRange(material), value };
+        return {
+          label: material.surah_name + " " + formatTahfidzRange(material),
+          value: average([s1, s2, s3, sts, sas].filter(item => item !== null)),
+        };
       });
 
       rows.push({
@@ -601,7 +638,11 @@ function buildReportRows(student, type) {
       continue;
     }
 
-    rows.push(getReportFixedUnitScore(definition, unit, studentGrades, data, type));
+    rows.push({
+      kind: "subject",
+      label: definition.label,
+      value: unit ? calculateUnitSAS(unit, studentGrades, data.materials) : null,
+    });
   }
 
   return rows;
@@ -647,35 +688,27 @@ function renderStsReport(student) {
   let number = 0;
 
   const body = rows.map(row => {
+    if (row.kind === "section") {
+      return `
+        <tr class="section-row">
+          <td colspan="7" class="subject">${escapeHtml(row.label)}</td>
+        </tr>
+      `;
+    }
+
     if (row.kind === "group") {
       number += 1;
-      const isTahfidz = normalizeMaterialName(row.label) === "tahfidz";
-      const targetTotalRows = isTahfidz ? 7 : 1;
-      const targetChildren = Math.max(0, targetTotalRows - 1);
-      const sourceChildren = row.children ?? [];
-      const groupRows = [];
-
-      for (let index = 0; index < targetChildren; index += 1) {
-        const child = sourceChildren[index] ?? {
-          label: "",
-          s1: null,
-          s2: null,
-          sts: null,
-          total: null,
-          average: null,
-        };
-        groupRows.push(`
-          <tr>
-            <td></td>
-            <td class="subject indent-1">${escapeHtml(child.label || "")}</td>
-            <td class="center">${reportPredicate(child.s1)}</td>
-            <td class="center">${reportPredicate(child.s2)}</td>
-            <td class="center">${reportPredicate(child.sts)}</td>
-            <td class="center">${reportFormatNumber(child.total)}</td>
-            <td class="center">${reportFormatNumber(child.average)}</td>
-          </tr>
-        `);
-      }
+      const groupRows = row.children.map(child => `
+        <tr>
+          <td></td>
+          <td class="subject indent-1">${escapeHtml(child.label || "")}</td>
+          <td class="center">${reportPredicate(child.s1)}</td>
+          <td class="center">${reportPredicate(child.s2)}</td>
+          <td class="center">${reportPredicate(child.sts)}</td>
+          <td class="center">${reportFormatNumber(child.total)}</td>
+          <td class="center">${reportFormatNumber(child.average)}</td>
+        </tr>
+      `).join("");
 
       return `
         <tr class="group-row">
@@ -683,7 +716,7 @@ function renderStsReport(student) {
           <td class="subject">${escapeHtml(row.label)}</td>
           <td></td><td></td><td></td><td></td><td></td>
         </tr>
-        ${groupRows.join("")}
+        ${groupRows}
       `;
     }
 
