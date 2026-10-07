@@ -10,6 +10,7 @@ const entryPage = document.querySelector("#entry-page");
 const welcomePage = document.querySelector("#welcome-page");
 const inputPage = document.querySelector("#input-page");
 const adminPage = document.querySelector("#admin-page");
+const legerPage = document.querySelector("#leger-page");
 
 const yearSelect = document.querySelector("#academic-year");
 const semesterSelect = document.querySelector("#semester");
@@ -28,6 +29,16 @@ const contextSummary = document.querySelector("#context-summary");
 const quoteText = document.querySelector("#quote-text");
 const quoteAuthor = document.querySelector("#quote-author");
 const inputGradeButton = document.querySelector("#input-grade-btn");
+const legerButton = document.querySelector("#leger-btn");
+const legerBackButton = document.querySelector("#leger-back-button");
+const legerContext = document.querySelector("#leger-context");
+const legerStsTab = document.querySelector("#leger-sts-tab");
+const legerSasTab = document.querySelector("#leger-sas-tab");
+const legerFormula = document.querySelector("#leger-formula");
+const legerError = document.querySelector("#leger-error");
+const legerSuccess = document.querySelector("#leger-success");
+const legerTableHead = document.querySelector("#leger-table-head");
+const legerTableBody = document.querySelector("#leger-table-body");
 const backButton = document.querySelector("#back-button");
 
 const inputBackButton = document.querySelector("#input-back-button");
@@ -81,6 +92,8 @@ let adminTahfidzComponent = null;
 let adminTahfidzMaterials = [];
 let adminFiqihSubject = null;
 let adminFiqihComponents = [];
+let legerMode = "STS";
+let legerData = null;
 
 function clearImportPanel() {
   pendingImportRows = [];
@@ -262,6 +275,271 @@ function downloadTemplate() {
 }
 
 
+
+function showLegerPage() {
+  entryPage.classList.add("hidden");
+  welcomePage.classList.add("hidden");
+  inputPage.classList.add("hidden");
+  adminPage.classList.add("hidden");
+  legerPage.classList.add("hidden");
+  legerPage.classList.remove("hidden");
+  legerContext.textContent =
+    teacherContext.className + " • " +
+    teacherContext.semester + " • " +
+    teacherContext.academicYear;
+}
+
+function getAssessmentLabel(name) {
+  const value = String(name ?? "").trim();
+  const match = value.match(/^(Sumatif 1|Sumatif 2|Sumatif 3|STS|SAS)\\b/i);
+  return match ? match[1].replace(/^sumatif/i, "Sumatif") : null;
+}
+
+function getQuranSubType(name) {
+  const value = String(name ?? "").toLowerCase();
+  if (value.startsWith("qira’ah") || value.startsWith("qira'ah") || value.startsWith("qiraah")) return "Qira'ah";
+  if (value.startsWith("kitabah")) return "Kitabah";
+  return null;
+}
+
+function average(values) {
+  const numbers = values.filter(value => Number.isFinite(Number(value))).map(Number);
+  if (!numbers.length) return null;
+  return numbers.reduce((sum, value) => sum + value, 0) / numbers.length;
+}
+
+function ceilScore(value) {
+  return value === null ? null : Math.ceil(value);
+}
+
+function formatLegerScore(value) {
+  return value === null ? "—" : String(value);
+}
+
+function buildLegerUnits(subjects, components) {
+  const units = [];
+
+  for (const subject of subjects) {
+    const subjectComponents = components.filter(item => item.subject_id === subject.id);
+
+    if (subject.name === "Fiqih Ibadah") {
+      if (subjectComponents.length) {
+        units.push({
+          key: "fiqih:" + subject.id,
+          subjectId: subject.id,
+          label: "Fiqih Ibadah",
+          type: "fiqih",
+          components: subjectComponents,
+        });
+      }
+      continue;
+    }
+
+    if (subject.subject_type === "quran") {
+      for (const subType of ["Qira'ah", "Kitabah", "Tahfidz"]) {
+        const matching = subjectComponents.filter(item =>
+          subType === "Tahfidz"
+            ? item.assessment_type === "tahfidz"
+            : getQuranSubType(item.name) === subType
+        );
+        if (matching.length) {
+          units.push({
+            key: "quran:" + subject.id + ":" + subType,
+            subjectId: subject.id,
+            label: subject.name + " — " + subType,
+            type: subType === "Tahfidz" ? "tahfidz" : "standard",
+            components: matching,
+          });
+        }
+      }
+      continue;
+    }
+
+    if (subjectComponents.length) {
+      units.push({
+        key: "subject:" + subject.id,
+        subjectId: subject.id,
+        label: subject.name,
+        type: "standard",
+        components: subjectComponents,
+      });
+    }
+  }
+
+  return units;
+}
+
+function getUnitLabelScores(unit, grades, materials) {
+  const componentIds = new Set(unit.components.map(item => item.id));
+  const unitGrades = grades.filter(row => componentIds.has(row.assessment_component_id));
+  const labelScores = new Map();
+
+  for (const grade of unitGrades) {
+    const component = unit.components.find(item => item.id === grade.assessment_component_id);
+    let label = getAssessmentLabel(component?.name);
+
+    if (unit.type === "tahfidz") {
+      const material = materials.find(item => item.id === grade.tahfidz_material_id);
+      label = material?.assessment_label ?? null;
+    }
+
+    if (!label) continue;
+    if (!labelScores.has(label)) labelScores.set(label, []);
+    labelScores.get(label).push(Number(grade.score));
+  }
+
+  return labelScores;
+}
+
+function calculateUnitSTS(unit, grades, materials) {
+  const labelScores = getUnitLabelScores(unit, grades, materials);
+  return {
+    s1: average(labelScores.get("Sumatif 1") ?? []),
+    s2: average(labelScores.get("Sumatif 2") ?? []),
+    sts: average(labelScores.get("STS") ?? []),
+  };
+}
+
+function calculateUnitSAS(unit, grades, materials) {
+  const labelScores = getUnitLabelScores(unit, grades, materials);
+
+  if (unit.type === "tahfidz" || unit.type === "fiqih") {
+    const allScores = [...labelScores.values()].flat();
+    return ceilScore(average(allScores));
+  }
+
+  const s1 = average(labelScores.get("Sumatif 1") ?? []);
+  const s2 = average(labelScores.get("Sumatif 2") ?? []);
+  const s3 = average(labelScores.get("Sumatif 3") ?? []);
+  const sts = average(labelScores.get("STS") ?? []);
+  const sas = average(labelScores.get("SAS") ?? []);
+
+  if ([s1, s2, s3, sts, sas].some(value => value === null)) return null;
+
+  const result = (((s1 + s2 + s3) / 3) * 2 + sts + sas) / 4;
+  return ceilScore(result);
+}
+
+function renderLegerTable() {
+  if (!legerData) return;
+
+  const { students, units, grades, materials } = legerData;
+  const isSTS = legerMode === "STS";
+
+  legerFormula.textContent = isSTS
+    ? "Leger STS: setiap unit menampilkan Sumatif 1, Sumatif 2, dan STS."
+    : "Leger SAS: ((rata-rata Sumatif 1, 2, 3 × 2) + STS + SAS) : 4, hasil dibulatkan ke atas. Tahfidz dan Fiqih menggunakan rata-rata seluruh penilaian yang tersedia.";
+
+  if (!units.length) {
+    legerTableHead.innerHTML = "";
+    legerTableBody.innerHTML = '<tr><td class="empty-state">Belum ada komponen penilaian untuk leger.</td></tr>';
+    return;
+  }
+
+  const topCells = units.map(unit =>
+    `<th colspan="${isSTS ? 3 : 1}">${escapeHtml(unit.label)}</th>`
+  ).join("");
+
+  const subCells = isSTS
+    ? units.map(() => "<th>S1</th><th>S2</th><th>STS</th>").join("")
+    : units.map(() => "<th>SAS</th>").join("");
+
+  legerTableHead.innerHTML =
+    "<tr><th rowspan=\"2\">No.</th><th rowspan=\"2\">Nama Siswa</th>" + topCells + "</tr>" +
+    "<tr>" + subCells + "</tr>";
+
+  legerTableBody.innerHTML = students.map((student, index) => {
+    const studentGrades = grades.filter(row => row.enrollment_id === student.enrollmentId);
+    const cells = units.map(unit => {
+      const scores = isSTS
+        ? calculateUnitSTS(unit, studentGrades, materials)
+        : { sas: calculateUnitSAS(unit, studentGrades, materials) };
+
+      if (isSTS) {
+        return "<td>" + formatLegerScore(scores.s1) + "</td>" +
+          "<td>" + formatLegerScore(scores.s2) + "</td>" +
+          "<td>" + formatLegerScore(scores.sts) + "</td>";
+      }
+      return "<td><strong>" + formatLegerScore(scores.sas) + "</strong></td>";
+    }).join("");
+
+    return "<tr><td>" + (index + 1) + "</td><td><strong>" +
+      escapeHtml(student.name) +
+      "</strong>" +
+      (student.nis ? '<div class="student-meta">' + escapeHtml(student.nis) + "</div>" : "") +
+      "</td>" + cells + "</tr>";
+  }).join("");
+}
+
+async function loadLegerData() {
+  clearError(legerError);
+  legerSuccess.classList.add("hidden");
+  legerTableHead.innerHTML = "";
+  legerTableBody.innerHTML = '<tr><td class="empty-state">Memuat leger...</td></tr>';
+
+  await loadStudents();
+
+  const [{ data: subjects, error: subjectError }, { data: components, error: componentError }] =
+    await Promise.all([
+      supabase
+        .from("subjects")
+        .select("id,name,subject_type")
+        .eq("is_active", true)
+        .order("name", { ascending: true }),
+      supabase
+        .from("assessment_components")
+        .select("id,subject_id,name,assessment_type,sequence")
+        .eq("academic_year_id", teacherContext.academicYearId)
+        .eq("class_id", teacherContext.classId)
+        .eq("is_active", true)
+        .order("sequence", { ascending: true }),
+    ]);
+
+  if (subjectError) throw new Error("Gagal memuat mata pelajaran leger: " + subjectError.message);
+  if (componentError) throw new Error("Gagal memuat komponen leger: " + componentError.message);
+
+  const { data: grades, error: gradeError } = await supabase
+    .from("grades")
+    .select("id,enrollment_id,assessment_component_id,tahfidz_material_id,score")
+    .eq("semester", teacherContext.semester)
+    .in("enrollment_id", students.map(student => student.enrollmentId));
+
+  if (gradeError) throw new Error("Gagal memuat nilai leger: " + gradeError.message);
+
+  const { data: materials, error: materialError } = await supabase
+    .from("tahfidz_materials")
+    .select("id,assessment_component_id,assessment_label")
+    .eq("is_active", true);
+
+  if (materialError) throw new Error("Gagal memuat materi Tahfidz: " + materialError.message);
+
+  legerData = {
+    students,
+    units: buildLegerUnits(subjects ?? [], components ?? []),
+    grades: grades ?? [],
+    materials: materials ?? [],
+  };
+
+  renderLegerTable();
+}
+
+async function openLegerPage() {
+  teacherContext = getTeacherContext();
+  if (!teacherContext) {
+    showEntryPage();
+    return;
+  }
+
+  showLegerPage();
+
+  try {
+    await loadLegerData();
+  } catch (error) {
+    showError(legerError, error.message || "Gagal memuat leger.");
+    legerTableHead.innerHTML = "";
+    legerTableBody.innerHTML = '<tr><td class="empty-state">Gagal memuat data leger.</td></tr>';
+  }
+}
 
 function showAdminPage() {
   entryPage.classList.add("hidden");
@@ -652,12 +930,14 @@ function showEntryPage() {
   entryPage.classList.remove("hidden");
   welcomePage.classList.add("hidden");
   inputPage.classList.add("hidden");
+  legerPage.classList.add("hidden");
 }
 
 function showWelcomePage(context) {
   entryPage.classList.add("hidden");
   welcomePage.classList.remove("hidden");
   inputPage.classList.add("hidden");
+  legerPage.classList.add("hidden");
 
   classBadge.textContent = context.className;
   contextSummary.innerHTML =
@@ -674,6 +954,7 @@ function showInputPage() {
   entryPage.classList.add("hidden");
   welcomePage.classList.add("hidden");
   inputPage.classList.remove("hidden");
+  legerPage.classList.add("hidden");
   inputContext.textContent =
     teacherContext.className + " • " +
     teacherContext.semester + " • " +
@@ -1060,6 +1341,23 @@ document.querySelector("#cancel-import-button").addEventListener("click", clearI
 document.querySelector("#download-template-button").addEventListener("click", downloadTemplate);
 
 inputGradeButton.addEventListener("click", openInputPage);
+legerButton.addEventListener("click", openLegerPage);
+legerBackButton.addEventListener("click", () => {
+  if (teacherContext) showWelcomePage(teacherContext);
+  else showEntryPage();
+});
+legerStsTab.addEventListener("click", () => {
+  legerMode = "STS";
+  legerStsTab.className = "primary-button";
+  legerSasTab.className = "secondary-button";
+  renderLegerTable();
+});
+legerSasTab.addEventListener("click", () => {
+  legerMode = "SAS";
+  legerStsTab.className = "secondary-button";
+  legerSasTab.className = "primary-button";
+  renderLegerTable();
+});
 
 inputBackButton.addEventListener("click", () => {
   if (teacherContext) showWelcomePage(teacherContext);
