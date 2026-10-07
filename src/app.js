@@ -78,6 +78,9 @@ const tahfidzSequence = document.querySelector("#tahfidz-sequence");
 const tahfidzTableBody = document.querySelector("#tahfidz-table-body");
 const cancelTahfidzEdit = document.querySelector("#cancel-tahfidz-edit");
 const adminLogoutButton = document.querySelector("#admin-logout-button");
+const reportSettingsForm = document.querySelector("#report-settings-form");
+const reportPrincipalName = document.querySelector("#report-principal-name");
+const reportHomeroomName = document.querySelector("#report-homeroom-name");
 const fiqihForm = document.querySelector("#fiqih-form");
 const fiqihEditId = document.querySelector("#fiqih-edit-id");
 const fiqihAssessmentLabel = document.querySelector("#fiqih-assessment-label");
@@ -106,6 +109,7 @@ let adminFiqihComponents = [];
 let legerMode = "STS";
 let legerData = null;
 let reportData = null;
+let reportSettings = { principalName: "", homeroomName: "" };
 
 function clearImportPanel() {
   pendingImportRows = [];
@@ -480,6 +484,19 @@ function renderReportIdentity(student, title, subtitle) {
   `;
 }
 
+function renderReportSignatures() {
+  const principal = reportSettings.principalName || "Nama Kepala Sekolah";
+  const homeroom = reportSettings.homeroomName || "Nama Wali Kelas";
+  return `
+    <div class="report-footer-grid">
+      <div class="report-sign">Orang Tua / Wali Murid<div class="signature-space"></div>(........................................)</div>
+      <div class="report-sign">Guru Kelas<div class="signature-space"></div><strong>${escapeHtml(homeroom)}</strong></div>
+    </div>
+    <div class="report-sign" style="margin-top:12px;">Mengetahui<br>Kepala Sekolah<div class="signature-space"></div><strong>${escapeHtml(principal)}</strong></div>
+  `;
+}
+
+
 function renderStsReport(student) {
   const rows = buildReportRows(student, "STS");
   const body = rows.map((row, index) => {
@@ -511,11 +528,7 @@ function renderStsReport(student) {
       <div class="report-footer">
         <div class="report-note">Predikat: A = 90–100, B = 80–89, C = 70–79, D = &lt;70.</div>
         <div class="report-date">Diberikan di : Larangan<br>Tanggal : ${reportFormatDate()}</div>
-        <div class="report-footer-grid">
-          <div class="report-sign">Orang Tua / Wali Murid<div class="signature-space"></div>(........................................)</div>
-          <div class="report-sign">Guru Kelas<div class="signature-space"></div>(........................................)</div>
-        </div>
-        <div class="report-sign" style="margin-top:12px;">Mengetahui<br>Kepala Sekolah<div class="signature-space"></div><strong>Amirullah, S.H.I</strong></div>
+        ${renderReportSignatures()}
       </div>
     </div>
   `;
@@ -605,22 +618,32 @@ async function loadReportData() {
   await loadStudents();
 
   const [
+    { data: reportSetting, error: reportSettingError },
+    { data: homeroom, error: homeroomError },
     { data: subjects, error: subjectError },
     { data: components, error: componentError },
     { data: grades, error: gradeError },
     { data: materials, error: materialError },
   ] = await Promise.all([
+    supabase.from("report_settings").select("principal_name").eq("id", true).maybeSingle(),
+    supabase.from("homeroom_teachers").select("teacher_name").eq("academic_year_id", teacherContext.academicYearId).eq("class_id", teacherContext.classId).maybeSingle(),
     supabase.from("subjects").select("id,name,subject_type").eq("is_active", true).order("name", { ascending: true }),
     supabase.from("assessment_components").select("id,subject_id,name,assessment_type,sequence").eq("academic_year_id", teacherContext.academicYearId).eq("class_id", teacherContext.classId).eq("is_active", true).order("sequence", { ascending: true }),
     supabase.from("grades").select("id,enrollment_id,assessment_component_id,tahfidz_material_id,score").eq("semester", teacherContext.semester).in("enrollment_id", students.map(student => student.enrollmentId)),
     supabase.from("tahfidz_materials").select("id,assessment_component_id,surah_name,surah_number,ayat_start,ayat_end,assessment_label,sequence").eq("is_active", true),
   ]);
 
+  if (reportSettingError) throw new Error("Gagal memuat pengaturan kepala sekolah: " + reportSettingError.message);
+  if (homeroomError) throw new Error("Gagal memuat pengaturan wali kelas: " + homeroomError.message);
   if (subjectError) throw new Error("Gagal memuat mata pelajaran rapor: " + subjectError.message);
   if (componentError) throw new Error("Gagal memuat komponen rapor: " + componentError.message);
   if (gradeError) throw new Error("Gagal memuat nilai rapor: " + gradeError.message);
   if (materialError) throw new Error("Gagal memuat materi Tahfidz rapor: " + materialError.message);
 
+  reportSettings = {
+    principalName: reportSetting?.principal_name ?? "",
+    homeroomName: homeroom?.teacher_name ?? "",
+  };
   reportData = { students, subjects: subjects ?? [], components: components ?? [], grades: grades ?? [], materials: materials ?? [] };
 
   reportStudentSelect.innerHTML = reportData.students.map(student =>
@@ -1377,6 +1400,82 @@ async function deactivateFiqih(id) {
   await loadAdminFiqih();
 }
 
+async function loadReportSettingsAdmin() {
+  if (!adminYearSelect.value || !adminClassSelect.value) {
+    reportPrincipalName.value = "";
+    reportHomeroomName.value = "";
+    return;
+  }
+
+  const [{ data: principal, error: principalError }, { data: homeroom, error: homeroomError }] =
+    await Promise.all([
+      supabase.from("report_settings").select("principal_name").eq("id", true).maybeSingle(),
+      supabase.from("homeroom_teachers").select("id,teacher_name").eq("academic_year_id", adminYearSelect.value).eq("class_id", adminClassSelect.value).maybeSingle(),
+    ]);
+
+  if (principalError) throw principalError;
+  if (homeroomError) throw homeroomError;
+
+  reportPrincipalName.value = principal?.principal_name ?? "";
+  reportHomeroomName.value = homeroom?.teacher_name ?? "";
+}
+
+reportSettingsForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  clearAdminMessages();
+
+  if (!adminYearSelect.value || !adminClassSelect.value) {
+    showAdminError("Pilih tahun ajaran dan kelas terlebih dahulu.");
+    return;
+  }
+
+  const principalName = reportPrincipalName.value.trim();
+  const homeroomName = reportHomeroomName.value.trim();
+
+  if (!principalName || !homeroomName) {
+    showAdminError("Nama Kepala Sekolah dan Wali Kelas wajib diisi.");
+    return;
+  }
+
+  const { error: principalError } = await supabase
+    .from("report_settings")
+    .upsert({ id: true, principal_name: principalName }, { onConflict: "id" });
+
+  if (principalError) {
+    showAdminError("Gagal menyimpan nama Kepala Sekolah: " + principalError.message);
+    return;
+  }
+
+  const { data: existing, error: findError } = await supabase
+    .from("homeroom_teachers")
+    .select("id")
+    .eq("academic_year_id", adminYearSelect.value)
+    .eq("class_id", adminClassSelect.value)
+    .maybeSingle();
+
+  if (findError) {
+    showAdminError("Gagal membaca data Wali Kelas: " + findError.message);
+    return;
+  }
+
+  const payload = {
+    academic_year_id: adminYearSelect.value,
+    class_id: adminClassSelect.value,
+    teacher_name: homeroomName,
+  };
+
+  const result = existing?.id
+    ? await supabase.from("homeroom_teachers").update(payload).eq("id", existing.id)
+    : await supabase.from("homeroom_teachers").insert(payload);
+
+  if (result.error) {
+    showAdminError("Gagal menyimpan nama Wali Kelas: " + result.error.message);
+    return;
+  }
+
+  adminTahfidzSuccess.textContent = "Identitas rapor berhasil disimpan.";
+  adminTahfidzSuccess.classList.remove("hidden");
+});
 async function openAdminPage() {
   try {
     showAdminPage();
@@ -1977,6 +2076,7 @@ adminYearSelect.addEventListener("change", async () => {
   try {
     await loadAdminTahfidz();
     await loadAdminFiqih();
+    await loadReportSettingsAdmin();
   } catch (error) {
     showAdminError(error.message);
   }
