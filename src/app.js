@@ -118,6 +118,16 @@ const adminStudentImportError = document.querySelector("#admin-student-import-er
 const adminStudentImportPreviewBody = document.querySelector("#admin-student-import-preview-body");
 const adminStudentConfirmImport = document.querySelector("#admin-student-confirm-import");
 const adminStudentCancelImport = document.querySelector("#admin-student-cancel-import");
+const adminDashboardView = document.querySelector("#admin-dashboard-view");
+const adminMasterView = document.querySelector("#admin-master-view");
+const adminAssessmentView = document.querySelector("#admin-assessment-view");
+const adminAssessmentFiqihView = document.querySelector("#admin-assessment-fiqih");
+const adminReportView = document.querySelector("#admin-report-view");
+const adminStatYear = document.querySelector("#admin-stat-year");
+const adminStatClass = document.querySelector("#admin-stat-class");
+const adminStatStudent = document.querySelector("#admin-stat-student");
+const adminStatSubject = document.querySelector("#admin-stat-subject");
+const adminNavButtons = [...document.querySelectorAll(".admin-nav-button")];
 
 const supabase = window.supabase?.createClient
   ? window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey)
@@ -1573,6 +1583,55 @@ adminStudentCancelImport.addEventListener("click",clearAdminStudentImport);
 
 async function deactivateAdminStudent(id){if(!confirm("Nonaktifkan siswa ini?"))return;const {error}=await supabase.from("students").update({is_active:false}).eq("id",id);if(error){showAdminError("Gagal menonaktifkan siswa: "+error.message);return;}await loadAdminStudents();}
 
+async function loadAdminDashboard() {
+  const [
+    { data: years, error: yearError },
+    { data: classes, error: classError },
+    { count: studentCount, error: studentError },
+    { count: subjectCount, error: subjectError }
+  ] = await Promise.all([
+    supabase.from("academic_years").select("name,is_active").eq("is_active", true).order("name", { ascending: false }).limit(1),
+    supabase.from("classes").select("id", { count: "exact", head: true }).eq("is_active", true),
+    supabase.from("students").select("id", { count: "exact", head: true }).eq("is_active", true),
+    supabase.from("subjects").select("id", { count: "exact", head: true }).eq("is_active", true)
+  ]);
+
+  if (yearError) throw new Error("Gagal memuat statistik tahun ajaran: " + yearError.message);
+  if (classError) throw new Error("Gagal memuat statistik kelas: " + classError.message);
+  if (studentError) throw new Error("Gagal memuat statistik siswa: " + studentError.message);
+  if (subjectError) throw new Error("Gagal memuat statistik mata pelajaran: " + subjectError.message);
+
+  adminStatYear.textContent = years?.[0]?.name ?? "—";
+  adminStatClass.textContent = String(classes?.length ?? 0);
+  adminStatStudent.textContent = String(studentCount ?? 0);
+  adminStatSubject.textContent = String(subjectCount ?? 0);
+}
+
+function setAdminView(view) {
+  const views = {
+    dashboard: [adminDashboardView],
+    master: [adminMasterView],
+    assessment: [adminAssessmentView, adminAssessmentFiqihView],
+    report: [adminReportView],
+  };
+
+  for (const element of [adminDashboardView, adminMasterView, adminAssessmentView, adminAssessmentFiqihView, adminReportView]) {
+    element.classList.add("hidden");
+  }
+
+  for (const element of (views[view] ?? views.dashboard)) {
+    element.classList.remove("hidden");
+  }
+
+  adminNavButtons.forEach(button => {
+    button.classList.toggle("active", button.dataset.adminView === view);
+  });
+
+  if (view === "dashboard") {
+    loadAdminDashboard().catch(error => showAdminError(error.message));
+  }
+}
+
 async function loadAdminMasterData(){await loadAdminMasterYears();await loadAdminMasterClasses();await loadAdminSelectors();await loadAdminStudents();await loadAdminTahfidz();await loadAdminFiqih();await loadReportSettingsAdmin();}
 
 async function loadAdminSelectors() {
@@ -1966,6 +2025,7 @@ async function openAdminPage() {
   try {
     showAdminPage();
     await loadAdminMasterData();
+    setAdminView("dashboard");
   } catch (error) {
     showAdminError(error.message || "Gagal memuat halaman admin.");
   }
@@ -2575,6 +2635,10 @@ adminClassSelect.addEventListener("change", async () => {
     showAdminError(error.message);
   }
 });
+adminNavButtons.forEach(button => {
+  button.addEventListener("click", () => setAdminView(button.dataset.adminView));
+});
+
 adminLogoutButton.addEventListener("click", adminLogout);
 
 backButton.addEventListener("click", () => {
