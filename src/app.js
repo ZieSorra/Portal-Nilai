@@ -831,11 +831,11 @@ function renderInternRows(rows) {
 function renderInternReport(student) {
   const rows = buildReportRows(student, "INTERN");
   return `
-    <div class="report-sheet">
+    <div class="report-sheet report-intern-sheet">
       ${renderReportIdentity(student, "LAPORAN HASIL BELAJAR SISWA", "KURIKULUM INTERN SEKOLAH")}
       <table class="report-table report-intern-table">
         <thead>
-          <tr><th>No.</th><th>Muatan Pelajaran</th><th>N</th><th>P</th><th>Keterangan</th></tr>
+          <tr><th>No.</th><th>Muatan Pelajaran</th><th>Nilai</th><th>Predikat</th><th>Keterangan</th></tr>
         </thead>
         <tbody>${renderInternRows(rows) || '<tr><td colspan="5" class="center">Belum ada nilai.</td></tr>'}</tbody>
       </table>
