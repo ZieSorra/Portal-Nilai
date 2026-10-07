@@ -389,20 +389,20 @@ function getTahfidzInternRows(unit, studentGrades, data) {
 }
 
 const REPORT_STS_SUBJECTS = [
-  { key: "Al-Qur'an — Qira'ah", label: "Al-Qur'an — Qira'ah", type: "unit", match: "qiraah" },
-  { key: "Al-Qur'an — Kitabah", label: "Al-Qur'an — Kitabah", type: "unit", match: "kitabah" },
-  { key: "Al-Qur'an — Tahfidz", label: "Al-Qur'an — Tahfidz", type: "tahfidz" },
-  { key: "Tajwid", label: "Tajwid", type: "subject", match: "tajwid" },
+  { key: "Pendidikan Agama Islam", label: "Pendidikan Agama Islam", type: "subject", match: "pendidikan agama islam" },
+  { key: "Pendidikan Pancasila", label: "Pendidikan Pancasila", type: "subject", match: "pendidikan pancasila" },
+  { key: "Bahasa Indonesia", label: "Bahasa Indonesia", type: "subject", match: "bahasa indonesia" },
+  { key: "Matematika", label: "Matematika", type: "subject", match: "matematika" },
+  { key: "IPAS", label: "IPAS", type: "subject", match: "ipas" },
+  { key: "Seni dan Budaya", label: "Seni dan Budaya", type: "subject", match: "seni dan budaya" },
+  { key: "PJOK", label: "PJOK", type: "subject", match: "pjok" },
+  { key: "Bahasa Inggris", label: "Bahasa Inggris", type: "subject", match: "bahasa inggris" },
   { key: "Aqidah Akhlak", label: "Aqidah Akhlak", type: "subject", match: "aqidah akhlak" },
+  { key: "Al-Qur'an — Tahfidz", label: "Tahfidz", type: "tahfidz" },
+  { key: "Al-Qur'an — Qira'ah", label: "Qira'at", type: "unit", match: "qiraah" },
+  { key: "Al-Qur'an — Kitabah", label: "Kitabah", type: "unit", match: "kitabah" },
   { key: "Fiqih Ibadah", label: "Fiqih Ibadah", type: "fiqih" },
   { key: "Bahasa Arab", label: "Bahasa Arab", type: "subject", match: "bahasa arab" },
-  { key: "Bahasa Indonesia", label: "Bahasa Indonesia", type: "subject", match: "bahasa indonesia" },
-  { key: "Bahasa Inggris", label: "Bahasa Inggris", type: "subject", match: "bahasa inggris" },
-  { key: "IPAS", label: "IPAS", type: "subject", match: "ipas" },
-  { key: "Matematika", label: "Matematika", type: "subject", match: "matematika" },
-  { key: "Pendidikan Pancasila", label: "Pendidikan Pancasila", type: "subject", match: "pendidikan pancasila" },
-  { key: "PJOK", label: "PJOK", type: "subject", match: "pjok" },
-  { key: "Seni dan Budaya", label: "Seni dan Budaya", type: "subject", match: "seni dan budaya" },
   { key: "TIK", label: "Komputer/ICT", type: "subject", match: "tik" },
 ];
 
@@ -411,9 +411,9 @@ const REPORT_INTERN_SUBJECTS = [
   { key: "Tajwid", label: "Tajwid", type: "subject", match: "tajwid" },
   { key: "Al-Qur'an — Qira'ah", label: "Qira'at", type: "unit", match: "qiraah" },
   { key: "Al-Qur'an — Kitabah", label: "Kitabah", type: "unit", match: "kitabah" },
-  { key: "Aqidah Akhlak", label: "Aqidah Akhlak", type: "subject", match: "aqidah akhlak" },
+  { key: "Aqidah Akhlak", label: "Aqidah Akhlak", type: "subject", match: "aqidahakhlak" },
   { key: "Fiqih Ibadah", label: "Fiqih Ibadah", type: "fiqih" },
-  { key: "Bahasa Arab", label: "Bahasa Arab", type: "subject", match: "bahasa arab" },
+  { key: "Bahasa Arab", label: "Bahasa Arab", type: "subject", match: "bahasaarab" },
   { key: "TIK", label: "Komputer/ICT", type: "subject", match: "tik" },
 ];
 
@@ -425,13 +425,17 @@ function findReportUnit(definition, units) {
     return units.find(unit => unit.type === "fiqih") || null;
   }
   if (definition.type === "unit") {
-    return units.find(unit =>
+    return units.find(unit => {
+      if (unit.type !== "standard") return false;
+      const subtype = getQuranSubType(unit.label);
+      return subtype && normalizeMaterialName(subtype).replace(/[^a-z0-9]/g, "") === definition.match;
+    }) || units.find(unit =>
       unit.type === "standard" &&
-      normalizeMaterialName(unit.label).includes(definition.match)
+      normalizeMaterialName(unit.label).replace(/[^a-z0-9]/g, "").includes(definition.match)
     ) || null;
   }
   return units.find(unit =>
-    normalizeMaterialName(unit.label) === definition.match
+    normalizeMaterialName(unit.label).replace(/[^a-z0-9]/g, "") === definition.match
   ) || null;
 }
 
