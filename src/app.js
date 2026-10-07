@@ -291,7 +291,7 @@ function showLegerPage() {
 
 function getAssessmentLabel(name) {
   const value = String(name ?? "").trim();
-  const match = value.match(/^(Sumatif 1|Sumatif 2|Sumatif 3|STS|SAS)\\b/i);
+  const match = value.match(/^(Sumatif 1|Sumatif 2|Sumatif 3|STS|SAS)\b/i);
   return match ? match[1].replace(/^sumatif/i, "Sumatif") : null;
 }
 
@@ -545,6 +545,7 @@ function showAdminPage() {
   entryPage.classList.add("hidden");
   welcomePage.classList.add("hidden");
   inputPage.classList.add("hidden");
+  legerPage.classList.add("hidden");
   adminPage.classList.remove("hidden");
 }
 
