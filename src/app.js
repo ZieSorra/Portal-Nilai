@@ -569,7 +569,7 @@ function buildReportRows(student, type) {
       ));
     }
 
-    rows.push({ kind: "section", label: "A. Kurikulum Intern Sekolah" });
+    rows.push({ kind: "section", label: "B. Kurikulum Intern Sekolah" });
     rows.push(buildStsAlQuranRow(units, studentGrades, data));
 
     for (const definition of REPORT_STS_INTERN) {
