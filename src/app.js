@@ -56,6 +56,13 @@ const tahfidzSequence = document.querySelector("#tahfidz-sequence");
 const tahfidzTableBody = document.querySelector("#tahfidz-table-body");
 const cancelTahfidzEdit = document.querySelector("#cancel-tahfidz-edit");
 const adminLogoutButton = document.querySelector("#admin-logout-button");
+const fiqihForm = document.querySelector("#fiqih-form");
+const fiqihEditId = document.querySelector("#fiqih-edit-id");
+const fiqihAssessmentLabel = document.querySelector("#fiqih-assessment-label");
+const fiqihMaterialName = document.querySelector("#fiqih-material-name");
+const fiqihSequence = document.querySelector("#fiqih-sequence");
+const fiqihTableBody = document.querySelector("#fiqih-table-body");
+const cancelFiqihEdit = document.querySelector("#cancel-fiqih-edit");
 
 const supabase = window.supabase?.createClient
   ? window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey)
@@ -72,6 +79,8 @@ let currentGrades = new Map();
 let pendingImportRows = [];
 let adminTahfidzComponent = null;
 let adminTahfidzMaterials = [];
+let adminFiqihSubject = null;
+let adminFiqihComponents = [];
 
 function clearImportPanel() {
   pendingImportRows = [];
@@ -434,11 +443,170 @@ async function deactivateTahfidz(id) {
   await loadAdminTahfidz();
 }
 
+function resetFiqihForm() {
+  fiqihEditId.value = "";
+  fiqihAssessmentLabel.value = "";
+  fiqihMaterialName.value = "";
+  fiqihSequence.value = "1";
+  cancelFiqihEdit.classList.add("hidden");
+}
+
+async function loadAdminFiqih() {
+  const yearId = adminYearSelect.value;
+  const classId = adminClassSelect.value;
+  if (!yearId || !classId) {
+    adminFiqihSubject = null;
+    adminFiqihComponents = [];
+    fiqihTableBody.innerHTML = '<tr><td colspan="4" class="empty-state">Pilih tahun ajaran dan kelas.</td></tr>';
+    return;
+  }
+
+  const { data: subject, error: subjectError } = await supabase
+    .from("subjects")
+    .select("id,name")
+    .eq("name", "Fiqih Ibadah")
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (subjectError) throw new Error("Gagal memuat mata pelajaran Fiqih Ibadah: " + subjectError.message);
+  adminFiqihSubject = subject;
+
+  if (!adminFiqihSubject) {
+    adminFiqihComponents = [];
+    fiqihTableBody.innerHTML = '<tr><td colspan="4" class="empty-state">Mata pelajaran Fiqih Ibadah belum tersedia.</td></tr>';
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("assessment_components")
+    .select("id,name,assessment_type,sequence,is_active")
+    .eq("academic_year_id", yearId)
+    .eq("class_id", classId)
+    .eq("subject_id", adminFiqihSubject.id)
+    .eq("is_active", true)
+    .order("sequence", { ascending: true })
+    .order("name", { ascending: true });
+
+  if (error) throw new Error("Gagal memuat komponen Fiqih: " + error.message);
+  adminFiqihComponents = data ?? [];
+  renderAdminFiqih();
+}
+
+function renderAdminFiqih() {
+  if (!adminFiqihComponents.length) {
+    fiqihTableBody.innerHTML = '<tr><td colspan="4" class="empty-state">Belum ada komponen Fiqih Ibadah.</td></tr>';
+    return;
+  }
+
+  fiqihTableBody.innerHTML = adminFiqihComponents.map((item, index) => `
+    <tr>
+      <td>${index + 1}</td>
+      <td>${escapeHtml(item.name)}</td>
+      <td>${item.sequence}</td>
+      <td><div class="row-actions">
+        <button type="button" class="secondary-button edit-fiqih" data-id="${item.id}">Edit</button>
+        <button type="button" class="danger-button delete-fiqih" data-id="${item.id}">Nonaktifkan</button>
+      </div></td>
+    </tr>
+  `).join("");
+
+  document.querySelectorAll(".edit-fiqih").forEach(button =>
+    button.addEventListener("click", () => startFiqihEdit(button.dataset.id))
+  );
+  document.querySelectorAll(".delete-fiqih").forEach(button =>
+    button.addEventListener("click", () => deactivateFiqih(button.dataset.id))
+  );
+}
+
+function startFiqihEdit(id) {
+  const item = adminFiqihComponents.find(row => row.id === id);
+  if (!item) return;
+
+  const separator = " — ";
+  const parts = item.name.split(separator);
+  fiqihEditId.value = item.id;
+  fiqihAssessmentLabel.value = parts.length > 1 ? parts[0].trim() : item.name;
+  fiqihMaterialName.value = parts.length > 1 ? parts.slice(1).join(separator).trim() : "";
+  fiqihSequence.value = item.sequence;
+  cancelFiqihEdit.classList.remove("hidden");
+  fiqihAssessmentLabel.focus();
+}
+
+fiqihForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  clearAdminMessages();
+
+  if (!adminFiqihSubject || !adminYearSelect.value || !adminClassSelect.value) {
+    showAdminError("Pilih tahun ajaran dan kelas terlebih dahulu.");
+    return;
+  }
+
+  const label = fiqihAssessmentLabel.value.trim();
+  const material = fiqihMaterialName.value.trim();
+  const sequence = Number(fiqihSequence.value);
+
+  if (!label || !material || !Number.isInteger(sequence) || sequence < 1) {
+    showAdminError("Label penilaian, materi Fiqih, dan urutan wajib diisi dengan benar.");
+    return;
+  }
+
+  const payload = {
+    academic_year_id: adminYearSelect.value,
+    class_id: adminClassSelect.value,
+    subject_id: adminFiqihSubject.id,
+    name: label + " — " + material,
+    assessment_type: "standard",
+    sequence,
+    is_active: true,
+  };
+
+  const id = fiqihEditId.value;
+  const { error } = id
+    ? await supabase.from("assessment_components").update(payload).eq("id", id)
+    : await supabase.from("assessment_components").insert(payload);
+
+  if (error) {
+    showAdminError("Gagal menyimpan komponen Fiqih: " + error.message);
+    return;
+  }
+
+  adminTahfidzSuccess.textContent = id
+    ? "Komponen Fiqih berhasil diperbarui."
+    : "Komponen Fiqih berhasil ditambahkan.";
+  adminTahfidzSuccess.classList.remove("hidden");
+  resetFiqihForm();
+  await loadAdminFiqih();
+});
+
+cancelFiqihEdit.addEventListener("click", resetFiqihForm);
+
+async function deactivateFiqih(id) {
+  const item = adminFiqihComponents.find(row => row.id === id);
+  if (!item) return;
+  if (!window.confirm("Nonaktifkan komponen " + item.name + "?")) return;
+
+  clearAdminMessages();
+  const { error } = await supabase
+    .from("assessment_components")
+    .update({ is_active: false })
+    .eq("id", id);
+
+  if (error) {
+    showAdminError("Gagal menonaktifkan komponen Fiqih: " + error.message);
+    return;
+  }
+
+  adminTahfidzSuccess.textContent = "Komponen Fiqih berhasil dinonaktifkan.";
+  adminTahfidzSuccess.classList.remove("hidden");
+  await loadAdminFiqih();
+}
+
 async function openAdminPage() {
   try {
     showAdminPage();
     await loadAdminSelectors();
     await loadAdminTahfidz();
+    await loadAdminFiqih();
   } catch (error) {
     showAdminError(error.message || "Gagal memuat halaman admin.");
   }
@@ -983,8 +1151,22 @@ adminForm.addEventListener("submit", async (event) => {
   }
 });
 
-adminYearSelect.addEventListener("change", () => loadAdminTahfidz().catch(error => showAdminError(error.message)));
-adminClassSelect.addEventListener("change", () => loadAdminTahfidz().catch(error => showAdminError(error.message)));
+adminYearSelect.addEventListener("change", async () => {
+  try {
+    await loadAdminTahfidz();
+    await loadAdminFiqih();
+  } catch (error) {
+    showAdminError(error.message);
+  }
+});
+adminClassSelect.addEventListener("change", async () => {
+  try {
+    await loadAdminTahfidz();
+    await loadAdminFiqih();
+  } catch (error) {
+    showAdminError(error.message);
+  }
+});
 adminLogoutButton.addEventListener("click", adminLogout);
 
 backButton.addEventListener("click", () => {
