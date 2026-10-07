@@ -1042,6 +1042,7 @@ function showAdminPage() {
   welcomePage.classList.add("hidden");
   inputPage.classList.add("hidden");
   legerPage.classList.add("hidden");
+  reportPage.classList.add("hidden");
   adminPage.classList.remove("hidden");
 }
 
@@ -1436,6 +1437,7 @@ function showWelcomePage(context) {
   welcomePage.classList.remove("hidden");
   inputPage.classList.add("hidden");
   legerPage.classList.add("hidden");
+  reportPage.classList.add("hidden");
 
   classBadge.textContent = context.className;
   contextSummary.innerHTML =
@@ -1534,7 +1536,7 @@ async function loadSubjects() {
 async function loadStudents() {
   const { data, error } = await supabase
     .from("student_enrollments")
-    .select("id,student_id,students(id,name,nis)")
+    .select("id,student_id,students(id,name,nis,nisn)")
     .eq("academic_year_id", teacherContext.academicYearId)
     .eq("class_id", teacherContext.classId)
     .eq("is_active", true)
@@ -1548,6 +1550,7 @@ async function loadStudents() {
       studentId: row.student_id,
       name: row.students?.name ?? "Tanpa nama",
       nis: row.students?.nis ?? "",
+      nisn: row.students?.nisn ?? "",
     }))
     .sort((a, b) => a.name.localeCompare(b.name, "id"));
 
