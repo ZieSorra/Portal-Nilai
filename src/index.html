@@ -56,8 +56,8 @@
             <strong>Input Nilai</strong>
             <span>Masukkan nilai secara manual atau melalui file.</span>
           </button>
-          <button type="button" class="menu-card disabled" disabled>
-            <strong>Leger</strong><span>Segera hadir</span>
+          <button type="button" class="menu-card active" id="leger-btn">
+            <strong>Leger</strong><span>Lihat Leger STS dan SAS.</span>
           </button>
           <button type="button" class="menu-card disabled" disabled>
             <strong>Cetak Rapor</strong><span>Segera hadir</span>
@@ -149,6 +149,41 @@
 
         <div class="input-actions">
           <button id="save-grades-button" type="button" class="primary-button" disabled>Simpan Nilai</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="leger-page" class="page wide-page hidden">
+      <div class="card leger-card">
+        <div class="input-header">
+          <div>
+            <div class="brand">ZIESORRA</div>
+            <h2>Leger</h2>
+            <p id="leger-context" class="muted"></p>
+          </div>
+          <button id="leger-back-button" class="secondary-button" type="button">Kembali</button>
+        </div>
+
+        <div class="leger-toolbar">
+          <div class="leger-tabs">
+            <button id="leger-sts-tab" type="button" class="primary-button">Leger STS</button>
+            <button id="leger-sas-tab" type="button" class="secondary-button">Leger SAS</button>
+          </div>
+          <div class="message info" id="leger-formula">
+            Leger STS menampilkan Sumatif 1, Sumatif 2, dan STS.
+          </div>
+        </div>
+
+        <div id="leger-error" class="message error hidden"></div>
+        <div id="leger-success" class="message success hidden"></div>
+
+        <div class="table-wrap leger-table-wrap">
+          <table id="leger-table" class="grade-table leger-table">
+            <thead id="leger-table-head"></thead>
+            <tbody id="leger-table-body">
+              <tr><td class="empty-state">Memuat leger...</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </section>
