@@ -559,6 +559,15 @@ async function validateClassEnrollment(academicYearId, classId) {
 
 async function loadSubjects() {
   setSelectOptions(subjectSelect, [], "Memuat mata pelajaran...");
+  setSelectOptions(componentSelect, [], "Pilih mata pelajaran");
+  componentSelect.disabled = true;
+  materialField.classList.add("hidden");
+  materialSelect.innerHTML = "";
+  currentComponents = [];
+  currentMaterials = [];
+  currentGrades = new Map();
+  renderGradeRows(false);
+
   const { data, error } = await supabase
     .from("subjects")
     .select("id,name,subject_type")
