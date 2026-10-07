@@ -139,7 +139,8 @@ let adminFiqihComponents = [];
 let legerMode = "STS";
 let legerData = null;
 let reportData = null;
-let reportSettings = { principalName: "", homeroomName: "" };\nlet pendingAdminStudentImportRows = [];
+let reportSettings = { principalName: "", homeroomName: "" };
+let pendingAdminStudentImportRows = [];
 
 function clearImportPanel() {
   pendingImportRows = [];
