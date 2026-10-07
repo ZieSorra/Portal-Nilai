@@ -11,6 +11,7 @@ const welcomePage = document.querySelector("#welcome-page");
 const inputPage = document.querySelector("#input-page");
 const adminPage = document.querySelector("#admin-page");
 const legerPage = document.querySelector("#leger-page");
+const reportPage = document.querySelector("#report-page");
 
 const yearSelect = document.querySelector("#academic-year");
 const semesterSelect = document.querySelector("#semester");
@@ -30,6 +31,7 @@ const quoteText = document.querySelector("#quote-text");
 const quoteAuthor = document.querySelector("#quote-author");
 const inputGradeButton = document.querySelector("#input-grade-btn");
 const legerButton = document.querySelector("#leger-btn");
+const reportButton = document.querySelector("#report-btn");
 const legerBackButton = document.querySelector("#leger-back-button");
 const legerContext = document.querySelector("#leger-context");
 const legerStsTab = document.querySelector("#leger-sts-tab");
@@ -39,6 +41,15 @@ const legerError = document.querySelector("#leger-error");
 const legerSuccess = document.querySelector("#leger-success");
 const legerTableHead = document.querySelector("#leger-table-head");
 const legerTableBody = document.querySelector("#leger-table-body");
+
+const reportBackButton = document.querySelector("#report-back-button");
+const reportTypeSelect = document.querySelector("#report-type");
+const reportStudentSelect = document.querySelector("#report-student");
+const reportPrintButton = document.querySelector("#report-print-button");
+const reportPrintAllButton = document.querySelector("#report-print-all-button");
+const reportContext = document.querySelector("#report-context");
+const reportError = document.querySelector("#report-error");
+const reportPreview = document.querySelector("#report-preview");
 const backButton = document.querySelector("#back-button");
 
 const inputBackButton = document.querySelector("#input-back-button");
@@ -94,6 +105,7 @@ let adminFiqihSubject = null;
 let adminFiqihComponents = [];
 let legerMode = "STS";
 let legerData = null;
+let reportData = null;
 
 function clearImportPanel() {
   pendingImportRows = [];
@@ -276,12 +288,381 @@ function downloadTemplate() {
 
 
 
+
+function reportPredicate(value) {
+  if (value === null || value === undefined || value === "") return "—";
+  const score = Number(value);
+  if (!Number.isFinite(score)) return "—";
+  if (score >= 90) return "A";
+  if (score >= 80) return "B";
+  if (score >= 70) return "C";
+  return "D";
+}
+
+function reportDescription(value) {
+  if (value === null || value === undefined || value === "") return "—";
+  return Number(value) >= 70 ? "Tuntas" : "Perlu Pendampingan";
+}
+
+function reportFormatNumber(value) {
+  if (value === null || value === undefined || value === "") return "—";
+  const number = Number(value);
+  if (!Number.isFinite(number)) return "—";
+  return Number.isInteger(number) ? String(number) : number.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
+}
+
+function reportFormatDate(date = new Date()) {
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date);
+}
+
+function getStudentReportGrades(student, data) {
+  return data.grades.filter(row => row.enrollment_id === student.enrollmentId);
+}
+
+function getTahfidzMaterialScore(material, assessmentLabel, studentGrades, data) {
+  const materialId = material.id;
+  const scores = studentGrades.filter(grade => {
+    if (grade.tahfidz_material_id !== materialId) return false;
+    const component = data.components.find(item => item.id === grade.assessment_component_id);
+    const label = material.assessment_label
+      ? getAssessmentLabel(material.assessment_label)
+      : getAssessmentLabel(component?.name);
+    return label === assessmentLabel;
+  }).map(grade => Number(grade.score));
+  return average(scores);
+}
+
+function getTahfidzInternRows(unit, studentGrades, data) {
+  const componentIds = new Set(unit.components.map(item => item.id));
+  const materialIds = new Set(
+    studentGrades
+      .filter(grade => componentIds.has(grade.assessment_component_id) && grade.tahfidz_material_id)
+      .map(grade => grade.tahfidz_material_id)
+  );
+  const materialList = data.materials.filter(material => materialIds.has(material.id));
+
+  const rows = [];
+  const seen = new Set();
+
+  for (const material of materialList) {
+    const surahKey = normalizeMaterialName(material.surah_name);
+    let key;
+    let value;
+    let label;
+
+    const s12 = getTahfidzMaterialScore(material, "Sumatif 1", studentGrades, data);
+    const s2 = getTahfidzMaterialScore(material, "Sumatif 2", studentGrades, data);
+    const s3 = getTahfidzMaterialScore(material, "Sumatif 3", studentGrades, data);
+    const sts = getTahfidzMaterialScore(material, "STS", studentGrades, data);
+    const sas = getTahfidzMaterialScore(material, "SAS", studentGrades, data);
+
+    if (s12 !== null || s2 !== null) {
+      key = surahKey + ":s12";
+      value = average([s12, s2].filter(v => v !== null));
+      label = material.surah_name;
+    } else if (s3 !== null || sts !== null) {
+      key = surahKey + ":s3sts";
+      value = average([s3, sts].filter(v => v !== null));
+      label = material.surah_name;
+    } else if (sas !== null) {
+      key = material.id + ":sas";
+      value = sas;
+      label = material.surah_name + " " + formatTahfidzRange(material);
+    } else {
+      continue;
+    }
+
+    if (seen.has(key)) continue;
+    seen.add(key);
+    rows.push({ label, value });
+  }
+
+  return rows;
+}
+
+function buildReportRows(student, type) {
+  const data = reportData;
+  const studentGrades = getStudentReportGrades(student, data);
+  const units = buildLegerUnits(data.subjects, data.components);
+
+  if (type === "STS") {
+    const rows = [];
+    for (const unit of units) {
+      if (unit.type === "tahfidz") {
+        const materialIds = new Set(
+          studentGrades
+            .filter(grade => unit.components.some(component => component.id === grade.assessment_component_id) && grade.tahfidz_material_id)
+            .map(grade => grade.tahfidz_material_id)
+        );
+        for (const material of data.materials.filter(item => materialIds.has(item.id))) {
+          const s1 = getTahfidzMaterialScore(material, "Sumatif 1", studentGrades, data);
+          const s2 = getTahfidzMaterialScore(material, "Sumatif 2", studentGrades, data);
+          const sts = getTahfidzMaterialScore(material, "STS", studentGrades, data);
+          if ([s1, s2, sts].every(value => value === null)) continue;
+          const values = [s1, s2, sts].filter(value => value !== null);
+          rows.push({
+            kind: "child",
+            label: material.surah_name + " " + formatTahfidzRange(material),
+            s1, s2, sts,
+            total: values.length ? values.reduce((sum, value) => sum + value, 0) : null,
+            average: average(values),
+          });
+        }
+        continue;
+      }
+
+      const scores = calculateUnitSTS(unit, studentGrades, data.materials);
+      const values = [scores.s1, scores.s2, scores.sts].filter(value => value !== null);
+      if (!values.length) continue;
+      rows.push({
+        kind: "subject",
+        label: unit.label,
+        s1: scores.s1,
+        s2: scores.s2,
+        sts: scores.sts,
+        total: values.reduce((sum, value) => sum + value, 0),
+        average: average(values),
+      });
+    }
+    return rows;
+  }
+
+  const rows = [];
+  for (const unit of units) {
+    if (unit.type === "tahfidz") {
+      const children = getTahfidzInternRows(unit, studentGrades, data);
+      if (children.length) rows.push({ kind: "group", label: unit.label, children });
+      continue;
+    }
+
+    if (unit.type === "fiqih") {
+      const children = [];
+      for (const component of unit.components) {
+        const values = studentGrades
+          .filter(grade => grade.assessment_component_id === component.id && !grade.tahfidz_material_id)
+          .map(grade => Number(grade.score));
+        const value = average(values);
+        if (value !== null) children.push({ label: component.name, value });
+      }
+      if (children.length) rows.push({ kind: "group", label: unit.label, children });
+      continue;
+    }
+
+    const value = calculateUnitSAS(unit, studentGrades, data.materials);
+    if (value !== null) rows.push({ kind: "subject", label: unit.label, value });
+  }
+
+  return rows;
+}
+
+function renderReportIdentity(student, title, subtitle) {
+  return `
+    <div class="report-title">${escapeHtml(title)}<br>${escapeHtml(subtitle)}</div>
+    <div class="report-school">SD ISLAM DARUL MU'MININ</div>
+    <table class="report-identity">
+      <tr>
+        <td class="label">Nama</td><td class="colon">:</td><td>${escapeHtml(student.name)}</td>
+        <td class="label">Kelas</td><td class="colon">:</td><td>${escapeHtml(teacherContext.className)}</td>
+      </tr>
+      <tr>
+        <td class="label">NIS</td><td class="colon">:</td><td>${escapeHtml(student.nis || "—")}</td>
+        <td class="label">Semester</td><td class="colon">:</td><td>${escapeHtml(teacherContext.semester)}</td>
+      </tr>
+      <tr>
+        <td class="label">NISN</td><td class="colon">:</td><td>${escapeHtml(student.nisn || "—")}</td>
+        <td class="label">Tahun Ajaran</td><td class="colon">:</td><td>${escapeHtml(teacherContext.academicYear)}</td>
+      </tr>
+    </table>
+  `;
+}
+
+function renderStsReport(student) {
+  const rows = buildReportRows(student, "STS");
+  const body = rows.map((row, index) => {
+    const indent = row.kind === "child" ? "indent-1" : "";
+    return `
+      <tr>
+        <td class="center">${index + 1}</td>
+        <td class="subject ${indent}">${escapeHtml(row.label)}</td>
+        <td class="center">${reportPredicate(row.s1)}</td>
+        <td class="center">${reportPredicate(row.s2)}</td>
+        <td class="center">${reportPredicate(row.sts)}</td>
+        <td class="center">${reportFormatNumber(row.total)}</td>
+        <td class="center">${reportFormatNumber(row.average)}</td>
+      </tr>
+    `;
+  }).join("");
+
+  return `
+    <div class="report-sheet">
+      ${renderReportIdentity(student, "LAPORAN HASIL BELAJAR SISWA", "RAPOR STS")}
+      <table class="report-table report-sts-table">
+        <thead>
+          <tr>
+            <th>No.</th><th>Mata Pelajaran</th><th>UH-1</th><th>UH-2</th><th>PTS</th><th>Jumlah</th><th>Nilai Rata-rata</th>
+          </tr>
+        </thead>
+        <tbody>${body || '<tr><td colspan="7" class="center">Belum ada nilai.</td></tr>'}</tbody>
+      </table>
+      <div class="report-footer">
+        <div class="report-note">Predikat: A = 90–100, B = 80–89, C = 70–79, D = &lt;70.</div>
+        <div class="report-date">Diberikan di : Larangan<br>Tanggal : ${reportFormatDate()}</div>
+        <div class="report-footer-grid">
+          <div class="report-sign">Orang Tua / Wali Murid<div class="signature-space"></div>(........................................)</div>
+          <div class="report-sign">Guru Kelas<div class="signature-space"></div>(........................................)</div>
+        </div>
+        <div class="report-sign" style="margin-top:12px;">Mengetahui<br>Kepala Sekolah<div class="signature-space"></div><strong>Amirullah, S.H.I</strong></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderInternRows(rows) {
+  let no = 0;
+  return rows.map(row => {
+    if (row.kind === "group") {
+      const children = row.children.map(child => `
+        <tr>
+          <td></td>
+          <td class="subject indent-1">${escapeHtml(child.label)}</td>
+          <td class="center">${reportFormatNumber(child.value)}</td>
+          <td class="center">${reportPredicate(child.value)}</td>
+          <td class="center">${reportDescription(child.value)}</td>
+        </tr>
+      `).join("");
+      no += 1;
+      return `
+        <tr class="group-row">
+          <td class="center">${no}</td>
+          <td class="subject">${escapeHtml(row.label)}</td>
+          <td></td><td></td><td></td>
+        </tr>${children}`;
+    }
+
+    no += 1;
+    return `
+      <tr>
+        <td class="center">${no}</td>
+        <td class="subject">${escapeHtml(row.label)}</td>
+        <td class="center">${reportFormatNumber(row.value)}</td>
+        <td class="center">${reportPredicate(row.value)}</td>
+        <td class="center">${reportDescription(row.value)}</td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function renderInternReport(student) {
+  const rows = buildReportRows(student, "INTERN");
+  return `
+    <div class="report-sheet">
+      ${renderReportIdentity(student, "LAPORAN HASIL BELAJAR SISWA", "KURIKULUM INTERN SEKOLAH")}
+      <table class="report-table report-intern-table">
+        <thead>
+          <tr><th>No.</th><th>Muatan Pelajaran</th><th>Nilai</th><th>Predikat</th><th>Keterangan</th></tr>
+        </thead>
+        <tbody>${renderInternRows(rows) || '<tr><td colspan="5" class="center">Belum ada nilai.</td></tr>'}</tbody>
+      </table>
+      <div class="report-footer">
+        <div class="report-date">Diberikan di : Larangan<br>Tanggal : ${reportFormatDate()}</div>
+        <div class="report-footer-grid">
+          <div class="report-sign">Orang Tua / Wali Murid<div class="signature-space"></div>(........................................)</div>
+          <div class="report-sign">Guru Kelas<div class="signature-space"></div>(........................................)</div>
+        </div>
+        <div class="report-sign" style="margin-top:12px;">Mengetahui<br>Kepala Sekolah<div class="signature-space"></div><strong>Amirullah, S.H.I</strong></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderSelectedReport() {
+  if (!reportData) return;
+  const student = reportData.students.find(item => item.enrollmentId === reportStudentSelect.value) || reportData.students[0];
+  if (!student) {
+    reportPreview.innerHTML = '<div class="empty-state">Belum ada siswa.</div>';
+    return;
+  }
+  reportStudentSelect.value = student.enrollmentId;
+  reportPreview.innerHTML = reportTypeSelect.value === "STS"
+    ? renderStsReport(student)
+    : renderInternReport(student);
+}
+
+function renderAllReports() {
+  if (!reportData?.students?.length) return;
+  reportPreview.innerHTML = reportData.students.map(student =>
+    reportTypeSelect.value === "STS" ? renderStsReport(student) : renderInternReport(student)
+  ).join("");
+}
+
+async function loadReportData() {
+  clearError(reportError);
+  reportPreview.innerHTML = '<div class="empty-state">Memuat data rapor...</div>';
+  await loadStudents();
+
+  const [
+    { data: subjects, error: subjectError },
+    { data: components, error: componentError },
+    { data: grades, error: gradeError },
+    { data: materials, error: materialError },
+  ] = await Promise.all([
+    supabase.from("subjects").select("id,name,subject_type").eq("is_active", true).order("name", { ascending: true }),
+    supabase.from("assessment_components").select("id,subject_id,name,assessment_type,sequence").eq("academic_year_id", teacherContext.academicYearId).eq("class_id", teacherContext.classId).eq("is_active", true).order("sequence", { ascending: true }),
+    supabase.from("grades").select("id,enrollment_id,assessment_component_id,tahfidz_material_id,score").eq("semester", teacherContext.semester).in("enrollment_id", students.map(student => student.enrollmentId)),
+    supabase.from("tahfidz_materials").select("id,assessment_component_id,surah_name,surah_number,ayat_start,ayat_end,assessment_label,sequence").eq("is_active", true),
+  ]);
+
+  if (subjectError) throw new Error("Gagal memuat mata pelajaran rapor: " + subjectError.message);
+  if (componentError) throw new Error("Gagal memuat komponen rapor: " + componentError.message);
+  if (gradeError) throw new Error("Gagal memuat nilai rapor: " + gradeError.message);
+  if (materialError) throw new Error("Gagal memuat materi Tahfidz rapor: " + materialError.message);
+
+  reportData = { students, subjects: subjects ?? [], components: components ?? [], grades: grades ?? [], materials: materials ?? [] };
+
+  reportStudentSelect.innerHTML = reportData.students.map(student =>
+    `<option value="${student.enrollmentId}">${escapeHtml(student.name)}</option>`
+  ).join("");
+
+  renderSelectedReport();
+}
+
+function showReportPage() {
+  entryPage.classList.add("hidden");
+  welcomePage.classList.add("hidden");
+  inputPage.classList.add("hidden");
+  legerPage.classList.add("hidden");
+  adminPage.classList.add("hidden");
+  reportPage.classList.remove("hidden");
+  reportContext.textContent =
+    teacherContext.className + " • " + teacherContext.semester + " • " + teacherContext.academicYear;
+}
+
+async function openReportPage() {
+  teacherContext = getTeacherContext();
+  if (!teacherContext) {
+    showEntryPage();
+    return;
+  }
+  showReportPage();
+  try {
+    await loadReportData();
+  } catch (error) {
+    showError(reportError, error.message || "Gagal memuat data rapor.");
+    reportPreview.innerHTML = '<div class="empty-state">Gagal memuat data rapor.</div>';
+  }
+}
+
 function showLegerPage() {
   entryPage.classList.add("hidden");
   welcomePage.classList.add("hidden");
   inputPage.classList.add("hidden");
   adminPage.classList.add("hidden");
   legerPage.classList.add("hidden");
+  reportPage.classList.add("hidden");
   legerPage.classList.remove("hidden");
   legerContext.textContent =
     teacherContext.className + " • " +
@@ -1047,6 +1428,7 @@ function showEntryPage() {
   welcomePage.classList.add("hidden");
   inputPage.classList.add("hidden");
   legerPage.classList.add("hidden");
+  reportPage.classList.add("hidden");
 }
 
 function showWelcomePage(context) {
@@ -1071,6 +1453,7 @@ function showInputPage() {
   welcomePage.classList.add("hidden");
   inputPage.classList.remove("hidden");
   legerPage.classList.add("hidden");
+  reportPage.classList.add("hidden");
   inputContext.textContent =
     teacherContext.className + " • " +
     teacherContext.semester + " • " +
@@ -1458,6 +1841,7 @@ document.querySelector("#download-template-button").addEventListener("click", do
 
 inputGradeButton.addEventListener("click", openInputPage);
 legerButton.addEventListener("click", openLegerPage);
+reportButton.addEventListener("click", openReportPage);
 legerBackButton.addEventListener("click", () => {
   if (teacherContext) showWelcomePage(teacherContext);
   else showEntryPage();
@@ -1474,6 +1858,27 @@ legerSasTab.addEventListener("click", () => {
   legerSasTab.className = "primary-button";
   renderLegerTable();
 });
+
+
+reportBackButton.addEventListener("click", () => {
+  if (teacherContext) showWelcomePage(teacherContext);
+  else showEntryPage();
+});
+
+reportTypeSelect.addEventListener("change", renderSelectedReport);
+reportStudentSelect.addEventListener("change", renderSelectedReport);
+
+reportPrintButton.addEventListener("click", () => {
+  renderSelectedReport();
+  window.print();
+});
+
+reportPrintAllButton.addEventListener("click", () => {
+  renderAllReports();
+  window.print();
+});
+
+
 
 inputBackButton.addEventListener("click", () => {
   if (teacherContext) showWelcomePage(teacherContext);
