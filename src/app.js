@@ -403,7 +403,7 @@ function calculateUnitSTS(unit, grades, materials) {
 function calculateUnitSAS(unit, grades, materials) {
   const labelScores = getUnitLabelScores(unit, grades, materials);
 
-  if (unit.type === "tahfidz" || unit.type === "fiqih") {
+  if (unit.type === "fiqih") {
     const allScores = [...labelScores.values()].flat();
     return ceilScore(average(allScores));
   }
@@ -420,6 +420,91 @@ function calculateUnitSAS(unit, grades, materials) {
   return ceilScore(result);
 }
 
+function normalizeMaterialName(value) {
+  return String(value ?? "")
+    .toLowerCase()
+    .replace(/[’‘`]/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function formatTahfidzRange(material) {
+  const start = Number(material?.ayat_start);
+  const end = Number(material?.ayat_end);
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return "";
+  return start === end ? String(start) : start + "–" + end;
+}
+
+function getTahfidzSasColumns(unit, grades, materials) {
+  const componentIds = new Set(unit.components.map(item => item.id));
+  const materialById = new Map(materials.map(item => [item.id, item]));
+  const componentById = new Map(unit.components.map(item => [item.id, item]));
+  const groups = new Map();
+
+  for (const grade of grades) {
+    if (!componentIds.has(grade.assessment_component_id) || !grade.tahfidz_material_id) continue;
+    const material = materialById.get(grade.tahfidz_material_id);
+    const component = componentById.get(grade.assessment_component_id);
+    const assessment = getAssessmentLabel(component?.name);
+    if (!material || !assessment) continue;
+
+    const surahKey = normalizeMaterialName(material.surah_name);
+    let groupKey;
+    let mode;
+    let label;
+
+    if (assessment === "Sumatif 1" || assessment === "Sumatif 2") {
+      groupKey = "surah:" + surahKey + ":s12";
+      mode = "s12";
+      label = material.surah_name;
+    } else if (assessment === "Sumatif 3" || assessment === "STS") {
+      groupKey = "surah:" + surahKey + ":s3sts";
+      mode = "s3sts";
+      label = material.surah_name;
+    } else if (assessment === "SAS") {
+      groupKey = "material:" + material.id + ":sas";
+      mode = "sas";
+      const range = formatTahfidzRange(material);
+      label = material.surah_name + (range ? " " + range : "");
+    } else {
+      continue;
+    }
+
+    if (!groups.has(groupKey)) {
+      groups.set(groupKey, { key: groupKey, label, mode, gradeIds: new Set() });
+    }
+    groups.get(groupKey).gradeIds.add(grade.id);
+  }
+
+  return [...groups.values()];
+}
+
+function getFiqihSasColumns(unit, grades) {
+  const componentIds = new Set(unit.components.map(item => item.id));
+  const groups = new Map();
+
+  for (const grade of grades) {
+    if (!componentIds.has(grade.assessment_component_id)) continue;
+    const component = unit.components.find(item => item.id === grade.assessment_component_id);
+    if (!component) continue;
+    const label = String(component.name ?? "").trim();
+    if (!label) continue;
+
+    if (!groups.has(component.id)) {
+      groups.set(component.id, { key: "fiqih:" + component.id, label, mode: "component", gradeIds: new Set() });
+    }
+    groups.get(component.id).gradeIds.add(grade.id);
+  }
+
+  return [...groups.values()];
+}
+
+function calculateDynamicSasColumn(column, studentGrades) {
+  const scores = studentGrades
+    .filter(grade => column.gradeIds.has(grade.id))
+    .map(grade => Number(grade.score));
+  return average(scores);
+}
 function renderLegerTable() {
   if (!legerData) return;
 
@@ -428,7 +513,7 @@ function renderLegerTable() {
 
   legerFormula.textContent = isSTS
     ? "Leger STS: setiap unit menampilkan Sumatif 1, Sumatif 2, dan STS."
-    : "Leger SAS: ((rata-rata Sumatif 1, 2, 3 × 2) + STS + SAS) : 4, hasil dibulatkan ke atas. Tahfidz dan Fiqih menggunakan rata-rata seluruh penilaian yang tersedia.";
+    : "Leger SAS: mata pelajaran biasa menggunakan ((rata-rata Sumatif 1, 2, 3 × 2) + STS + SAS) : 4, dibulatkan ke atas. Tahfidz menampilkan nilai per surat/materi sesuai penilaian yang diuji; Fiqih Ibadah menampilkan nilai per materi/komponen yang diuji.";
 
   if (!units.length) {
     legerTableHead.innerHTML = "";
@@ -436,13 +521,47 @@ function renderLegerTable() {
     return;
   }
 
-  const topCells = units.map(unit =>
-    `<th colspan="${isSTS ? 3 : 1}">${escapeHtml(unit.label)}</th>`
-  ).join("");
+  if (isSTS) {
+    const topCells = units.map(unit =>
+      `<th colspan="3">${escapeHtml(unit.label)}</th>`
+    ).join("");
+    const subCells = units.map(() => "<th>S1</th><th>S2</th><th>STS</th>").join("");
 
-  const subCells = isSTS
-    ? units.map(() => "<th>S1</th><th>S2</th><th>STS</th>").join("")
-    : units.map(() => "<th>SAS</th>").join("");
+    legerTableHead.innerHTML =
+      "<tr><th rowspan=\"2\">No.</th><th rowspan=\"2\">Nama Siswa</th>" + topCells + "</tr>" +
+      "<tr>" + subCells + "</tr>";
+
+    legerTableBody.innerHTML = students.map((student, index) => {
+      const studentGrades = grades.filter(row => row.enrollment_id === student.enrollmentId);
+      const cells = units.map(unit => {
+        const scores = calculateUnitSTS(unit, studentGrades, materials);
+        return "<td>" + formatLegerScore(scores.s1) + "</td>" +
+          "<td>" + formatLegerScore(scores.s2) + "</td>" +
+          "<td>" + formatLegerScore(scores.sts) + "</td>";
+      }).join("");
+
+      return "<tr><td>" + (index + 1) + "</td><td><strong>" +
+        escapeHtml(student.name) +
+        "</strong>" +
+        (student.nis ? '<div class="student-meta">' + escapeHtml(student.nis) + "</div>" : "") +
+        "</td>" + cells + "</tr>";
+    }).join("");
+    return;
+  }
+
+  const sasColumns = units.map(unit => {
+    if (unit.type === "tahfidz") return { unit, columns: getTahfidzSasColumns(unit, grades, materials) };
+    if (unit.type === "fiqih") return { unit, columns: getFiqihSasColumns(unit, grades) };
+    return { unit, columns: [{ key: unit.key + ":sas", label: "SAS", mode: "standard", gradeIds: new Set() }] };
+  });
+
+  const visibleSasColumns = sasColumns.filter(group => group.columns.length > 0);
+  const topCells = visibleSasColumns.map(group =>
+    `<th colspan="${group.columns.length}">${escapeHtml(group.unit.label)}</th>`
+  ).join("");
+  const subCells = visibleSasColumns.map(group =>
+    group.columns.map(column => `<th>${escapeHtml(column.label)}</th>`).join("")
+  ).join("");
 
   legerTableHead.innerHTML =
     "<tr><th rowspan=\"2\">No.</th><th rowspan=\"2\">Nama Siswa</th>" + topCells + "</tr>" +
@@ -450,18 +569,12 @@ function renderLegerTable() {
 
   legerTableBody.innerHTML = students.map((student, index) => {
     const studentGrades = grades.filter(row => row.enrollment_id === student.enrollmentId);
-    const cells = units.map(unit => {
-      const scores = isSTS
-        ? calculateUnitSTS(unit, studentGrades, materials)
-        : { sas: calculateUnitSAS(unit, studentGrades, materials) };
-
-      if (isSTS) {
-        return "<td>" + formatLegerScore(scores.s1) + "</td>" +
-          "<td>" + formatLegerScore(scores.s2) + "</td>" +
-          "<td>" + formatLegerScore(scores.sts) + "</td>";
-      }
-      return "<td><strong>" + formatLegerScore(scores.sas) + "</strong></td>";
-    }).join("");
+    const cells = visibleSasColumns.map(group => group.columns.map(column => {
+      const score = column.mode === "standard"
+        ? calculateUnitSAS(group.unit, studentGrades, materials)
+        : ceilScore(calculateDynamicSasColumn(column, studentGrades));
+      return "<td><strong>" + formatLegerScore(score) + "</strong></td>";
+    }).join("")).join("");
 
     return "<tr><td>" + (index + 1) + "</td><td><strong>" +
       escapeHtml(student.name) +
@@ -508,7 +621,7 @@ async function loadLegerData() {
 
   const { data: materials, error: materialError } = await supabase
     .from("tahfidz_materials")
-    .select("id,assessment_component_id,assessment_label")
+    .select("id,assessment_component_id,surah_name,surah_number,ayat_start,ayat_end,assessment_label,sequence")
     .eq("is_active", true);
 
   if (materialError) throw new Error("Gagal memuat materi Tahfidz: " + materialError.message);
