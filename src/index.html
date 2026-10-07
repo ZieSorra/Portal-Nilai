@@ -206,6 +206,38 @@
             </tbody>
           </table>
         </div>
+
+        <hr class="section-divider" />
+
+        <div class="admin-section">
+          <h3>Master Fiqih Ibadah</h3>
+          <p class="muted">Buat komponen penilaian dinamis, misalnya <strong>Sumatif 1 — Thaharah</strong>.</p>
+          <div class="message info">Format yang ditampilkan guru: <strong>Komponen/Penilaian → Sumatif 1 — Thaharah</strong>.</div>
+          <form id="fiqih-form" class="tahfidz-form" novalidate>
+            <input id="fiqih-edit-id" type="hidden" />
+            <label>Label Penilaian
+              <input id="fiqih-assessment-label" type="text" placeholder="Sumatif 1" required />
+            </label>
+            <label>Materi Fiqih
+              <input id="fiqih-material-name" type="text" placeholder="Thaharah" required />
+            </label>
+            <label>Urutan
+              <input id="fiqih-sequence" type="number" min="1" value="1" required />
+            </label>
+            <div class="tahfidz-form-actions">
+              <button id="cancel-fiqih-edit" type="button" class="secondary-button hidden">Batal Edit</button>
+              <button type="submit" class="primary-button">Simpan Komponen Fiqih</button>
+            </div>
+          </form>
+          <div class="table-wrap">
+            <table class="grade-table">
+              <thead><tr><th>No.</th><th>Komponen/Penilaian</th><th>Urutan</th><th>Aksi</th></tr></thead>
+              <tbody id="fiqih-table-body">
+                <tr><td colspan="4" class="empty-state">Pilih tahun ajaran dan kelas.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </section>
 
