@@ -277,7 +277,7 @@ function clearAdminMessages() {
   adminTahfidzSuccess.classList.add("hidden");
 }
 
-function adminError(message) {
+function showAdminError(message) {
   showError(adminTahfidzError, message);
 }
 
@@ -377,7 +377,7 @@ tahfidzForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   clearAdminMessages();
   if (!adminTahfidzComponent) {
-    adminError("Pilih tahun ajaran dan kelas yang memiliki komponen Tahfidz.");
+    showAdminError("Pilih tahun ajaran dan kelas yang memiliki komponen Tahfidz.");
     return;
   }
   const surahName = tahfidzSurahName.value.trim();
@@ -390,7 +390,7 @@ tahfidzForm.addEventListener("submit", async (event) => {
       !Number.isInteger(ayatStart) || ayatStart < 1 ||
       !Number.isInteger(ayatEnd) || ayatEnd < ayatStart ||
       !assessmentLabel || !Number.isInteger(sequence) || sequence < 1) {
-    adminError("Lengkapi data dengan benar. Ayat akhir harus sama atau lebih besar dari ayat mulai.");
+    showAdminError("Lengkapi data dengan benar. Ayat akhir harus sama atau lebih besar dari ayat mulai.");
     return;
   }
   const payload = {
@@ -408,7 +408,7 @@ tahfidzForm.addEventListener("submit", async (event) => {
     ? await supabase.from("tahfidz_materials").update(payload).eq("id", id)
     : await supabase.from("tahfidz_materials").insert(payload);
   if (error) {
-    adminError("Gagal menyimpan materi Tahfidz: " + error.message);
+    showAdminError("Gagal menyimpan materi Tahfidz: " + error.message);
     return;
   }
   adminTahfidzSuccess.textContent = id ? "Materi Tahfidz berhasil diperbarui." : "Materi Tahfidz berhasil ditambahkan.";
@@ -426,7 +426,7 @@ async function deactivateTahfidz(id) {
   clearAdminMessages();
   const { error } = await supabase.from("tahfidz_materials").update({ is_active: false }).eq("id", id);
   if (error) {
-    adminError("Gagal menonaktifkan materi Tahfidz: " + error.message);
+    showAdminError("Gagal menonaktifkan materi Tahfidz: " + error.message);
     return;
   }
   adminTahfidzSuccess.textContent = "Materi Tahfidz berhasil dinonaktifkan.";
@@ -440,7 +440,7 @@ async function openAdminPage() {
     await loadAdminSelectors();
     await loadAdminTahfidz();
   } catch (error) {
-    adminError(error.message || "Gagal memuat halaman admin.");
+    showAdminError(error.message || "Gagal memuat halaman admin.");
   }
 }
 
@@ -974,8 +974,8 @@ adminForm.addEventListener("submit", async (event) => {
   }
 });
 
-adminYearSelect.addEventListener("change", () => loadAdminTahfidz().catch(error => adminError(error.message)));
-adminClassSelect.addEventListener("change", () => loadAdminTahfidz().catch(error => adminError(error.message)));
+adminYearSelect.addEventListener("change", () => loadAdminTahfidz().catch(error => showAdminError(error.message)));
+adminClassSelect.addEventListener("change", () => loadAdminTahfidz().catch(error => showAdminError(error.message)));
 adminLogoutButton.addEventListener("click", adminLogout);
 
 backButton.addEventListener("click", () => {
