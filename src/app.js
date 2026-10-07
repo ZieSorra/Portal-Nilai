@@ -636,12 +636,40 @@ function renderReportSignatures() {
 
 function renderStsReport(student) {
   const rows = buildReportRows(student, "STS");
-  const body = rows.map((row, index) => {
-    const indent = row.kind === "child" ? "indent-1" : "";
+  let number = 0;
+
+  const body = rows.map(row => {
+    if (row.kind === "group") {
+      number += 1;
+      const groupRows = row.children.map(child => {
+        return `
+          <tr>
+            <td></td>
+            <td class="subject indent-1">${escapeHtml(child.label)}</td>
+            <td class="center">${reportPredicate(child.s1)}</td>
+            <td class="center">${reportPredicate(child.s2)}</td>
+            <td class="center">${reportPredicate(child.sts)}</td>
+            <td class="center">${reportFormatNumber(child.total)}</td>
+            <td class="center">${reportFormatNumber(child.average)}</td>
+          </tr>
+        `;
+      }).join("");
+
+      return `
+        <tr class="group-row">
+          <td class="center">${number}</td>
+          <td class="subject">${escapeHtml(row.label)}</td>
+          <td></td><td></td><td></td><td></td><td></td>
+        </tr>
+        ${groupRows}
+      `;
+    }
+
+    number += 1;
     return `
       <tr>
-        <td class="center">${index + 1}</td>
-        <td class="subject ${indent}">${escapeHtml(row.label)}</td>
+        <td class="center">${number}</td>
+        <td class="subject">${escapeHtml(row.label)}</td>
         <td class="center">${reportPredicate(row.s1)}</td>
         <td class="center">${reportPredicate(row.s2)}</td>
         <td class="center">${reportPredicate(row.sts)}</td>
@@ -670,6 +698,7 @@ function renderStsReport(student) {
     </div>
   `;
 }
+
 
 function renderInternRows(rows) {
   let no = 0;
