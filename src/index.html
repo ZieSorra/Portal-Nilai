@@ -224,15 +224,49 @@
 
     <section id="admin-page" class="page wide-page hidden">
       <div class="card admin-card">
-        <div class="input-header">
+        <div class="admin-header">
           <div>
             <div class="brand">ZIESORRA</div>
-            <h2>Admin — Master Tahfidz</h2>
-            <p class="muted">Atur surah, rentang ayat, label penilaian, dan urutan materi Tahfidz.</p>
+            <h2>Panel Admin</h2>
+            <p class="muted">Kelola data master, penilaian, dan identitas rapor.</p>
           </div>
           <button id="admin-logout-button" class="secondary-button" type="button">Keluar Admin</button>
         </div>
-        <div class="admin-section">
+
+        <div class="admin-layout">
+          <aside class="admin-sidebar">
+            <div class="admin-nav-title">MENU ADMIN</div>
+            <button type="button" class="admin-nav-button active" data-admin-view="dashboard">📊 Dashboard</button>
+            <div class="admin-nav-group">DATA MASTER</div>
+            <button type="button" class="admin-nav-button" data-admin-view="master">🗂️ Data Master</button>
+            <div class="admin-nav-sub">
+              <span>Tahun Ajaran</span><span>Kelas</span><span>Siswa</span><span>Mata Pelajaran</span>
+            </div>
+            <div class="admin-nav-group">PENILAIAN</div>
+            <button type="button" class="admin-nav-button" data-admin-view="assessment">📝 Penilaian</button>
+            <div class="admin-nav-sub">
+              <span>Komponen</span><span>Tahfidz</span><span>Fiqih Ibadah</span>
+            </div>
+            <div class="admin-nav-group">RAPOR</div>
+            <button type="button" class="admin-nav-button" data-admin-view="report">🖨️ Identitas Rapor</button>
+          </aside>
+
+          <main class="admin-content">
+            <section id="admin-dashboard-view" class="admin-view">
+              <div class="admin-page-heading">
+                <h3>Dashboard</h3>
+                <p class="muted">Ringkasan data utama ZIESORRA.</p>
+              </div>
+              <div class="admin-stat-grid">
+                <div class="admin-stat-card"><span>Tahun Ajaran Aktif</span><strong id="admin-stat-year">—</strong></div>
+                <div class="admin-stat-card"><span>Kelas Aktif</span><strong id="admin-stat-class">—</strong></div>
+                <div class="admin-stat-card"><span>Siswa Aktif</span><strong id="admin-stat-student">—</strong></div>
+                <div class="admin-stat-card"><span>Mata Pelajaran</span><strong id="admin-stat-subject">—</strong></div>
+              </div>
+            </section>
+
+            <section id="admin-master-view" class="admin-view hidden">
+        <div class="admin-section" id="admin-year-section">
           <h3>Master Tahun Ajaran</h3>
           <form id="admin-year-form" class="tahfidz-form" novalidate>
             <input id="admin-year-edit-id" type="hidden" />
@@ -251,7 +285,7 @@
           </table></div>
         </div>
 
-        <div class="admin-section">
+        <div class="admin-section" id="admin-class-section">
           <h3>Master Kelas</h3>
           <form id="admin-class-form" class="tahfidz-form" novalidate>
             <input id="admin-class-edit-id" type="hidden" />
@@ -270,7 +304,7 @@
           </table></div>
         </div>
 
-        <div class="admin-section">
+        <div class="admin-section" id="admin-student-section">
           <h3>Master Siswa</h3>
           <form id="admin-student-form" class="tahfidz-form" novalidate>
             <input id="admin-student-edit-id" type="hidden" />
@@ -336,6 +370,7 @@
           </table></div>
         </div>
 
+        <section id="admin-assessment-view" class="admin-view hidden">
         <div class="admin-toolbar">
           <label>Tahun Ajaran
             <select id="admin-year-select"><option value="">Memuat...</option></select>
@@ -380,9 +415,12 @@
           </table>
         </div>
 
+        </section>
+
         <hr class="section-divider" />
 
-        <div class="admin-section">
+        <section id="admin-report-view" class="admin-view hidden">
+        <div class="admin-section" id="admin-report-section">
           <h3>Identitas Rapor</h3>
           <p class="muted">Atur nama Kepala Sekolah dan Wali Kelas yang akan dicetak pada rapor.</p>
           <form id="report-settings-form" class="tahfidz-form" novalidate>
@@ -397,8 +435,9 @@
             </div>
           </form>
         </div>
+        </section>
 
-
+        <section id="admin-assessment-fiqih" class="admin-view hidden">
         <div class="admin-section">
           <h3>Master Fiqih Ibadah</h3>
           <p class="muted">Buat komponen penilaian dinamis, misalnya <strong>Sumatif 1 — Thaharah</strong>.</p>
@@ -428,6 +467,7 @@
             </table>
           </div>
         </div>
+        </section>
       </div>
     </section>
 
