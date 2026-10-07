@@ -445,7 +445,9 @@ function getTahfidzSasColumns(unit, grades, materials) {
     if (!componentIds.has(grade.assessment_component_id) || !grade.tahfidz_material_id) continue;
     const material = materialById.get(grade.tahfidz_material_id);
     const component = componentById.get(grade.assessment_component_id);
-    const assessment = getAssessmentLabel(component?.name);
+    const assessment = material.assessment_label
+      ? getAssessmentLabel(material.assessment_label)
+      : getAssessmentLabel(component?.name);
     if (!material || !assessment) continue;
 
     const surahKey = normalizeMaterialName(material.surah_name);
