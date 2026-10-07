@@ -291,8 +291,8 @@ button {
 .report-table .small { font-size:10pt; }
 .report-footer { margin-top:12px; }
 .report-footer-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:8px; }
-.report-sign { text-align:center; min-height:70px; }
-.report-sign .signature-space { height:38px; }
+.report-sign { text-align:center; min-height:88px; }
+.report-sign .signature-space { height:52px; }
 .report-note { margin-top:10px; font-size:10pt; }
 .report-date { margin-top:6px; font-size:10pt; }\n.report-date-row { display:grid; grid-template-columns:58px 10px auto; line-height:1.35; }
 .report-intern-table th:nth-child(1) { width:7%; }
