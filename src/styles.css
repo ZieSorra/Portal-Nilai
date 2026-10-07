@@ -339,3 +339,5 @@ button {
 .report-intern-sheet .report-title { margin-bottom:4px; }
 .report-intern-sheet .report-identity { margin-bottom:6px; }
 .report-intern-sheet .report-footer { margin-top:8px; }
+
+@media print { .report-intern-sheet { padding-top:8mm !important; } }
