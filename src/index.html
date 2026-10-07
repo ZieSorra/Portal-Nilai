@@ -59,8 +59,8 @@
           <button type="button" class="menu-card active" id="leger-btn">
             <strong>Leger</strong><span>Lihat Leger STS dan SAS.</span>
           </button>
-          <button type="button" class="menu-card disabled" disabled>
-            <strong>Cetak Rapor</strong><span>Segera hadir</span>
+          <button type="button" class="menu-card active" id="report-btn">
+            <strong>Cetak Rapor</strong><span>Cetak Rapor STS dan Rapor Intern.</span>
           </button>
         </div>
         <button id="back-button" class="text-button" type="button">Ganti kelas</button>
@@ -185,6 +185,40 @@
             </tbody>
           </table>
         </div>
+      </div>
+    </section>
+
+
+    <section id="report-page" class="page wide-page hidden">
+      <div class="card report-card">
+        <div class="input-header no-print">
+          <div>
+            <div class="brand">ZIESORRA</div>
+            <h2>Cetak Rapor</h2>
+            <p id="report-context" class="muted"></p>
+          </div>
+          <button id="report-back-button" class="secondary-button" type="button">Kembali</button>
+        </div>
+
+        <div class="report-toolbar no-print">
+          <label>Jenis Rapor
+            <select id="report-type">
+              <option value="STS">Rapor STS</option>
+              <option value="INTERN">Rapor Intern</option>
+            </select>
+          </label>
+          <label>Siswa
+            <select id="report-student"></select>
+          </label>
+          <div class="report-actions">
+            <button id="report-print-button" type="button" class="primary-button">Cetak Rapor</button>
+            <button id="report-print-all-button" type="button" class="secondary-button">Cetak Semua Siswa</button>
+          </div>
+        </div>
+
+        <div id="report-error" class="message error hidden no-print"></div>
+
+        <div id="report-preview" class="report-preview"></div>
       </div>
     </section>
 
