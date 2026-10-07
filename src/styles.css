@@ -327,3 +327,11 @@ button {
   .report-toolbar { grid-template-columns:1fr; }
   .report-sheet { width:100%; min-height:auto; overflow:auto; }
 }
+
+.report-intern-sheet { padding-top:15mm; line-height:1.25; }
+.report-intern-sheet .report-title,
+.report-intern-sheet .report-identity,
+.report-intern-sheet .report-table,
+.report-intern-sheet .report-footer { line-height:1.25; }
+.report-intern-sheet .report-table th,
+.report-intern-sheet .report-table td { line-height:1.25; }
