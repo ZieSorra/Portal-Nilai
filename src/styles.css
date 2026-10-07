@@ -272,7 +272,7 @@ button {
 .report-toolbar { display:grid; grid-template-columns:220px minmax(220px,1fr) auto; gap:14px; align-items:end; margin-top:24px; }
 .report-actions { display:flex; gap:8px; flex-wrap:wrap; }
 .report-preview { margin-top:24px; }
-.report-sheet { width:210mm; min-height:297mm; margin:0 auto; padding:4mm 10mm 8mm; background:#fff; color:#111; box-sizing:border-box; font-family:Arial, Helvetica, sans-serif; font-size:10pt; }
+.report-sheet { width:210mm; min-height:297mm; margin:0 auto; padding:0 10mm 6mm; background:#fff; color:#111; box-sizing:border-box; font-family:Arial, Helvetica, sans-serif; font-size:10pt; }
 .report-title { text-align:center; font-weight:800; font-size:13pt; line-height:1.45; margin-bottom:8px; text-transform:uppercase; }
 .report-school { text-align:center; font-weight:700; font-size:10pt; margin-bottom:10px; }
 .report-identity { width:100%; border-collapse:collapse; margin-bottom:10px; }
@@ -295,6 +295,13 @@ button {
 .report-sign .signature-space { height:52px; }
 .report-note { margin-top:10px; font-size:10pt; }
 .report-date { margin-top:6px; font-size:10pt; }\n.report-date-row { display:grid; grid-template-columns:58px 10px auto; line-height:1.35; }
+.report-intern-sheet { font-size:11pt; }
+.report-intern-sheet .report-identity td,
+.report-intern-sheet .report-date,
+.report-intern-sheet .report-sign,
+.report-intern-sheet .report-table th,
+.report-intern-sheet .report-table td { font-size:11pt; }
+.report-intern-sheet .report-title { font-size:13pt; }
 .report-intern-table th:nth-child(1) { width:7%; }
 .report-intern-table th:nth-child(2) { width:55%; }
 .report-intern-table th:nth-child(3) { width:12%; }
@@ -312,7 +319,7 @@ button {
   #report-page > .card { box-shadow:none !important; border:0 !important; max-width:none !important; padding:0 !important; margin:0 !important; }
   .no-print { display:none !important; }
   .report-preview { margin:0 !important; }
-  .report-sheet { margin:0; width:210mm; min-height:297mm; padding:4mm 10mm 8mm; page-break-after:always; }
+  .report-sheet { margin:0; width:210mm; min-height:297mm; padding:0 10mm 6mm; page-break-after:always; }
   .report-sheet:last-child { page-break-after:auto; }
   @page { size:A4 portrait; margin:0; }
 }
