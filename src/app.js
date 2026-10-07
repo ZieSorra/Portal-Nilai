@@ -649,10 +649,9 @@ function buildReportRows(student, type) {
 }
 
 
-function renderReportIdentity(student, title, subtitle) {
+function renderReportIdentity(student, title, subtitle = "") {
   return `
-    <div class="report-title">${escapeHtml(title)}<br>${escapeHtml(subtitle)}</div>
-    <div class="report-school">SD ISLAM DARUL MU'MININ</div>
+    <div class="report-title">${escapeHtml(title)}${subtitle ? `<br>${escapeHtml(subtitle)}` : ""}</div>
     <table class="report-identity">
       <tr>
         <td class="label">Nama</td><td class="colon">:</td><td>${escapeHtml(student.name)}</td>
@@ -687,24 +686,30 @@ function renderStsReport(student) {
   const rows = buildReportRows(student, "STS");
   let number = 0;
 
+  const renderScorePair = (score) => `
+    <td class="center">${reportFormatNumber(score)}</td>
+    <td class="center">${reportPredicate(score)}</td>
+  `;
+
   const body = rows.map(row => {
     if (row.kind === "section") {
       return `
         <tr class="section-row">
-          <td colspan="7" class="subject">${escapeHtml(row.label)}</td>
+          <td colspan="10" class="subject">${escapeHtml(row.label)}</td>
         </tr>
       `;
     }
 
     if (row.kind === "group") {
       number += 1;
-      const groupRows = row.children.map(child => `
+      const children = row.children ?? [];
+      const rowspan = children.length + 1;
+      const groupRows = children.map(child => `
         <tr>
-          <td></td>
           <td class="subject indent-1">${escapeHtml(child.label || "")}</td>
-          <td class="center">${reportPredicate(child.s1)}</td>
-          <td class="center">${reportPredicate(child.s2)}</td>
-          <td class="center">${reportPredicate(child.sts)}</td>
+          ${renderScorePair(child.s1)}
+          ${renderScorePair(child.s2)}
+          ${renderScorePair(child.sts)}
           <td class="center">${reportFormatNumber(child.total)}</td>
           <td class="center">${reportFormatNumber(child.average)}</td>
         </tr>
@@ -712,9 +717,9 @@ function renderStsReport(student) {
 
       return `
         <tr class="group-row">
-          <td class="center">${number}</td>
+          <td class="center" rowspan="${rowspan}">${number}</td>
           <td class="subject">${escapeHtml(row.label)}</td>
-          <td></td><td></td><td></td><td></td><td></td>
+          <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
         </tr>
         ${groupRows}
       `;
@@ -725,9 +730,9 @@ function renderStsReport(student) {
       <tr>
         <td class="center">${number}</td>
         <td class="subject">${escapeHtml(row.label)}</td>
-        <td class="center">${reportPredicate(row.s1)}</td>
-        <td class="center">${reportPredicate(row.s2)}</td>
-        <td class="center">${reportPredicate(row.sts)}</td>
+        ${renderScorePair(row.s1)}
+        ${renderScorePair(row.s2)}
+        ${renderScorePair(row.sts)}
         <td class="center">${reportFormatNumber(row.total)}</td>
         <td class="center">${reportFormatNumber(row.average)}</td>
       </tr>
@@ -736,17 +741,31 @@ function renderStsReport(student) {
 
   return `
     <div class="report-sheet">
-      ${renderReportIdentity(student, "LAPORAN HASIL BELAJAR SISWA", "RAPOR STS")}
+      ${renderReportIdentity(student, "LAPORAN HASIL BELAJAR SISWA")}
       <table class="report-table report-sts-table">
         <thead>
           <tr>
-            <th>No.</th><th>Mata Pelajaran</th><th>UH-1</th><th>UH-2</th><th>PTS</th><th>Jumlah</th><th>Nilai Rata-rata</th>
+            <th rowspan="2">No.</th>
+            <th rowspan="2">Mata Pelajaran</th>
+            <th colspan="2">SH-1</th>
+            <th colspan="2">SH-2</th>
+            <th colspan="2">STS</th>
+            <th rowspan="2">Jumlah</th>
+            <th rowspan="2">Nilai<br>Rata-rata</th>
+          </tr>
+          <tr>
+            <th>Nilai</th><th>Predikat</th>
+            <th>Nilai</th><th>Predikat</th>
+            <th>Nilai</th><th>Predikat</th>
           </tr>
         </thead>
-        <tbody>${body || '<tr><td colspan="7" class="center">Belum ada nilai.</td></tr>'}</tbody>
+        <tbody>${body || '<tr><td colspan="10" class="center">Belum ada nilai.</td></tr>'}</tbody>
       </table>
       <div class="report-footer">
-        <div class="report-date">Diberikan di : Larangan<br>Tanggal : ${reportFormatDate()}</div>
+        <div class="report-date">
+          <div class="report-date-row"><span>Diberikan di</span><span>:</span><span>Larangan</span></div>
+          <div class="report-date-row"><span>Tanggal</span><span>:</span><span>${reportFormatDate()}</span></div>
+        </div>
         ${renderReportSignatures()}
       </div>
     </div>
@@ -780,9 +799,12 @@ function renderInternRows(rows) {
         `);
       }
 
+      const rowspan = targetTotalRows;
+      const mergeNumber = isTahfidz || isFiqih;
+
       return `
         <tr class="group-row">
-          <td class="center">${no}</td>
+          <td class="center"${mergeNumber ? ` rowspan="${rowspan}"` : ""}>${no}</td>
           <td class="subject">${escapeHtml(row.label)}</td>
           <td></td><td></td><td></td>
         </tr>${children.join("")}`;
@@ -815,7 +837,10 @@ function renderInternReport(student) {
         <tbody>${renderInternRows(rows) || '<tr><td colspan="5" class="center">Belum ada nilai.</td></tr>'}</tbody>
       </table>
       <div class="report-footer">
-        <div class="report-date">Diberikan di : Larangan<br>Tanggal : ${reportFormatDate()}</div>
+        <div class="report-date">
+          <div class="report-date-row"><span>Diberikan di</span><span>:</span><span>Larangan</span></div>
+          <div class="report-date-row"><span>Tanggal</span><span>:</span><span>${reportFormatDate()}</span></div>
+        </div>
         ${renderReportSignatures()}
       </div>
     </div>
