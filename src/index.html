@@ -232,6 +232,77 @@
           </div>
           <button id="admin-logout-button" class="secondary-button" type="button">Keluar Admin</button>
         </div>
+        <div class="admin-section">
+          <h3>Master Tahun Ajaran</h3>
+          <form id="admin-year-form" class="tahfidz-form" novalidate>
+            <input id="admin-year-edit-id" type="hidden" />
+            <label>Tahun Ajaran
+              <input id="admin-year-name" type="text" placeholder="2026/2027" required />
+            </label>
+            <label class="checkbox-label"><input id="admin-year-active" type="checkbox" /> Aktif</label>
+            <div class="tahfidz-form-actions">
+              <button id="cancel-admin-year-edit" type="button" class="secondary-button hidden">Batal Edit</button>
+              <button type="submit" class="primary-button">Simpan Tahun Ajaran</button>
+            </div>
+          </form>
+          <div class="table-wrap"><table class="grade-table">
+            <thead><tr><th>No.</th><th>Tahun Ajaran</th><th>Status</th><th>Aksi</th></tr></thead>
+            <tbody id="admin-year-table-body"><tr><td colspan="4" class="empty-state">Memuat...</td></tr></tbody>
+          </table></div>
+        </div>
+
+        <div class="admin-section">
+          <h3>Master Kelas</h3>
+          <form id="admin-class-form" class="tahfidz-form" novalidate>
+            <input id="admin-class-edit-id" type="hidden" />
+            <label>Nama Kelas
+              <input id="admin-class-name" type="text" placeholder="1A" required />
+            </label>
+            <label class="checkbox-label"><input id="admin-class-active" type="checkbox" checked /> Aktif</label>
+            <div class="tahfidz-form-actions">
+              <button id="cancel-admin-class-edit" type="button" class="secondary-button hidden">Batal Edit</button>
+              <button type="submit" class="primary-button">Simpan Kelas</button>
+            </div>
+          </form>
+          <div class="table-wrap"><table class="grade-table">
+            <thead><tr><th>No.</th><th>Kelas</th><th>Status</th><th>Aksi</th></tr></thead>
+            <tbody id="admin-class-table-body"><tr><td colspan="4" class="empty-state">Memuat...</td></tr></tbody>
+          </table></div>
+        </div>
+
+        <div class="admin-section">
+          <h3>Master Siswa</h3>
+          <form id="admin-student-form" class="tahfidz-form" novalidate>
+            <input id="admin-student-edit-id" type="hidden" />
+            <label>NIS
+              <input id="admin-student-nis" type="text" />
+            </label>
+            <label>NISN
+              <input id="admin-student-nisn" type="text" />
+            </label>
+            <label>Nama Siswa
+              <input id="admin-student-name" type="text" required />
+            </label>
+            <label>Jenis Kelamin
+              <select id="admin-student-gender"><option value="L">Laki-laki</option><option value="P">Perempuan</option></select>
+            </label>
+            <label>Tahun Ajaran
+              <select id="admin-student-year"></select>
+            </label>
+            <label>Kelas
+              <select id="admin-student-class"></select>
+            </label>
+            <div class="tahfidz-form-actions">
+              <button id="cancel-admin-student-edit" type="button" class="secondary-button hidden">Batal Edit</button>
+              <button type="submit" class="primary-button">Simpan Siswa</button>
+            </div>
+          </form>
+          <div class="table-wrap"><table class="grade-table">
+            <thead><tr><th>No.</th><th>NIS</th><th>NISN</th><th>Nama</th><th>L/P</th><th>Kelas</th><th>Aksi</th></tr></thead>
+            <tbody id="admin-student-table-body"><tr><td colspan="7" class="empty-state">Memuat...</td></tr></tbody>
+          </table></div>
+        </div>
+
         <div class="admin-toolbar">
           <label>Tahun Ajaran
             <select id="admin-year-select"><option value="">Memuat...</option></select>
