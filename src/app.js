@@ -790,7 +790,11 @@ function renderInternRows(rows) {
         const child = sourceChildren[index] ?? { label: "", value: null };
         children.push(`
           <tr>
-            <td class="subject indent-1">${escapeHtml(child.label || "")}</td>
+            <td class="subject indent-1">${escapeHtml(
+              isFiqih
+                ? String(child.label || "").replace(/^Sumatif\s*\d+\s*[—-]\s*/i, "")
+                : (child.label || "")
+            )}</td>
             <td class="center">${reportFormatNumber(child.value)}</td>
             <td class="center">${reportPredicate(child.value)}</td>
             <td class="center">${reportDescription(child.value)}</td>
