@@ -279,6 +279,23 @@
         <hr class="section-divider" />
 
         <div class="admin-section">
+          <h3>Identitas Rapor</h3>
+          <p class="muted">Atur nama Kepala Sekolah dan Wali Kelas yang akan dicetak pada rapor.</p>
+          <form id="report-settings-form" class="tahfidz-form" novalidate>
+            <label>Nama Kepala Sekolah
+              <input id="report-principal-name" type="text" placeholder="Contoh: Amirullah, S.H.I" required />
+            </label>
+            <label>Wali Kelas
+              <input id="report-homeroom-name" type="text" placeholder="Nama wali kelas" required />
+            </label>
+            <div class="tahfidz-form-actions">
+              <button type="submit" class="primary-button">Simpan Identitas Rapor</button>
+            </div>
+          </form>
+        </div>
+
+
+        <div class="admin-section">
           <h3>Master Fiqih Ibadah</h3>
           <p class="muted">Buat komponen penilaian dinamis, misalnya <strong>Sumatif 1 — Thaharah</strong>.</p>
           <div class="message info">Format yang ditampilkan guru: <strong>Komponen/Penilaian → Sumatif 1 — Thaharah</strong>.</div>
