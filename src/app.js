@@ -388,80 +388,217 @@ function getTahfidzInternRows(unit, studentGrades, data) {
   return rows;
 }
 
+const REPORT_STS_SUBJECTS = [
+  { key: "Al-Qur'an — Qira'ah", label: "Al-Qur'an — Qira'ah", type: "unit", match: "qiraah" },
+  { key: "Al-Qur'an — Kitabah", label: "Al-Qur'an — Kitabah", type: "unit", match: "kitabah" },
+  { key: "Al-Qur'an — Tahfidz", label: "Al-Qur'an — Tahfidz", type: "tahfidz" },
+  { key: "Tajwid", label: "Tajwid", type: "subject", match: "tajwid" },
+  { key: "Aqidah Akhlak", label: "Aqidah Akhlak", type: "subject", match: "aqidah akhlak" },
+  { key: "Fiqih Ibadah", label: "Fiqih Ibadah", type: "fiqih" },
+  { key: "Bahasa Arab", label: "Bahasa Arab", type: "subject", match: "bahasa arab" },
+  { key: "Bahasa Indonesia", label: "Bahasa Indonesia", type: "subject", match: "bahasa indonesia" },
+  { key: "Bahasa Inggris", label: "Bahasa Inggris", type: "subject", match: "bahasa inggris" },
+  { key: "IPAS", label: "IPAS", type: "subject", match: "ipas" },
+  { key: "Matematika", label: "Matematika", type: "subject", match: "matematika" },
+  { key: "Pendidikan Pancasila", label: "Pendidikan Pancasila", type: "subject", match: "pendidikan pancasila" },
+  { key: "PJOK", label: "PJOK", type: "subject", match: "pjok" },
+  { key: "Seni dan Budaya", label: "Seni dan Budaya", type: "subject", match: "seni dan budaya" },
+  { key: "TIK", label: "Komputer/ICT", type: "subject", match: "tik" },
+];
+
+const REPORT_INTERN_SUBJECTS = [
+  { key: "Al-Qur'an — Tahfidz", label: "Tahfidz", type: "tahfidz" },
+  { key: "Tajwid", label: "Tajwid", type: "subject", match: "tajwid" },
+  { key: "Al-Qur'an — Qira'ah", label: "Qira'at", type: "unit", match: "qiraah" },
+  { key: "Al-Qur'an — Kitabah", label: "Kitabah", type: "unit", match: "kitabah" },
+  { key: "Aqidah Akhlak", label: "Aqidah Akhlak", type: "subject", match: "aqidah akhlak" },
+  { key: "Fiqih Ibadah", label: "Fiqih Ibadah", type: "fiqih" },
+  { key: "Bahasa Arab", label: "Bahasa Arab", type: "subject", match: "bahasa arab" },
+  { key: "TIK", label: "Komputer/ICT", type: "subject", match: "tik" },
+];
+
+function findReportUnit(definition, units) {
+  if (definition.type === "tahfidz") {
+    return units.find(unit => unit.type === "tahfidz") || null;
+  }
+  if (definition.type === "fiqih") {
+    return units.find(unit => unit.type === "fiqih") || null;
+  }
+  if (definition.type === "unit") {
+    return units.find(unit =>
+      unit.type === "standard" &&
+      normalizeMaterialName(unit.label).includes(definition.match)
+    ) || null;
+  }
+  return units.find(unit =>
+    normalizeMaterialName(unit.label) === definition.match
+  ) || null;
+}
+
+function getReportFixedUnitScore(definition, unit, studentGrades, data, type) {
+  if (!unit) return null;
+
+  if (type === "STS") {
+    const scores = calculateUnitSTS(unit, studentGrades, data.materials);
+    const values = [scores.s1, scores.s2, scores.sts].filter(value => value !== null);
+    return {
+      kind: "subject",
+      label: definition.label,
+      s1: scores.s1,
+      s2: scores.s2,
+      sts: scores.sts,
+      total: values.length ? values.reduce((sum, value) => sum + value, 0) : null,
+      average: average(values),
+    };
+  }
+
+  return {
+    kind: "subject",
+    label: definition.label,
+    value: calculateUnitSAS(unit, studentGrades, data.materials),
+  };
+}
+
 function buildReportRows(student, type) {
   const data = reportData;
   const studentGrades = getStudentReportGrades(student, data);
   const units = buildLegerUnits(data.subjects, data.components);
+  const definitions = type === "STS" ? REPORT_STS_SUBJECTS : REPORT_INTERN_SUBJECTS;
 
   if (type === "STS") {
     const rows = [];
-    for (const unit of units) {
-      if (unit.type === "tahfidz") {
+
+    for (const definition of definitions) {
+      const unit = findReportUnit(definition, units);
+
+      if (definition.type === "tahfidz") {
         const materialIds = new Set(
           studentGrades
-            .filter(grade => unit.components.some(component => component.id === grade.assessment_component_id) && grade.tahfidz_material_id)
+            .filter(grade =>
+              unit?.components.some(component => component.id === grade.assessment_component_id) &&
+              grade.tahfidz_material_id
+            )
             .map(grade => grade.tahfidz_material_id)
         );
-        for (const material of data.materials.filter(item => materialIds.has(item.id))) {
-          const s1 = getTahfidzMaterialScore(material, "Sumatif 1", studentGrades, data);
-          const s2 = getTahfidzMaterialScore(material, "Sumatif 2", studentGrades, data);
-          const sts = getTahfidzMaterialScore(material, "STS", studentGrades, data);
-          if ([s1, s2, sts].every(value => value === null)) continue;
-          const values = [s1, s2, sts].filter(value => value !== null);
+
+        const materials = data.materials.filter(item =>
+          materialIds.has(item.id)
+        );
+
+        if (materials.length) {
           rows.push({
-            kind: "child",
-            label: material.surah_name + " " + formatTahfidzRange(material),
-            s1, s2, sts,
-            total: values.length ? values.reduce((sum, value) => sum + value, 0) : null,
-            average: average(values),
+            kind: "group",
+            label: definition.label,
+            children: materials.map(material => {
+              const s1 = getTahfidzMaterialScore(material, "Sumatif 1", studentGrades, data);
+              const s2 = getTahfidzMaterialScore(material, "Sumatif 2", studentGrades, data);
+              const sts = getTahfidzMaterialScore(material, "STS", studentGrades, data);
+              const values = [s1, s2, sts].filter(value => value !== null);
+              return {
+                label: material.surah_name + " " + formatTahfidzRange(material),
+                s1, s2, sts,
+                total: values.length ? values.reduce((sum, value) => sum + value, 0) : null,
+                average: average(values),
+              };
+            }),
+          });
+        } else {
+          rows.push({
+            kind: "group",
+            label: definition.label,
+            children: [{ label: "", s1: null, s2: null, sts: null, total: null, average: null }],
           });
         }
         continue;
       }
 
-      const scores = calculateUnitSTS(unit, studentGrades, data.materials);
-      const values = [scores.s1, scores.s2, scores.sts].filter(value => value !== null);
-      if (!values.length) continue;
-      rows.push({
-        kind: "subject",
-        label: unit.label,
-        s1: scores.s1,
-        s2: scores.s2,
-        sts: scores.sts,
-        total: values.reduce((sum, value) => sum + value, 0),
-        average: average(values),
-      });
+      if (definition.type === "fiqih") {
+        const children = unit
+          ? unit.components.map(component => {
+              const values = studentGrades
+                .filter(grade => grade.assessment_component_id === component.id && !grade.tahfidz_material_id)
+                .map(grade => Number(grade.score));
+              const s1 = average(values);
+              return { label: component.name, s1, s2: null, sts: null, total: s1, average: s1 };
+            })
+          : [];
+
+        if (children.length) {
+          rows.push({ kind: "group", label: definition.label, children });
+        } else {
+          rows.push({ kind: "subject", label: definition.label, s1: null, s2: null, sts: null, total: null, average: null });
+        }
+        continue;
+      }
+
+      rows.push(getReportFixedUnitScore(definition, unit, studentGrades, data, type));
     }
+
     return rows;
   }
 
   const rows = [];
-  for (const unit of units) {
-    if (unit.type === "tahfidz") {
-      const children = getTahfidzInternRows(unit, studentGrades, data);
-      if (children.length) rows.push({ kind: "group", label: unit.label, children });
+
+  for (const definition of definitions) {
+    const unit = findReportUnit(definition, units);
+
+    if (definition.type === "tahfidz") {
+      const materialIds = new Set(
+        studentGrades
+          .filter(grade =>
+            unit?.components.some(component => component.id === grade.assessment_component_id) &&
+            grade.tahfidz_material_id
+          )
+          .map(grade => grade.tahfidz_material_id)
+      );
+
+      const materials = data.materials.filter(item =>
+        unit?.components.some(component => component.id === item.assessment_component_id) &&
+        (materialIds.has(item.id) || true)
+      );
+
+      const children = materials.map(material => {
+        const s12 = getTahfidzMaterialScore(material, "Sumatif 1", studentGrades, data);
+        const s2 = getTahfidzMaterialScore(material, "Sumatif 2", studentGrades, data);
+        const s3 = getTahfidzMaterialScore(material, "Sumatif 3", studentGrades, data);
+        const sts = getTahfidzMaterialScore(material, "STS", studentGrades, data);
+        const sas = getTahfidzMaterialScore(material, "SAS", studentGrades, data);
+        const value = average([s12, s2, s3, sts, sas].filter(item => item !== null));
+        return { label: material.surah_name + " " + formatTahfidzRange(material), value };
+      });
+
+      rows.push({
+        kind: "group",
+        label: definition.label,
+        children: children.length ? children : [{ label: "", value: null }],
+      });
       continue;
     }
 
-    if (unit.type === "fiqih") {
-      const children = [];
-      for (const component of unit.components) {
-        const values = studentGrades
-          .filter(grade => grade.assessment_component_id === component.id && !grade.tahfidz_material_id)
-          .map(grade => Number(grade.score));
-        const value = average(values);
-        if (value !== null) children.push({ label: component.name, value });
-      }
-      if (children.length) rows.push({ kind: "group", label: unit.label, children });
+    if (definition.type === "fiqih") {
+      const children = unit
+        ? unit.components.map(component => {
+            const values = studentGrades
+              .filter(grade => grade.assessment_component_id === component.id && !grade.tahfidz_material_id)
+              .map(grade => Number(grade.score));
+            return { label: component.name, value: average(values) };
+          })
+        : [];
+
+      rows.push({
+        kind: "group",
+        label: definition.label,
+        children: children.length ? children : [{ label: "", value: null }],
+      });
       continue;
     }
 
-    const value = calculateUnitSAS(unit, studentGrades, data.materials);
-    if (value !== null) rows.push({ kind: "subject", label: unit.label, value });
+    rows.push(getReportFixedUnitScore(definition, unit, studentGrades, data, type));
   }
 
   return rows;
 }
+
 
 function renderReportIdentity(student, title, subtitle) {
   return `
