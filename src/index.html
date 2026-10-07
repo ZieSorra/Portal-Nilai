@@ -297,6 +297,39 @@
               <button type="submit" class="primary-button">Simpan Siswa</button>
             </div>
           </form>
+          <div class="input-mode-note">
+            <div>
+              <strong>Import siswa massal</strong>
+              <span>Download template, upload Excel/CSV, periksa preview, lalu konfirmasi penyimpanan.</span>
+            </div>
+            <div class="import-actions">
+              <button id="admin-student-download-template" type="button" class="secondary-button">Download Template</button>
+              <label class="upload-button secondary-button" for="admin-student-file-input">Upload Excel/CSV
+                <input id="admin-student-file-input" type="file" accept=".xlsx,.xls,.csv" hidden />
+              </label>
+            </div>
+          </div>
+
+          <div id="admin-student-import-panel" class="import-panel hidden">
+            <div class="import-head">
+              <div>
+                <strong>Preview Import Siswa</strong>
+                <p id="admin-student-import-summary" class="muted"></p>
+              </div>
+              <button id="admin-student-cancel-import" type="button" class="text-button">Batalkan</button>
+            </div>
+            <div id="admin-student-import-error" class="message error hidden"></div>
+            <div class="table-wrap">
+              <table class="grade-table import-table">
+                <thead><tr><th>No.</th><th>NIS</th><th>NISN</th><th>Nama</th><th>L/P</th><th>Status</th></tr></thead>
+                <tbody id="admin-student-import-preview-body"></tbody>
+              </table>
+            </div>
+            <div class="input-actions">
+              <button id="admin-student-confirm-import" type="button" class="primary-button" disabled>Konfirmasi &amp; Simpan</button>
+            </div>
+          </div>
+
           <div class="table-wrap"><table class="grade-table">
             <thead><tr><th>No.</th><th>NIS</th><th>NISN</th><th>Nama</th><th>L/P</th><th>Kelas</th><th>Aksi</th></tr></thead>
             <tbody id="admin-student-table-body"><tr><td colspan="7" class="empty-state">Memuat...</td></tr></tbody>
@@ -416,6 +449,6 @@
       </div>
     </div>
   </main>
-  <script type="module" src="./app.js?v=20261007-24"></script>
+  <script type="module" src="./app.js?v=20261007-25"></script>
 </body>
 </html>
