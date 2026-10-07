@@ -57,7 +57,12 @@ const tahfidzTableBody = document.querySelector("#tahfidz-table-body");
 const cancelTahfidzEdit = document.querySelector("#cancel-tahfidz-edit");
 const adminLogoutButton = document.querySelector("#admin-logout-button");
 
-const supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+const supabase = window.supabase?.createClient
+  ? window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey)
+  : (await import("https://esm.sh/@supabase/supabase-js@2")).createClient(
+      SUPABASE_CONFIG.url,
+      SUPABASE_CONFIG.anonKey
+    );
 
 let teacherContext = null;
 let students = [];
