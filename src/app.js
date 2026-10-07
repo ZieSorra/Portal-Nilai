@@ -582,11 +582,7 @@ function renderInternReport(student) {
       </table>
       <div class="report-footer">
         <div class="report-date">Diberikan di : Larangan<br>Tanggal : ${reportFormatDate()}</div>
-        <div class="report-footer-grid">
-          <div class="report-sign">Orang Tua / Wali Murid<div class="signature-space"></div>(........................................)</div>
-          <div class="report-sign">Guru Kelas<div class="signature-space"></div>(........................................)</div>
-        </div>
-        <div class="report-sign" style="margin-top:12px;">Mengetahui<br>Kepala Sekolah<div class="signature-space"></div><strong>Amirullah, S.H.I</strong></div>
+        ${renderReportSignatures()}
       </div>
     </div>
   `;
@@ -2085,6 +2081,7 @@ adminClassSelect.addEventListener("change", async () => {
   try {
     await loadAdminTahfidz();
     await loadAdminFiqih();
+    await loadReportSettingsAdmin();
   } catch (error) {
     showAdminError(error.message);
   }
