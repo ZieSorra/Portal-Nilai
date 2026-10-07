@@ -1403,9 +1403,27 @@ adminYearForm.addEventListener("submit",async e=>{
   e.preventDefault(); clearAdminMessages();
   const name=adminYearName.value.trim(); if(!name){showAdminError("Tahun ajaran wajib diisi.");return;}
   const id=adminYearEditId.value; const payload={name,is_active:adminYearActive.checked};
-  if(payload.is_active){ await supabase.from("academic_years").update({is_active:false}).neq("id",id||"00000000-0000-0000-0000-000000000000"); }
-  const result=id ? await supabase.from("academic_years").update(payload).eq("id",id) : await supabase.from("academic_years").insert(payload);
-  if(result.error){showAdminError("Gagal menyimpan tahun ajaran: "+result.error.message);return;}
+  if(payload.is_active){
+    const deactivateResult = await supabase
+      .from("academic_years")
+      .update({is_active:false})
+      .neq("id",id||"00000000-0000-0000-0000-000000000000");
+    if(deactivateResult.error){
+      showAdminError("Gagal mengatur tahun ajaran aktif: "+deactivateResult.error.message);
+      return;
+    }
+  }
+  const result=id
+    ? await supabase.from("academic_years").update(payload).eq("id",id)
+    : await supabase.from("academic_years").insert(payload);
+  if(result.error){
+    if(result.error.code === "23505"){
+      showAdminError("Tahun ajaran tersebut sudah ada. Gunakan tombol Edit pada data yang sudah tersedia.");
+    }else{
+      showAdminError("Gagal menyimpan tahun ajaran: "+result.error.message);
+    }
+    return;
+  }
   resetAdminYearForm(); adminTahfidzSuccess.textContent="Tahun ajaran berhasil disimpan."; adminTahfidzSuccess.classList.remove("hidden");
   await loadAdminMasterData();
 });
