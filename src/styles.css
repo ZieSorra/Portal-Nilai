@@ -294,7 +294,7 @@ button {
 .report-sign { text-align:center; min-height:88px; }
 .report-sign .signature-space { height:52px; }
 .report-note { margin-top:10px; font-size:10pt; }
-.report-date { margin-top:6px; font-size:10pt; }\n.report-date-row { display:grid; grid-template-columns:58px 10px auto; line-height:1.35; }
+.report-date { margin-top:6px; font-size:10pt; }\n.report-date-row { display:grid; grid-template-columns:78px 10px auto; line-height:1.25; }
 .report-intern-sheet { font-size:11pt; }
 .report-intern-sheet .report-identity td,
 .report-intern-sheet .report-date,
@@ -335,3 +335,7 @@ button {
 .report-intern-sheet .report-footer { line-height:1.25; }
 .report-intern-sheet .report-table th,
 .report-intern-sheet .report-table td { line-height:1.25; }
+
+.report-intern-sheet .report-title { margin-bottom:4px; }
+.report-intern-sheet .report-identity { margin-bottom:6px; }
+.report-intern-sheet .report-footer { margin-top:8px; }
