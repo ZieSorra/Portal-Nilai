@@ -110,6 +110,14 @@ const adminStudentYear = document.querySelector("#admin-student-year");
 const adminStudentClass = document.querySelector("#admin-student-class");
 const cancelAdminStudentEdit = document.querySelector("#cancel-admin-student-edit");
 const adminStudentTableBody = document.querySelector("#admin-student-table-body");
+const adminStudentFileInput = document.querySelector("#admin-student-file-input");
+const adminStudentDownloadTemplate = document.querySelector("#admin-student-download-template");
+const adminStudentImportPanel = document.querySelector("#admin-student-import-panel");
+const adminStudentImportSummary = document.querySelector("#admin-student-import-summary");
+const adminStudentImportError = document.querySelector("#admin-student-import-error");
+const adminStudentImportPreviewBody = document.querySelector("#admin-student-import-preview-body");
+const adminStudentConfirmImport = document.querySelector("#admin-student-confirm-import");
+const adminStudentCancelImport = document.querySelector("#admin-student-cancel-import");
 
 const supabase = window.supabase?.createClient
   ? window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey)
@@ -131,7 +139,7 @@ let adminFiqihComponents = [];
 let legerMode = "STS";
 let legerData = null;
 let reportData = null;
-let reportSettings = { principalName: "", homeroomName: "" };
+let reportSettings = { principalName: "", homeroomName: "" };\nlet pendingAdminStudentImportRows = [];
 
 function clearImportPanel() {
   pendingImportRows = [];
@@ -1421,6 +1429,110 @@ adminClassForm.addEventListener("submit",async e=>{e.preventDefault();clearAdmin
 cancelAdminClassEdit.addEventListener("click",resetAdminClassForm);
 async function toggleAdminClass(id,active){const {error}=await supabase.from("classes").update({is_active:!active}).eq("id",id);if(error){showAdminError(error.message);return;}await loadAdminMasterData();}
 
+
+function clearAdminStudentImport() {
+  pendingAdminStudentImportRows = [];
+  adminStudentImportPanel.classList.add("hidden");
+  adminStudentImportPreviewBody.innerHTML = "";
+  adminStudentImportSummary.textContent = "";
+  clearError(adminStudentImportError);
+  adminStudentConfirmImport.disabled = true;
+  adminStudentConfirmImport.textContent = "Konfirmasi & Simpan";
+  adminStudentFileInput.value = "";
+}
+
+async function validateAdminStudentImport(rawRows) {
+  if (!rawRows.length) throw new Error("File tidak memiliki data.");
+  const headers = Object.keys(rawRows[0]).map(normalizeHeader);
+  if (!headers.includes("nama")) throw new Error("Kolom wajib 'Nama' tidak ditemukan.");
+  if (!headers.includes("jenis kelamin")) throw new Error("Kolom wajib 'Jenis Kelamin' tidak ditemukan.");
+
+  const { data: existingStudents, error } = await supabase
+    .from("students").select("nis,nisn").eq("is_active", true);
+  if (error) throw new Error("Gagal memeriksa siswa yang sudah ada: " + error.message);
+
+  const existingNis = new Set((existingStudents ?? []).map(x => normalizeName(x.nis)).filter(Boolean));
+  const existingNisn = new Set((existingStudents ?? []).map(x => normalizeName(x.nisn)).filter(Boolean));
+  const seenNis = new Set(), seenNisn = new Set(), seenNames = new Set();
+
+  return rawRows.map((raw,index) => {
+    const n={};
+    for(const [key,value] of Object.entries(raw)) n[normalizeHeader(key)]=value;
+    const nis=String(n.nis??"").trim(), nisn=String(n.nisn??"").trim();
+    const name=String(n.nama??"").trim(), gender=String(n["jenis kelamin"]??"").trim().toUpperCase();
+    const errors=[], nk=normalizeName(nis), nnk=normalizeName(nisn), namek=normalizeName(name);
+    if(!name) errors.push("Nama wajib diisi");
+    if(!["L","P"].includes(gender)) errors.push("Jenis Kelamin harus L atau P");
+    if(nk && (existingNis.has(nk)||seenNis.has(nk))) errors.push("NIS sudah digunakan");
+    if(nnk && (existingNisn.has(nnk)||seenNisn.has(nnk))) errors.push("NISN sudah digunakan");
+    if(namek && seenNames.has(namek)) errors.push("Nama duplikat dalam file");
+    if(nk) seenNis.add(nk);
+    if(nnk) seenNisn.add(nnk);
+    if(namek) seenNames.add(namek);
+    return {rowNumber:index+2,nis:nis||null,nisn:nisn||null,name,gender,status:errors.length?errors.join("; "):"OK",valid:!errors.length};
+  });
+}
+
+function renderAdminStudentImportPreview(rows) {
+  adminStudentImportPreviewBody.innerHTML=rows.map((row,index)=>`
+    <tr><td>${index+1}</td><td>${escapeHtml(row.nis||"—")}</td><td>${escapeHtml(row.nisn||"—")}</td>
+    <td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.gender||"—")}</td>
+    <td class="${row.valid?"import-ok":"import-invalid"}">${escapeHtml(row.status)}</td></tr>`).join("");
+  const valid=rows.filter(x=>x.valid).length, invalid=rows.length-valid;
+  adminStudentImportSummary.textContent=valid+" baris valid • "+invalid+" baris perlu diperbaiki.";
+  adminStudentConfirmImport.disabled=invalid>0||valid===0;
+}
+
+async function processAdminStudentImportFile(file) {
+  clearAdminStudentImport();
+  if(!adminYearSelect.value||!adminClassSelect.value){showAdminError("Pilih tahun ajaran dan kelas pada toolbar admin terlebih dahulu.");return;}
+  if(!window.XLSX){showAdminError("Modul Excel belum tersedia. Muat ulang halaman lalu coba lagi.");return;}
+  try {
+    const buffer=await file.arrayBuffer();
+    const workbook=window.XLSX.read(buffer,{type:"array"});
+    const sheet=workbook.Sheets[workbook.SheetNames[0]];
+    const raw=window.XLSX.utils.sheet_to_json(sheet,{defval:""});
+    pendingAdminStudentImportRows=await validateAdminStudentImport(raw);
+    adminStudentImportPanel.classList.remove("hidden");
+    renderAdminStudentImportPreview(pendingAdminStudentImportRows);
+  } catch(error) {
+    adminStudentImportPanel.classList.remove("hidden");
+    showError(adminStudentImportError,error.message||"Gagal membaca file.");
+  }
+}
+
+async function confirmAdminStudentImport() {
+  if(!pendingAdminStudentImportRows.length||pendingAdminStudentImportRows.some(x=>!x.valid)) return;
+  if(!adminYearSelect.value||!adminClassSelect.value) return;
+  adminStudentConfirmImport.disabled=true;
+  adminStudentConfirmImport.textContent="Menyimpan...";
+  try {
+    const payload=pendingAdminStudentImportRows.map(x=>({nis:x.nis,nisn:x.nisn,name:x.name,gender:x.gender,is_active:true}));
+    const {data:inserted,error}=await supabase.from("students").insert(payload).select("id");
+    if(error) throw error;
+    if(!inserted||inserted.length!==payload.length) throw new Error("Jumlah siswa tersimpan tidak sesuai data import.");
+    const enrollments=inserted.map(x=>({student_id:x.id,academic_year_id:adminYearSelect.value,class_id:adminClassSelect.value,is_active:true}));
+    const {error:enrollmentError}=await supabase.from("student_enrollments").insert(enrollments);
+    if(enrollmentError) throw enrollmentError;
+    clearAdminStudentImport();
+    adminTahfidzSuccess.textContent=inserted.length+" siswa berhasil diimport.";
+    adminTahfidzSuccess.classList.remove("hidden");
+    await loadAdminStudents();
+  } catch(error) {
+    showError(adminStudentImportError,"Gagal menyimpan import: "+error.message);
+    adminStudentConfirmImport.disabled=false;
+    adminStudentConfirmImport.textContent="Konfirmasi & Simpan";
+  }
+}
+
+function downloadAdminStudentTemplate() {
+  if(!window.XLSX){showAdminError("Modul Excel belum tersedia. Muat ulang halaman lalu coba lagi.");return;}
+  const sheet=window.XLSX.utils.json_to_sheet([{NIS:"",NISN:"",Nama:"","Jenis Kelamin":""}]);
+  const workbook=window.XLSX.utils.book_new();
+  window.XLSX.utils.book_append_sheet(workbook,sheet,"Siswa");
+  window.XLSX.writeFile(workbook,"Template-Import-Siswa.xlsx");
+}
+
 async function loadAdminStudents() {
   const yearId=adminYearSelect.value, classId=adminClassSelect.value;
   if(!yearId||!classId){adminStudentTableBody.innerHTML='<tr><td colspan="7" class="empty-state">Pilih tahun ajaran dan kelas di atas.</td></tr>';return;}
@@ -1433,8 +1545,13 @@ async function loadAdminStudents() {
 }
 async function startAdminStudentEdit(id,enrollmentId){const [{data:s},{data:e}]=await Promise.all([supabase.from("students").select("id,nis,nisn,name,gender,is_active").eq("id",id).single(),supabase.from("student_enrollments").select("id,academic_year_id,class_id").eq("id",enrollmentId).single()]);if(!s||!e)return;adminStudentEditId.value=s.id;adminStudentNis.value=s.nis||"";adminStudentNisn.value=s.nisn||"";adminStudentName.value=s.name;adminStudentGender.value=s.gender||"L";adminStudentYear.value=e.academic_year_id;adminStudentClass.value=e.class_id;cancelAdminStudentEdit.classList.remove("hidden");}
 function resetAdminStudentForm(){adminStudentEditId.value="";adminStudentNis.value="";adminStudentNisn.value="";adminStudentName.value="";adminStudentGender.value="L";adminStudentYear.value="";adminStudentClass.value="";cancelAdminStudentEdit.classList.add("hidden");}
-adminStudentForm.addEventListener("submit",async e=>{e.preventDefault();clearAdminMessages();const name=adminStudentName.value.trim();if(!name||!adminStudentYear.value||!adminStudentClass.value){showAdminError("Nama, tahun ajaran, dan kelas wajib diisi.");return;}const id=adminStudentEditId.value;let studentId=id;if(id){const {error}=await supabase.from("students").update({nis:adminStudentNis.value.trim()||null,nisn:adminStudentNisn.value.trim()||null,name,gender:adminStudentGender.value}).eq("id",id);if(error){showAdminError("Gagal memperbarui siswa: "+error.message);return;}}else{const {data,error}=await supabase.from("students").insert({nis:adminStudentNis.value.trim()||null,nisn:adminStudentNisn.value.trim()||null,name,gender:adminStudentGender.value,is_active:true}).select("id").single();if(error){showAdminError("Gagal menambah siswa: "+error.message);return;}studentId=data.id;}const {data:existing}=await supabase.from("student_enrollments").select("id").eq("student_id",studentId).maybeSingle();const ep={student_id:studentId,academic_year_id:adminStudentYear.value,class_id:adminStudentClass.value,is_active:true};const er=existing?await supabase.from("student_enrollments").update(ep).eq("id",existing.id):await supabase.from("student_enrollments").insert(ep);if(er.error){showAdminError("Gagal menyimpan kelas siswa: "+er.error.message);return;}resetAdminStudentForm();adminTahfidzSuccess.textContent="Data siswa berhasil disimpan.";adminTahfidzSuccess.classList.remove("hidden");await loadAdminStudents();});
+adminStudentForm.addEventListener("submit",async e=>{e.preventDefault();clearAdminMessages();const name=adminStudentName.value.trim();if(!name||!adminStudentYear.value||!adminStudentClass.value){showAdminError("Nama, tahun ajaran, dan kelas wajib diisi.");return;}const id=adminStudentEditId.value;let studentId=id;if(id){const {error}=await supabase.from("students").update({nis:adminStudentNis.value.trim()||null,nisn:adminStudentNisn.value.trim()||null,name,gender:adminStudentGender.value}).eq("id",id);if(error){showAdminError("Gagal memperbarui siswa: "+error.message);return;}}else{const {data,error}=await supabase.from("students").insert({nis:adminStudentNis.value.trim()||null,nisn:adminStudentNisn.value.trim()||null,name,gender:adminStudentGender.value,is_active:true}).select("id").single();if(error){showAdminError("Gagal menambah siswa: "+error.message);return;}studentId=data.id;}const {data:existing,error:findError}=await supabase.from("student_enrollments").select("id").eq("student_id",studentId).eq("academic_year_id",adminStudentYear.value).maybeSingle();if(findError){showAdminError("Gagal memeriksa kelas siswa: "+findError.message);return;}const ep={student_id:studentId,academic_year_id:adminStudentYear.value,class_id:adminStudentClass.value,is_active:true};const er=existing?await supabase.from("student_enrollments").update(ep).eq("id",existing.id):await supabase.from("student_enrollments").insert(ep);if(er.error){showAdminError("Gagal menyimpan kelas siswa: "+er.error.message);return;}resetAdminStudentForm();adminTahfidzSuccess.textContent="Data siswa berhasil disimpan.";adminTahfidzSuccess.classList.remove("hidden");await loadAdminStudents();});
 cancelAdminStudentEdit.addEventListener("click",resetAdminStudentForm);
+adminStudentFileInput.addEventListener("change",async event=>{const file=event.target.files?.[0];if(file)await processAdminStudentImportFile(file);});
+adminStudentDownloadTemplate.addEventListener("click",downloadAdminStudentTemplate);
+adminStudentConfirmImport.addEventListener("click",confirmAdminStudentImport);
+adminStudentCancelImport.addEventListener("click",clearAdminStudentImport);
+
 async function deactivateAdminStudent(id){if(!confirm("Nonaktifkan siswa ini?"))return;const {error}=await supabase.from("students").update({is_active:false}).eq("id",id);if(error){showAdminError("Gagal menonaktifkan siswa: "+error.message);return;}await loadAdminStudents();}
 
 async function loadAdminMasterData(){await loadAdminMasterYears();await loadAdminMasterClasses();await loadAdminSelectors();await loadAdminStudents();await loadAdminTahfidz();await loadAdminFiqih();await loadReportSettingsAdmin();}
