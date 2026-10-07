@@ -440,7 +440,11 @@ function findReportUnit(definition, units) {
 }
 
 function getReportFixedUnitScore(definition, unit, studentGrades, data, type) {
-  if (!unit) return null;
+  if (!unit) {
+    return type === "STS"
+      ? { kind: "subject", label: definition.label, s1: null, s2: null, sts: null, total: null, average: null }
+      : { kind: "subject", label: definition.label, value: null };
+  }
 
   if (type === "STS") {
     const scores = calculateUnitSTS(unit, studentGrades, data.materials);
