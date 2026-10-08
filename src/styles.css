@@ -395,3 +395,69 @@ button {
 .ziesorra-modal-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:20px; }
 .ziesorra-modal-actions button { min-width:100px; }
 @media (max-width:600px) { .ziesorra-modal-card { padding:20px; } .ziesorra-modal-actions { flex-direction:column-reverse; } .ziesorra-modal-actions button { width:100%; } }
+
+
+/* Phase UI/UX — professional visual system */
+:root {
+  --zs-primary:#1e3a8a;
+  --zs-primary-strong:#172554;
+  --zs-primary-soft:#eff6ff;
+  --zs-border:#e2e8f0;
+  --zs-surface:#ffffff;
+  --zs-surface-soft:#f8fafc;
+  --zs-text:#0f172a;
+  --zs-muted:#64748b;
+  --zs-radius:16px;
+  --zs-shadow:0 10px 30px rgba(15,23,42,.06);
+}
+body { background:linear-gradient(180deg,#f8fafc 0%,#eef2f7 100%); color:var(--zs-text); }
+.app-shell { padding:32px 24px; }
+.card { border-color:var(--zs-border); border-radius:20px; box-shadow:0 14px 40px rgba(15,23,42,.07); }
+.brand { color:var(--zs-primary); letter-spacing:.16em; }
+h1,h2,h3 { color:var(--zs-text); }
+h1 { font-size:clamp(1.65rem,3vw,2rem); }
+h2 { font-size:1.5rem; }
+.muted { color:var(--zs-muted); }
+select,input { border-color:#cbd5e1; transition:border-color .15s,box-shadow .15s,background .15s; }
+select:focus,input:focus { outline:none; border-color:#60a5fa; box-shadow:0 0 0 3px rgba(59,130,246,.14); }
+button { transition:transform .12s,box-shadow .12s,background .12s,opacity .12s; }
+button:hover:not(:disabled) { transform:translateY(-1px); }
+button:disabled { cursor:not-allowed; opacity:.55; }
+.primary-button { background:var(--zs-primary); box-shadow:0 3px 10px rgba(30,58,138,.16); }
+.primary-button:hover:not(:disabled) { background:var(--zs-primary-strong); }
+.secondary-button { background:#eef2f7; border:1px solid #e2e8f0; }
+.secondary-button:hover:not(:disabled) { background:#e2e8f0; }
+.danger-button { border:1px solid #fecaca; }
+.message { border-radius:12px; }
+.welcome-card { max-width:900px; margin:0 auto; }
+.context-summary { border:1px solid var(--zs-border); background:var(--zs-surface-soft); }
+.quote { border:1px solid #dbeafe; background:linear-gradient(135deg,#eff6ff,#f8fafc); }
+.menu-card { border:1px solid var(--zs-border); border-radius:16px; padding:18px; box-shadow:var(--zs-shadow); }
+.menu-card.active:hover { border-color:#93c5fd; box-shadow:0 12px 28px rgba(30,58,138,.10); }
+.menu-card strong { color:var(--zs-primary-strong); font-size:1rem; }
+.table-wrap { border-color:var(--zs-border); border-radius:16px; box-shadow:0 3px 12px rgba(15,23,42,.025); }
+.grade-table th { background:#f1f5f9; color:#334155; font-weight:800; }
+.grade-table td { color:#334155; }
+.grade-table tbody tr:hover { background:#f8fafc; }
+.admin-card { max-width:1280px; margin:0 auto; }
+.admin-header { padding-bottom:18px; }
+.admin-layout { gap:20px; }
+.admin-sidebar { border-color:var(--zs-border); background:#fff; box-shadow:var(--zs-shadow); padding:12px; }
+.admin-nav-title { color:var(--zs-primary); }
+.admin-nav-button { border-radius:10px; padding:10px 12px; }
+.admin-nav-button:hover { background:#eff6ff; color:var(--zs-primary-strong); }
+.admin-nav-button.active { background:var(--zs-primary); box-shadow:0 4px 12px rgba(30,58,138,.16); }
+.admin-content { background:transparent; }
+.admin-section { padding:20px; border:1px solid var(--zs-border); border-radius:16px; background:#fff; box-shadow:var(--zs-shadow); }
+.admin-section + .admin-section { margin-top:16px; }
+.admin-section h3 { margin-top:0; }
+.admin-tabs { margin-top:0; padding-bottom:10px; }
+.admin-tab { border:1px solid transparent; }
+.admin-tab.active { background:var(--zs-primary); }
+.admin-filter-bar,.tahfidz-form,.admin-move-panel { border-color:var(--zs-border); background:var(--zs-surface-soft); }
+.admin-stat-grid { gap:16px; }
+.admin-stat-card { border-color:var(--zs-border); box-shadow:var(--zs-shadow); }
+.admin-stat-card strong { color:var(--zs-primary-strong); }
+.row-actions { align-items:center; }
+.toast { box-shadow:0 10px 30px rgba(15,23,42,.18); border:1px solid rgba(255,255,255,.1); }
+@media (max-width:900px) { .app-shell { padding:20px 14px; } .admin-section { padding:16px; } }
