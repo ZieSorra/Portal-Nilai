@@ -7,6 +7,20 @@ revoke execute on function public.is_grade_input_frozen(uuid, text) from anon;
 
 grant select on public.report_settings, public.homeroom_teachers to authenticated;
 
+-- teacher_access_sessions is queried by teacher-scoped RLS policies.
+-- Keep the table itself private: authenticated users can only see their own
+-- session rows (plus the admin account can inspect all rows).
+grant select on public.teacher_access_sessions to authenticated;
+
+drop policy if exists "teacher_read_own_access_sessions" on public.teacher_access_sessions;
+create policy "teacher_read_own_access_sessions"
+on public.teacher_access_sessions
+for select to authenticated
+using (
+  auth.email() = 'hendaltezza@gmail.com'
+  or auth.uid() = auth_user_id
+);
+
 grant select on public.students, public.student_enrollments, public.subjects,
   public.assessment_components, public.tahfidz_materials, public.grades,
   public.grade_input_locks to authenticated;
