@@ -124,6 +124,14 @@ const adminSubjectType = document.querySelector("#admin-subject-type");
 const adminSubjectActive = document.querySelector("#admin-subject-active");
 const cancelAdminSubjectEdit = document.querySelector("#cancel-admin-subject-edit");
 const adminSubjectTableBody = document.querySelector("#admin-subject-table-body");
+const adminStudentMovePanel = document.querySelector("#admin-student-move-panel");
+const adminStudentMoveInfo = document.querySelector("#admin-student-move-info");
+const adminStudentMoveYear = document.querySelector("#admin-student-move-year");
+const adminStudentMoveClass = document.querySelector("#admin-student-move-class");
+const adminStudentCancelMove = document.querySelector("#admin-student-cancel-move");
+const adminStudentConfirmMove = document.querySelector("#admin-student-confirm-move");
+let adminStudentMoveEnrollmentId = "";
+let adminStudentMoveStudentId = "";
 const adminStudentFileInput = document.querySelector("#admin-student-file-input");
 const adminStudentDownloadTemplate = document.querySelector("#admin-student-download-template");
 const adminStudentImportPanel = document.querySelector("#admin-student-import-panel");
@@ -1402,6 +1410,35 @@ function showAdminError(message) {
   showError(adminTahfidzError, message);
 }
 
+async function deleteAdminYear(id){if(!confirm("Hapus tahun ajaran ini? Data yang masih terhubung dapat membuat penghapusan ditolak."))return;const {error}=await supabase.from("academic_years").delete().eq("id",id);if(error){showAdminMasterError("Gagal menghapus tahun ajaran: "+error.message);return;}await loadAdminMasterYears();await loadAdminStudentFilters();showAdminMasterSuccess("Tahun ajaran berhasil dihapus.");}
+async function deleteAdminClass(id){if(!confirm("Hapus kelas ini? Data yang masih terhubung dapat membuat penghapusan ditolak."))return;const {error}=await supabase.from("classes").delete().eq("id",id);if(error){showAdminMasterError("Gagal menghapus kelas: "+error.message);return;}await loadAdminMasterClasses();await loadAdminStudentFilters();showAdminMasterSuccess("Kelas berhasil dihapus.");}
+async function deleteAdminStudent(id){if(!confirm("Hapus siswa ini? Penghapusan akan ditolak jika masih memiliki data kelas/nilai yang terhubung."))return;const {error}=await supabase.from("students").delete().eq("id",id);if(error){showAdminMasterError("Gagal menghapus siswa: "+error.message);return;}await loadAdminStudents();showAdminMasterSuccess("Siswa berhasil dihapus.");}
+async function deleteAdminSubject(id){if(!confirm("Hapus mata pelajaran ini? Penghapusan akan ditolak jika masih digunakan pada penilaian."))return;const {error}=await supabase.from("subjects").delete().eq("id",id);if(error){showAdminMasterError("Gagal menghapus mata pelajaran: "+error.message);return;}await loadAdminSubjects();showAdminMasterSuccess("Mata pelajaran berhasil dihapus.");}
+
+async function openAdminStudentMove(studentId,enrollmentId,name){
+  adminStudentMoveStudentId=studentId; adminStudentMoveEnrollmentId=enrollmentId;
+  adminStudentMoveInfo.textContent="Siswa: "+name;
+  const [{data:years},{data:classes}]=await Promise.all([
+    supabase.from("academic_years").select("id,name").order("name",{ascending:false}),
+    supabase.from("classes").select("id,name").eq("is_active",true).order("name",{ascending:true})
+  ]);
+  setSelectOptions(adminStudentMoveYear,(years??[]).map(x=>({value:x.id,label:x.name})),"Pilih tahun ajaran tujuan");
+  setSelectOptions(adminStudentMoveClass,(classes??[]).map(x=>({value:x.id,label:x.name})),"Pilih kelas tujuan");
+  adminStudentMovePanel.classList.remove("hidden");
+}
+async function confirmAdminStudentMove(){
+  if(!adminStudentMoveStudentId||!adminStudentMoveYear.value||!adminStudentMoveClass.value){showAdminMasterError("Pilih tahun ajaran dan kelas tujuan.");return;}
+  const {data:existing,error:findError}=await supabase.from("student_enrollments").select("id").eq("student_id",adminStudentMoveStudentId).eq("academic_year_id",adminStudentMoveYear.value).maybeSingle();
+  if(findError){showAdminMasterError("Gagal memeriksa enrollment tujuan: "+findError.message);return;}
+  const payload={student_id:adminStudentMoveStudentId,academic_year_id:adminStudentMoveYear.value,class_id:adminStudentMoveClass.value,is_active:true};
+  const result=existing?await supabase.from("student_enrollments").update(payload).eq("id",existing.id):await supabase.from("student_enrollments").insert(payload);
+  if(result.error){showAdminMasterError("Gagal memindahkan siswa: "+result.error.message);return;}
+  adminStudentMovePanel.classList.add("hidden");
+  showAdminMasterSuccess("Siswa berhasil dipindahkan ke kelas tujuan.");
+  await loadAdminStudents();
+}
+function closeAdminStudentMove(){adminStudentMovePanel.classList.add("hidden");adminStudentMoveStudentId="";adminStudentMoveEnrollmentId="";}
+
 async function loadAdminMasterYears() {
   const { data, error } = await supabase.from("academic_years")
     .select("id,name,is_active").order("name", { ascending: false });
@@ -1411,10 +1448,10 @@ async function loadAdminMasterYears() {
     <td>${item.is_active ? "Aktif" : "Nonaktif"}</td>
     <td><div class="row-actions">
       <button type="button" class="secondary-button edit-admin-year" data-id="${item.id}">Edit</button>
-      <button type="button" class="danger-button toggle-admin-year" data-id="${item.id}" data-active="${item.is_active}">${item.is_active ? "Nonaktifkan" : "Aktifkan"}</button>
+      <button type="button" class="danger-button toggle-admin-year" data-id="${item.id}" data-active="${item.is_active}">${item.is_active ? "Nonaktifkan" : "Aktifkan"}</button><button type="button" class="danger-button delete-admin-year" data-id="${item.id}">Hapus</button>
     </div></td></tr>`).join("") || '<tr><td colspan="4" class="empty-state">Belum ada tahun ajaran.</td></tr>';
   document.querySelectorAll(".edit-admin-year").forEach(b=>b.addEventListener("click",()=>startAdminYearEdit(b.dataset.id,data)));
-  document.querySelectorAll(".toggle-admin-year").forEach(b=>b.addEventListener("click",()=>toggleAdminYear(b.dataset.id,b.dataset.active==="true")));
+  document.querySelectorAll(".toggle-admin-year").forEach(b=>b.addEventListener("click",()=>toggleAdminYear(b.dataset.id,b.dataset.active==="true")));\n  document.querySelectorAll(".delete-admin-year").forEach(b=>b.addEventListener("click",()=>deleteAdminYear(b.dataset.id)));
 }
 
 function startAdminYearEdit(id,data) {
@@ -1460,9 +1497,9 @@ async function loadAdminMasterClasses() {
   adminClassTableBody.innerHTML=(data??[]).map((item,index)=>`
     <tr><td>${index+1}</td><td>${escapeHtml(item.name)}</td><td>${item.is_active?"Aktif":"Nonaktif"}</td>
     <td><div class="row-actions"><button type="button" class="secondary-button edit-admin-class" data-id="${item.id}">Edit</button>
-    <button type="button" class="danger-button toggle-admin-class" data-id="${item.id}" data-active="${item.is_active}">${item.is_active?"Nonaktifkan":"Aktifkan"}</button></div></td></tr>`).join("") || '<tr><td colspan="4" class="empty-state">Belum ada kelas.</td></tr>';
+    <button type="button" class="danger-button toggle-admin-class" data-id="${item.id}" data-active="${item.is_active}">${item.is_active?"Nonaktifkan":"Aktifkan"}</button><button type="button" class="danger-button delete-admin-class" data-id="${item.id}">Hapus</button></div></td></tr>`).join("") || '<tr><td colspan="4" class="empty-state">Belum ada kelas.</td></tr>';
   document.querySelectorAll(".edit-admin-class").forEach(b=>b.addEventListener("click",()=>startAdminClassEdit(b.dataset.id,data)));
-  document.querySelectorAll(".toggle-admin-class").forEach(b=>b.addEventListener("click",()=>toggleAdminClass(b.dataset.id,b.dataset.active==="true")));
+  document.querySelectorAll(".toggle-admin-class").forEach(b=>b.addEventListener("click",()=>toggleAdminClass(b.dataset.id,b.dataset.active==="true")));\n  document.querySelectorAll(".delete-admin-class").forEach(b=>b.addEventListener("click",()=>deleteAdminClass(b.dataset.id)));
   setSelectOptions(adminStudentClassFilter,(data??[]).map(x=>({value:x.id,label:x.name})),"Pilih kelas");
 }
 function startAdminClassEdit(id,data){const item=data.find(x=>x.id===id);if(!item)return;adminClassEditId.value=item.id;adminClassName.value=item.name;adminClassActive.checked=item.is_active;cancelAdminClassEdit.classList.remove("hidden");}
@@ -1586,7 +1623,7 @@ async function loadAdminStudents() {
   document.querySelectorAll(".deactivate-admin-student").forEach(b=>b.addEventListener("click",()=>deactivateAdminStudent(b.dataset.id)));
 }
 async function startAdminStudentEdit(id,enrollmentId){const [{data:s},{data:e}]=await Promise.all([supabase.from("students").select("id,nis,nisn,name,gender,is_active").eq("id",id).single(),supabase.from("student_enrollments").select("id,academic_year_id,class_id").eq("id",enrollmentId).single()]);if(!s||!e)return;adminStudentEditId.value=s.id;adminStudentNis.value=s.nis||"";adminStudentNisn.value=s.nisn||"";adminStudentName.value=s.name;adminStudentGender.value=s.gender||"L";adminStudentYearFilter.value=e.academic_year_id;adminStudentClassFilter.value=e.class_id;cancelAdminStudentEdit.classList.remove("hidden");}
-function resetAdminStudentForm(){adminStudentEditId.value="";adminStudentNis.value="";adminStudentNisn.value="";adminStudentName.value="";adminStudentGender.value="L";adminStudentYearFilter.value="";adminStudentClassFilter.value="";cancelAdminStudentEdit.classList.add("hidden");}
+function resetAdminStudentForm(){adminStudentEditId.value="";adminStudentNis.value="";adminStudentNisn.value="";adminStudentName.value="";adminStudentGender.value="L";cancelAdminStudentEdit.classList.add("hidden");}
 adminStudentForm.addEventListener("submit",async e=>{e.preventDefault();clearAdminMasterMessages();const name=adminStudentName.value.trim();if(!name||!adminStudentYearFilter.value||!adminStudentClassFilter.value){showAdminMasterError("Nama, tahun ajaran, dan kelas wajib diisi.");return;}const id=adminStudentEditId.value;let studentId=id;if(id){const {error}=await supabase.from("students").update({nis:adminStudentNis.value.trim()||null,nisn:adminStudentNisn.value.trim()||null,name,gender:adminStudentGender.value}).eq("id",id);if(error){showAdminMasterError("Gagal memperbarui siswa: "+error.message);return;}}else{const {data,error}=await supabase.from("students").insert({nis:adminStudentNis.value.trim()||null,nisn:adminStudentNisn.value.trim()||null,name,gender:adminStudentGender.value,is_active:true}).select("id").single();if(error){showAdminMasterError("Gagal menambah siswa: "+error.message);return;}studentId=data.id;}const {data:existing,error:findError}=await supabase.from("student_enrollments").select("id").eq("student_id",studentId).eq("academic_year_id",adminStudentYearFilter.value).maybeSingle();if(findError){showAdminMasterError("Gagal memeriksa kelas siswa: "+findError.message);return;}const ep={student_id:studentId,academic_year_id:adminStudentYearFilter.value,class_id:adminStudentClassFilter.value,is_active:true};const er=existing?await supabase.from("student_enrollments").update(ep).eq("id",existing.id):await supabase.from("student_enrollments").insert(ep);if(er.error){showAdminMasterError("Gagal menyimpan kelas siswa: "+er.error.message);return;}resetAdminStudentForm();showAdminMasterSuccess("Data siswa berhasil disimpan.");await loadAdminStudents();});
 cancelAdminStudentEdit.addEventListener("click",resetAdminStudentForm);
 adminStudentFileInput.addEventListener("change",async event=>{const file=event.target.files?.[0];if(file)await processAdminStudentImportFile(file);});
@@ -1649,10 +1686,10 @@ async function loadAdminSubjects() {
     <tr><td>${index+1}</td><td>${escapeHtml(item.code || "—")}</td><td>${escapeHtml(item.name)}</td>
     <td>${item.subject_type === "quran" ? "Al-Qur'an" : "Standar"}</td><td>${item.is_active ? "Aktif" : "Nonaktif"}</td>
     <td><div class="row-actions"><button type="button" class="secondary-button edit-admin-subject" data-id="${item.id}">Edit</button>
-    <button type="button" class="danger-button toggle-admin-subject" data-id="${item.id}" data-active="${item.is_active}">${item.is_active ? "Nonaktifkan" : "Aktifkan"}</button></div></td></tr>`).join("")
+    <button type="button" class="danger-button toggle-admin-subject" data-id="${item.id}" data-active="${item.is_active}">${item.is_active ? "Nonaktifkan" : "Aktifkan"}</button><button type="button" class="danger-button delete-admin-subject" data-id="${item.id}">Hapus</button></div></td></tr>`).join("")
     || '<tr><td colspan="6" class="empty-state">Belum ada mata pelajaran.</td></tr>';
   document.querySelectorAll(".edit-admin-subject").forEach(b=>b.addEventListener("click",()=>startAdminSubjectEdit(b.dataset.id,data)));
-  document.querySelectorAll(".toggle-admin-subject").forEach(b=>b.addEventListener("click",()=>toggleAdminSubject(b.dataset.id,b.dataset.active==="true")));
+  document.querySelectorAll(".toggle-admin-subject").forEach(b=>b.addEventListener("click",()=>toggleAdminSubject(b.dataset.id,b.dataset.active==="true")));\n  document.querySelectorAll(".delete-admin-subject").forEach(b=>b.addEventListener("click",()=>deleteAdminSubject(b.dataset.id)));
 }
 function startAdminSubjectEdit(id,data){const item=data.find(x=>x.id===id);if(!item)return;adminSubjectEditId.value=item.id;adminSubjectCode.value=item.code||"";adminSubjectName.value=item.name;adminSubjectType.value=item.subject_type||"standard";adminSubjectActive.checked=item.is_active;cancelAdminSubjectEdit.classList.remove("hidden");}
 function resetAdminSubjectForm(){adminSubjectEditId.value="";adminSubjectCode.value="";adminSubjectName.value="";adminSubjectType.value="standard";adminSubjectActive.checked=true;cancelAdminSubjectEdit.classList.add("hidden");}
@@ -2713,6 +2750,8 @@ adminClassSelect.addEventListener("change", async () => {
     await loadAdminReportFilters();
   } catch (error) { showAdminError(error.message); }
 });
+adminStudentConfirmMove.addEventListener("click",confirmAdminStudentMove);
+adminStudentCancelMove.addEventListener("click",closeAdminStudentMove);
 adminStudentYearFilter.addEventListener("change",()=>loadAdminStudents().catch(e=>showAdminMasterError(e.message)));
 adminStudentClassFilter.addEventListener("change",()=>loadAdminStudents().catch(e=>showAdminMasterError(e.message)));
 adminReportYearFilter.addEventListener("change",()=>loadReportSettingsAdmin().catch(e=>showAdminMasterError(e.message)));
