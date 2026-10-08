@@ -641,5 +641,15 @@
     </div>
   </main>
   <script type="module" src="./app.js?v=20261008-40"></script>
-</body>
+<script>
+document.addEventListener("DOMContentLoaded",function(){
+  const bind=(a,b)=>{const x=document.getElementById(a),y=document.getElementById(b);if(x&&y)x.addEventListener("click",()=>y.click())};
+  bind("chrome-home-button","back-button");
+  bind("chrome-input-button","input-grade-btn");
+  bind("chrome-leger-button","leger-btn");
+  bind("chrome-report-button","report-btn");
+  bind("chrome-admin-button","admin-link");
+  bind("chrome-admin-teacher-button","admin-link");
+});
+</script></body>
 </html>
