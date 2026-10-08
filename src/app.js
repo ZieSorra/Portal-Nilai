@@ -1660,6 +1660,12 @@ async function loadAdminDashboard() {
 }
 
 function setAdminMasterTab(tab) {
+  if (tab !== "student") {
+    adminStudentYearFilter.value = "";
+    adminStudentClassFilter.value = "";
+    resetAdminStudentForm();
+    closeAdminStudentMove();
+  }
   adminMasterTabs.forEach(button => button.classList.toggle("active", button.dataset.masterTab === tab));
   adminMasterPanels.forEach(panel => panel.classList.toggle("hidden", panel.dataset.masterPanel !== tab));
   if (tab === "student") loadAdminStudents().catch(error => showAdminMasterError(error.message));
@@ -1721,6 +1727,17 @@ function setAdminView(view) {
 
   if (view === "dashboard") {
     loadAdminDashboard().catch(error => showAdminMasterError(error.message));
+  }
+  if (view === "assessment") {
+    adminYearSelect.value = "";
+    adminClassSelect.value = "";
+    loadAdminTahfidz().catch(error => showAdminMasterError(error.message));
+    loadAdminFiqih().catch(error => showAdminMasterError(error.message));
+  }
+  if (view === "report") {
+    adminReportYearFilter.value = "";
+    adminReportClassFilter.value = "";
+    loadReportSettingsAdmin().catch(error => showAdminMasterError(error.message));
   }
 }
 
