@@ -1837,7 +1837,7 @@ async function loadAdminFreezeControls() {
   }
   const [{ data: years, error: yearError }, { data: classes, error: classError }, { data: locks, error: lockError }] =
     await Promise.all([
-      supabase.from("academic_years").select("id,name").order("name", { ascending: false }),
+      supabase.from("academic_years").select("id,name").eq("is_active", true).order("name", { ascending: false }),
       supabase.from("classes").select("id,name").order("name", { ascending: true }),
       supabase.from("grade_input_locks").select("id,academic_year_id,semester,class_id,is_frozen").eq("semester", adminFreezeSemester.value)
     ]);
