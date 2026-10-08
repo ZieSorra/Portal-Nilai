@@ -12,6 +12,21 @@ grant select on public.report_settings, public.homeroom_teachers to authenticate
 -- session rows (plus the admin account can inspect all rows).
 grant select on public.teacher_access_sessions to authenticated;
 
+-- Teacher-scoped policies are recreated below.
+-- Drop them first so this audit script is safe to run repeatedly.
+drop policy if exists "teacher_read_own_access_sessions" on public.teacher_access_sessions;
+drop policy if exists "teacher_read_students" on public.students;
+drop policy if exists "teacher_read_enrollments" on public.student_enrollments;
+drop policy if exists "teacher_read_subjects" on public.subjects;
+drop policy if exists "teacher_read_assessment_components" on public.assessment_components;
+drop policy if exists "teacher_read_tahfidz_materials" on public.tahfidz_materials;
+drop policy if exists "teacher_read_grades" on public.grades;
+drop policy if exists "teacher_insert_grades" on public.grades;
+drop policy if exists "teacher_update_grades" on public.grades;
+drop policy if exists "teacher_read_grade_input_locks" on public.grade_input_locks;
+drop policy if exists "teacher_read_report_settings" on public.report_settings;
+drop policy if exists "teacher_read_homeroom_teachers" on public.homeroom_teachers;
+
 drop policy if exists "teacher_read_own_access_sessions" on public.teacher_access_sessions;
 create policy "teacher_read_own_access_sessions"
 on public.teacher_access_sessions
