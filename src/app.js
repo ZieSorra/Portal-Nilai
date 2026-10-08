@@ -124,6 +124,14 @@ const adminSubjectType = document.querySelector("#admin-subject-type");
 const adminSubjectActive = document.querySelector("#admin-subject-active");
 const cancelAdminSubjectEdit = document.querySelector("#cancel-admin-subject-edit");
 const adminSubjectTableBody = document.querySelector("#admin-subject-table-body");
+const adminComponentForm = document.querySelector("#admin-component-form");
+const adminComponentEditId = document.querySelector("#admin-component-edit-id");
+const adminComponentSubjectSelect = document.querySelector("#admin-component-subject-select");
+const adminComponentName = document.querySelector("#admin-component-name");
+const adminComponentSequence = document.querySelector("#admin-component-sequence");
+const cancelAdminComponentEdit = document.querySelector("#cancel-admin-component-edit");
+const adminComponentTableBody = document.querySelector("#admin-component-table-body");
+
 const adminStudentMovePanel = document.querySelector("#admin-student-move-panel");
 const adminStudentMoveInfo = document.querySelector("#admin-student-move-info");
 const adminStudentMoveYear = document.querySelector("#admin-student-move-year");
@@ -1731,6 +1739,7 @@ function setAdminView(view) {
   if (view === "assessment") {
     adminYearSelect.value = "";
     adminClassSelect.value = "";
+    loadAdminComponents().catch(error => showAdminMasterError(error.message));
     loadAdminTahfidz().catch(error => showAdminMasterError(error.message));
     loadAdminFiqih().catch(error => showAdminMasterError(error.message));
   }
@@ -1782,6 +1791,171 @@ async function loadAdminSelectors() {
   setSelectOptions(adminYearSelect, (years ?? []).map(item => ({ value: item.id, label: item.name })), "Pilih tahun ajaran");
   setSelectOptions(adminClassSelect, (classes ?? []).map(item => ({ value: item.id, label: item.name })), "Pilih kelas");
 }
+
+
+function resetAdminComponentForm() {
+  adminComponentEditId.value = "";
+  adminComponentSubjectSelect.value = "";
+  adminComponentName.value = "";
+  adminComponentSequence.value = "1";
+  cancelAdminComponentEdit.classList.add("hidden");
+}
+
+async function loadAdminComponentSubjects() {
+  const { data, error } = await supabase
+    .from("subjects")
+    .select("id,name,subject_type,is_active")
+    .order("name", { ascending: true });
+
+  if (error) throw new Error("Gagal memuat mata pelajaran komponen: " + error.message);
+
+  const options = (data ?? [])
+    .filter(item => item.name !== "Fiqih Ibadah")
+    .map(item => ({
+      value: item.id,
+      label: item.name + (item.is_active ? "" : " (Nonaktif)")
+    }));
+
+  setSelectOptions(adminComponentSubjectSelect, options, "Pilih mata pelajaran");
+}
+
+async function loadAdminComponents() {
+  clearAdminMessages();
+  resetAdminComponentForm();
+  adminComponentTableBody.innerHTML = '<tr><td colspan="6" class="empty-state">Memuat komponen...</td></tr>';
+
+  const yearId = adminYearSelect.value;
+  const classId = adminClassSelect.value;
+
+  if (!yearId || !classId) {
+    adminComponentTableBody.innerHTML = '<tr><td colspan="6" class="empty-state">Pilih tahun ajaran dan kelas.</td></tr>';
+    return;
+  }
+
+  await loadAdminComponentSubjects();
+
+  const { data, error } = await supabase
+    .from("assessment_components")
+    .select("id,subject_id,name,assessment_type,sequence,is_active,subjects(name,is_active)")
+    .eq("academic_year_id", yearId)
+    .eq("class_id", classId)
+    .eq("assessment_type", "standard")
+    .order("subject_id", { ascending: true })
+    .order("sequence", { ascending: true })
+    .order("name", { ascending: true });
+
+  if (error) throw new Error("Gagal memuat komponen penilaian: " + error.message);
+
+  const rows = data ?? [];
+  adminComponentTableBody.innerHTML = rows.map((item, index) => `
+    <tr>
+      <td>${index + 1}</td>
+      <td>${escapeHtml(item.subjects?.name || "—")}</td>
+      <td>${escapeHtml(item.name)}</td>
+      <td>${item.sequence}</td>
+      <td>${item.is_active ? "Aktif" : "Nonaktif"}</td>
+      <td>
+        <div class="row-actions">
+          <button type="button" class="secondary-button edit-admin-component" data-id="${item.id}">Edit</button>
+          <button type="button" class="danger-button toggle-admin-component" data-id="${item.id}" data-active="${item.is_active}">
+            ${item.is_active ? "Nonaktifkan" : "Aktifkan"}
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join("") || '<tr><td colspan="6" class="empty-state">Belum ada komponen penilaian.</td></tr>';
+
+  document.querySelectorAll(".edit-admin-component").forEach(button =>
+    button.addEventListener("click", () => startAdminComponentEdit(button.dataset.id, rows))
+  );
+  document.querySelectorAll(".toggle-admin-component").forEach(button =>
+    button.addEventListener("click", () => toggleAdminComponent(button.dataset.id, button.dataset.active === "true"))
+  );
+}
+
+function startAdminComponentEdit(id, rows) {
+  const item = rows.find(row => row.id === id);
+  if (!item) return;
+
+  adminComponentEditId.value = item.id;
+  adminComponentSubjectSelect.value = item.subject_id;
+  adminComponentName.value = item.name;
+  adminComponentSequence.value = item.sequence;
+  cancelAdminComponentEdit.classList.remove("hidden");
+  adminComponentName.focus();
+}
+
+async function toggleAdminComponent(id, active) {
+  if (!window.confirm((active ? "Nonaktifkan" : "Aktifkan") + " komponen penilaian ini?")) return;
+
+  const { error } = await supabase
+    .from("assessment_components")
+    .update({ is_active: !active })
+    .eq("id", id);
+
+  if (error) {
+    showAdminMasterError("Gagal mengubah status komponen: " + error.message);
+    return;
+  }
+
+  showAdminMasterSuccess("Status komponen penilaian berhasil diubah.");
+  await loadAdminComponents();
+}
+
+adminComponentForm.addEventListener("submit", async event => {
+  event.preventDefault();
+  clearAdminMasterMessages();
+
+  if (!adminYearSelect.value || !adminClassSelect.value) {
+    showAdminMasterError("Pilih tahun ajaran dan kelas terlebih dahulu.");
+    return;
+  }
+
+  const subjectId = adminComponentSubjectSelect.value;
+  const name = adminComponentName.value;
+  const sequence = Number(adminComponentSequence.value);
+
+  if (!subjectId || !name || !Number.isInteger(sequence) || sequence < 1) {
+    showAdminMasterError("Mata pelajaran, komponen, dan urutan wajib diisi dengan benar.");
+    return;
+  }
+
+  const subject = [...adminComponentSubjectSelect.options].find(option => option.value === subjectId);
+  if (!subject) {
+    showAdminMasterError("Mata pelajaran tidak ditemukan.");
+    return;
+  }
+
+  const payload = {
+    academic_year_id: adminYearSelect.value,
+    class_id: adminClassSelect.value,
+    subject_id: subjectId,
+    name,
+    assessment_type: "standard",
+    sequence,
+    is_active: true,
+  };
+
+  const id = adminComponentEditId.value;
+  const result = id
+    ? await supabase.from("assessment_components").update(payload).eq("id", id)
+    : await supabase.from("assessment_components").insert(payload);
+
+  if (result.error) {
+    if (result.error.code === "23505") {
+      showAdminMasterError("Komponen tersebut sudah ada untuk mata pelajaran, tahun ajaran, dan kelas ini.");
+    } else {
+      showAdminMasterError("Gagal menyimpan komponen penilaian: " + result.error.message);
+    }
+    return;
+  }
+
+  resetAdminComponentForm();
+  showAdminMasterSuccess(id ? "Komponen penilaian berhasil diperbarui." : "Komponen penilaian berhasil ditambahkan.");
+  await loadAdminComponents();
+});
+
+cancelAdminComponentEdit.addEventListener("click", resetAdminComponentForm);
 
 async function loadAdminTahfidz() {
   clearAdminMessages();
@@ -2755,6 +2929,7 @@ adminForm.addEventListener("submit", async (event) => {
 
 adminYearSelect.addEventListener("change", async () => {
   try {
+    await loadAdminComponents();
     await loadAdminTahfidz();
     await loadAdminFiqih();
     await loadAdminStudentFilters();
@@ -2763,6 +2938,7 @@ adminYearSelect.addEventListener("change", async () => {
 });
 adminClassSelect.addEventListener("change", async () => {
   try {
+    await loadAdminComponents();
     await loadAdminTahfidz();
     await loadAdminFiqih();
     await loadAdminStudentFilters();
