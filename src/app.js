@@ -1846,8 +1846,8 @@ async function saveTeacherAccessCode() {
 
   const code = generateTeacherAccessCode();
   const confirmed = await showConfirm(
-    "Ganti Kode Akses Guru",
-    "Kode lama akan langsung tidak berlaku. Pastikan kode baru siap dibagikan kepada guru."
+    "Kode lama akan langsung tidak berlaku. Pastikan kode baru siap dibagikan kepada guru.",
+    { title: "Ganti Kode Akses Guru", confirmText: "Ganti Kode" }
   );
   if (!confirmed) return;
 
@@ -1882,10 +1882,13 @@ async function toggleTeacherAccess() {
 
   const disable = adminAccessToggle.textContent === "Nonaktifkan";
   const confirmed = await showConfirm(
-    disable ? "Nonaktifkan Kode Akses" : "Aktifkan Kode Akses",
     disable
       ? "Guru tidak dapat masuk menggunakan kode ini sampai kode diaktifkan kembali."
-      : "Kode akses akan kembali dapat digunakan."
+      : "Kode akses akan kembali dapat digunakan.",
+    {
+      title: disable ? "Nonaktifkan Kode Akses" : "Aktifkan Kode Akses",
+      confirmText: disable ? "Nonaktifkan" : "Aktifkan"
+    }
   );
   if (!confirmed) return;
 
