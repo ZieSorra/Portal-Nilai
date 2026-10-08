@@ -1,7 +1,11 @@
 -- ZIESORRA Security & RLS Audit — scoped policies
 revoke all on public.students, public.student_enrollments, public.subjects,
   public.assessment_components, public.tahfidz_materials, public.grades,
-  public.grade_input_locks from anon;
+  public.grade_input_locks, public.report_settings, public.homeroom_teachers from anon;
+
+revoke execute on function public.is_grade_input_frozen(uuid, text) from anon;
+
+grant select on public.report_settings, public.homeroom_teachers to authenticated;
 
 grant select on public.students, public.student_enrollments, public.subjects,
   public.assessment_components, public.tahfidz_materials, public.grades,
