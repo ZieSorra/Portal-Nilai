@@ -1,0 +1,303 @@
+/* Portal Nilai — Stitch visual refinement
+   Presentation layer only. No business logic or DOM behavior is changed.
+*/
+:root{
+  --pn-navy:#0b2545;
+  --pn-navy-2:#123b63;
+  --pn-blue:#2563eb;
+  --pn-cyan:#0891b2;
+  --pn-teal:#0f766e;
+  --pn-green:#059669;
+  --pn-amber:#d97706;
+  --pn-purple:#7c3aed;
+  --pn-red:#dc2626;
+  --pn-text:#172033;
+  --pn-muted:#64748b;
+  --pn-bg:#eaf1f7;
+  --pn-surface:#ffffff;
+  --pn-soft:#f6f8fb;
+  --pn-border:#d7e0e9;
+  --pn-shadow:0 12px 32px rgba(11,37,69,.09);
+}
+
+body{
+  color:var(--pn-text);
+  background:var(--pn-bg) url("./assets/ziesorra-background.svg") center/cover fixed no-repeat;
+}
+
+.ziesorra-topbar{
+  height:70px;
+  padding:0 22px;
+  grid-template-columns:250px minmax(0,1fr) auto;
+  background:rgba(255,255,255,.97);
+  border-bottom:1px solid var(--pn-border);
+  box-shadow:0 4px 18px rgba(11,37,69,.07);
+}
+
+.ziesorra-brand-mark{
+  width:36px;height:36px;border-radius:10px;
+  background:var(--pn-navy);
+  box-shadow:0 4px 12px rgba(11,37,69,.16);
+}
+
+.ziesorra-brand-name{
+  color:var(--pn-navy);
+  font-size:15px;
+  letter-spacing:-.01em;
+}
+
+.ziesorra-brand-subtitle{
+  color:var(--pn-cyan);
+  letter-spacing:.12em;
+}
+
+.ziesorra-context-pill{
+  background:#f7fafc;
+  border-color:var(--pn-border);
+  color:#526173;
+}
+
+.ziesorra-top-button{
+  background:#fff;
+  border-color:#cbd7e4;
+  color:var(--pn-navy);
+}
+
+.ziesorra-sidebar{
+  width:250px;
+  top:70px;
+  padding:20px 13px;
+  background:rgba(255,255,255,.97);
+  border-right:1px solid var(--pn-border);
+}
+
+.ziesorra-nav-label{
+  padding:7px 11px 9px;
+  color:#8a97a8;
+}
+
+.ziesorra-nav-button{
+  min-height:42px;
+  border-radius:10px;
+  color:#465466;
+}
+
+.ziesorra-nav-button:hover{
+  background:#eef5fb;
+  color:var(--pn-navy);
+}
+
+.ziesorra-sidebar-status{
+  background:#f8fafc;
+  border-color:var(--pn-border);
+}
+
+.ziesorra-sidebar-status strong{
+  color:var(--pn-navy);
+  font-size:10px;
+}
+
+.page:not(#entry-page){
+  margin-left:250px;
+  padding:96px 26px 30px;
+}
+
+.page:not(#entry-page)>.card{
+  width:min(100%,1500px);
+  min-height:calc(100vh - 126px);
+  padding:30px 32px 34px;
+  border-radius:16px;
+  border:1px solid rgba(215,224,233,.9);
+  background:rgba(255,255,255,.98);
+  box-shadow:var(--pn-shadow);
+}
+
+#entry-page{
+  background:transparent;
+}
+
+#entry-page .entry-card{
+  border-top:4px solid var(--pn-blue);
+  border-radius:18px;
+  box-shadow:0 22px 60px rgba(11,37,69,.16);
+}
+
+#entry-page .brand,
+.page .brand{
+  color:var(--pn-cyan);
+  letter-spacing:.16em;
+}
+
+.input-card{border-top-color:var(--pn-blue)!important}
+.leger-card{border-top-color:var(--pn-green)!important}
+.report-card{border-top-color:var(--pn-amber)!important}
+.admin-card{border-top-color:var(--pn-purple)!important}
+
+.input-toolbar,
+.report-toolbar,
+.admin-toolbar,
+.admin-filter-bar{
+  background:#f7f9fc;
+  border-color:var(--pn-border);
+}
+
+select,input{
+  min-height:44px;
+  border-color:#cbd7e4;
+  border-radius:9px;
+}
+
+.primary-button{
+  background:var(--pn-navy);
+  border-radius:9px;
+}
+
+.secondary-button{
+  background:#f1f5f9;
+  border-color:var(--pn-border);
+  border-radius:9px;
+}
+
+.table-wrap{
+  border-color:#cfd9e4;
+  border-radius:10px;
+}
+
+.grade-table th{
+  background:#f1f5f9;
+  color:#334155;
+  border-bottom:1px solid #cfd9e4;
+}
+
+.grade-table td{
+  border-bottom:1px solid #e5ebf1;
+}
+
+.grade-table tbody tr:hover td{
+  background:#f8fbfe;
+}
+
+.score-input{
+  min-width:92px;
+  width:100px;
+  text-align:center;
+  font-variant-numeric:tabular-nums;
+  font-weight:700;
+}
+
+.welcome-card{
+  width:min(100%,1050px)!important;
+  border-top:4px solid var(--pn-blue)!important;
+  padding:34px 38px!important;
+}
+
+.quote{
+  background:linear-gradient(135deg,var(--pn-navy),var(--pn-navy-2));
+  border-radius:13px;
+}
+
+.menu-card{
+  border-radius:12px;
+  box-shadow:0 6px 18px rgba(11,37,69,.06);
+}
+
+.menu-card:nth-child(1){border-top-color:var(--pn-blue)}
+.menu-card:nth-child(2){border-top-color:var(--pn-green)}
+.menu-card:nth-child(3){border-top-color:var(--pn-amber)}
+
+.leger-table{
+  min-width:1050px;
+  font-variant-numeric:tabular-nums;
+}
+
+.leger-table th{
+  background:var(--pn-navy)!important;
+  color:#fff!important;
+}
+
+.leger-table th:nth-child(1),
+.leger-table td:nth-child(1){
+  position:sticky;
+  left:0;
+  background:#fff;
+  z-index:3;
+}
+
+.leger-table th:nth-child(2),
+.leger-table td:nth-child(2){
+  left:48px;
+}
+
+.leger-table thead th:nth-child(1),
+.leger-table thead th:nth-child(2){
+  background:var(--pn-navy)!important;
+  color:#fff!important;
+  z-index:5;
+}
+
+.leger-tabs button{
+  border-radius:9px;
+}
+
+.admin-layout{
+  grid-template-columns:215px minmax(0,1fr);
+}
+
+.admin-sidebar{
+  background:#f7f9fc;
+  border-color:var(--pn-border);
+  border-radius:12px;
+}
+
+.admin-nav-button{
+  border-radius:9px;
+}
+
+.admin-nav-button.active{
+  background:var(--pn-purple);
+}
+
+.admin-section{
+  border-radius:12px;
+  border-color:var(--pn-border);
+  box-shadow:0 6px 18px rgba(11,37,69,.05);
+}
+
+.admin-stat-card{
+  border-radius:12px;
+  box-shadow:0 6px 18px rgba(11,37,69,.05);
+}
+
+.admin-stat-card:nth-child(1){border-top:3px solid var(--pn-blue)}
+.admin-stat-card:nth-child(2){border-top:3px solid var(--pn-purple)}
+.admin-stat-card:nth-child(3){border-top:3px solid var(--pn-green)}
+.admin-stat-card:nth-child(4){border-top:3px solid var(--pn-amber)}
+
+.ziesorra-modal-card{
+  border-radius:14px;
+}
+
+.report-sheet{
+  box-shadow:0 8px 24px rgba(15,23,42,.10);
+}
+
+@media(max-width:1200px){
+  .ziesorra-sidebar{width:220px}
+  .page:not(#entry-page){margin-left:220px}
+}
+
+@media(max-width:900px){
+  .ziesorra-sidebar{width:68px}
+  .page:not(#entry-page){margin-left:68px;padding-left:14px;padding-right:14px}
+}
+
+@media(max-width:700px){
+  .page:not(#entry-page){margin-left:0;padding:76px 10px 14px}
+  .ziesorra-sidebar{display:none}
+  .ziesorra-topbar{grid-template-columns:1fr auto}
+  .welcome-card{padding:25px 20px!important}
+}
+
+@media print{
+  .report-sheet{box-shadow:none!important}
+}
