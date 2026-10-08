@@ -106,3 +106,31 @@ on public.subjects
 for select
 to authenticated
 using (auth.email() = 'hendaltezza@gmail.com');
+
+
+-- Admin-only hard delete for master rows.
+-- PostgreSQL foreign-key constraints still protect records that are in use.
+grant delete on public.academic_years to authenticated;
+grant delete on public.classes to authenticated;
+grant delete on public.students to authenticated;
+grant delete on public.subjects to authenticated;
+
+drop policy if exists "admin_delete_academic_years" on public.academic_years;
+create policy "admin_delete_academic_years"
+on public.academic_years for delete to authenticated
+using (auth.email() = 'hendaltezza@gmail.com');
+
+drop policy if exists "admin_delete_classes" on public.classes;
+create policy "admin_delete_classes"
+on public.classes for delete to authenticated
+using (auth.email() = 'hendaltezza@gmail.com');
+
+drop policy if exists "admin_delete_students" on public.students;
+create policy "admin_delete_students"
+on public.students for delete to authenticated
+using (auth.email() = 'hendaltezza@gmail.com');
+
+drop policy if exists "admin_delete_subjects" on public.subjects;
+create policy "admin_delete_subjects"
+on public.subjects for delete to authenticated
+using (auth.email() = 'hendaltezza@gmail.com');
