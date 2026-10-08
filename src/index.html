@@ -266,6 +266,15 @@
             </section>
 
             <section id="admin-master-view" class="admin-view hidden">
+        <div id="admin-master-error" class="message error hidden"></div>
+        <div id="admin-master-success" class="message success hidden"></div>
+        <div class="admin-tabs">
+          <button type="button" class="admin-tab active" data-master-tab="year">Tahun Ajaran</button>
+          <button type="button" class="admin-tab" data-master-tab="class">Kelas</button>
+          <button type="button" class="admin-tab" data-master-tab="student">Siswa</button>
+          <button type="button" class="admin-tab" data-master-tab="subject">Mata Pelajaran</button>
+        </div>
+        <div class="admin-master-panel" data-master-panel="year">
         <div class="admin-section" id="admin-year-section">
           <h3>Master Tahun Ajaran</h3>
           <form id="admin-year-form" class="tahfidz-form" novalidate>
@@ -284,7 +293,9 @@
             <tbody id="admin-year-table-body"><tr><td colspan="4" class="empty-state">Memuat...</td></tr></tbody>
           </table></div>
         </div>
+        </div>
 
+        <div class="admin-master-panel hidden" data-master-panel="class">
         <div class="admin-section" id="admin-class-section">
           <h3>Master Kelas</h3>
           <form id="admin-class-form" class="tahfidz-form" novalidate>
@@ -303,10 +314,20 @@
             <tbody id="admin-class-table-body"><tr><td colspan="4" class="empty-state">Memuat...</td></tr></tbody>
           </table></div>
         </div>
+        </div>
 
+        <div class="admin-master-panel hidden" data-master-panel="student">
         <div class="admin-section" id="admin-student-section">
           <h3>Master Siswa</h3>
-          <form id="admin-student-form" class="tahfidz-form" novalidate>
+          <div class="admin-filter-bar">
+          <label>Tahun Ajaran
+            <select id="admin-student-year-filter"></select>
+          </label>
+          <label>Kelas
+            <select id="admin-student-class-filter"></select>
+          </label>
+        </div>
+        <form id="admin-student-form" class="tahfidz-form" novalidate>
             <input id="admin-student-edit-id" type="hidden" />
             <label>NIS
               <input id="admin-student-nis" type="text" />
@@ -369,9 +390,39 @@
             <tbody id="admin-student-table-body"><tr><td colspan="7" class="empty-state">Memuat...</td></tr></tbody>
           </table></div>
         </div>
+        </div>
+
+        <div class="admin-master-panel hidden" data-master-panel="subject">
+        <div class="admin-section" id="admin-subject-section">
+          <h3>Master Mata Pelajaran</h3>
+          <p class="muted">Kelola mata pelajaran yang tersedia di sistem.</p>
+          <form id="admin-subject-form" class="tahfidz-form" novalidate>
+            <input id="admin-subject-edit-id" type="hidden" />
+            <label>Kode
+              <input id="admin-subject-code" type="text" placeholder="MTK" />
+            </label>
+            <label>Nama Mata Pelajaran
+              <input id="admin-subject-name" type="text" required placeholder="Matematika" />
+            </label>
+            <label>Jenis
+              <select id="admin-subject-type"><option value="standard">Standar</option><option value="quran">Al-Qur'an</option></select>
+            </label>
+            <label class="checkbox-label"><input id="admin-subject-active" type="checkbox" checked /> Aktif</label>
+            <div class="tahfidz-form-actions">
+              <button id="cancel-admin-subject-edit" type="button" class="secondary-button hidden">Batal Edit</button>
+              <button type="submit" class="primary-button">Simpan Mata Pelajaran</button>
+            </div>
+          </form>
+          <div class="table-wrap"><table class="grade-table">
+            <thead><tr><th>No.</th><th>Kode</th><th>Mata Pelajaran</th><th>Jenis</th><th>Status</th><th>Aksi</th></tr></thead>
+            <tbody id="admin-subject-table-body"><tr><td colspan="6" class="empty-state">Memuat...</td></tr></tbody>
+          </table></div>
+        </div>
+        </div>
         </section>
 
         <section id="admin-assessment-view" class="admin-view hidden">
+        <div class="admin-page-heading"><h3>Penilaian</h3><p class="muted">Atur master penilaian berdasarkan tahun ajaran dan kelas.</p></div>
         <div class="admin-toolbar">
           <label>Tahun Ajaran
             <select id="admin-year-select"><option value="">Memuat...</option></select>
@@ -421,6 +472,15 @@
         <hr class="section-divider" />
 
         <section id="admin-report-view" class="admin-view hidden">
+        <div class="admin-page-heading"><h3>Identitas Rapor</h3><p class="muted">Atur identitas rapor berdasarkan tahun ajaran dan kelas.</p></div>
+        <div class="admin-filter-bar">
+          <label>Tahun Ajaran
+            <select id="admin-report-year-filter"></select>
+          </label>
+          <label>Kelas
+            <select id="admin-report-class-filter"></select>
+          </label>
+        </div>
         <div class="admin-section" id="admin-report-section">
           <h3>Identitas Rapor</h3>
           <p class="muted">Atur nama Kepala Sekolah dan Wali Kelas yang akan dicetak pada rapor.</p>
@@ -490,6 +550,6 @@
       </div>
     </div>
   </main>
-  <script type="module" src="./app.js?v=20261007-25"></script>
+  <script type="module" src="./app.js?v=20261007-26"></script>
 </body>
 </html>
