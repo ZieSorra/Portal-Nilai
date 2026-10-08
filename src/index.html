@@ -232,13 +232,16 @@
 
     <section id="admin-page" class="page wide-page hidden">
       <div class="card admin-card">
-        <div class="admin-header">
-          <div>
-            <div class="brand">PORTAL NILAI</div>
-            <h2>Panel Admin</h2>
-            <p class="muted">Kelola data master, penilaian, dan identitas rapor.</p>
+        <div class="admin-stitch-header">
+          <div class="admin-stitch-title">
+            <div class="admin-eyebrow">PORTAL NILAI</div>
+            <h2>Administrator Workspace</h2>
+            <p>Kelola data master, konfigurasi penilaian, kontrol input, dan identitas rapor.</p>
           </div>
-          <button id="admin-logout-button" class="secondary-button" type="button">Keluar Admin</button>
+          <div class="admin-stitch-actions">
+            <div class="admin-stitch-badge"><span class="material-symbols-outlined">verified_user</span><span>Administrator</span></div>
+            <button id="admin-logout-button" class="secondary-button" type="button"><span class="material-symbols-outlined">logout</span> Keluar</button>
+          </div>
         </div>
 
         <div class="admin-layout">
@@ -269,9 +272,13 @@
 
           <main class="admin-content">
             <section id="admin-dashboard-view" class="admin-view">
-              <div class="admin-page-heading">
-                <h3>Dashboard</h3>
-                <p class="muted">Ringkasan data utama Portal Nilai.</p>
+              <div class="admin-stitch-hero">
+                <div>
+                  <div class="admin-eyebrow">ADMIN DASHBOARD</div>
+                  <h3>Ringkasan Portal Nilai</h3>
+                  <p>Informasi utama sistem yang dapat dikelola administrator.</p>
+                </div>
+                <span class="material-symbols-outlined">admin_panel_settings</span>
               </div>
               <div class="admin-stat-grid">
                 <div class="admin-stat-card"><span>Tahun Ajaran Aktif</span><strong id="admin-stat-year">—</strong></div>
@@ -280,7 +287,6 @@
                 <div class="admin-stat-card"><span>Mata Pelajaran</span><strong id="admin-stat-subject">—</strong></div>
               </div>
             </section>
-
             <section id="admin-master-view" class="admin-view hidden">
         <div id="admin-master-error" class="message error hidden"></div>
         <div id="admin-master-success" class="message success hidden"></div>
