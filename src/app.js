@@ -1463,7 +1463,7 @@ async function loadAdminMasterClasses() {
     <button type="button" class="danger-button toggle-admin-class" data-id="${item.id}" data-active="${item.is_active}">${item.is_active?"Nonaktifkan":"Aktifkan"}</button></div></td></tr>`).join("") || '<tr><td colspan="4" class="empty-state">Belum ada kelas.</td></tr>';
   document.querySelectorAll(".edit-admin-class").forEach(b=>b.addEventListener("click",()=>startAdminClassEdit(b.dataset.id,data)));
   document.querySelectorAll(".toggle-admin-class").forEach(b=>b.addEventListener("click",()=>toggleAdminClass(b.dataset.id,b.dataset.active==="true")));
-  setSelectOptions(adminStudentClass,(data??[]).map(x=>({value:x.id,label:x.name})),"Pilih kelas");
+  setSelectOptions(adminStudentClassFilter,(data??[]).map(x=>({value:x.id,label:x.name})),"Pilih kelas");
 }
 function startAdminClassEdit(id,data){const item=data.find(x=>x.id===id);if(!item)return;adminClassEditId.value=item.id;adminClassName.value=item.name;adminClassActive.checked=item.is_active;cancelAdminClassEdit.classList.remove("hidden");}
 function resetAdminClassForm(){adminClassEditId.value="";adminClassName.value="";adminClassActive.checked=true;cancelAdminClassEdit.classList.add("hidden");}
