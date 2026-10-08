@@ -1424,10 +1424,40 @@ function showAdminError(message) {
   showError(adminTahfidzError, message);
 }
 
-async function deleteAdminYear(id){if(!confirm("Hapus tahun ajaran ini? Data yang masih terhubung dapat membuat penghapusan ditolak."))return;const {error}=await supabase.from("academic_years").delete().eq("id",id);if(error){showAdminMasterError("Gagal menghapus tahun ajaran: "+error.message);return;}await loadAdminMasterYears();await loadAdminStudentFilters();showAdminMasterSuccess("Tahun ajaran berhasil dihapus.");}
-async function deleteAdminClass(id){if(!confirm("Hapus kelas ini? Data yang masih terhubung dapat membuat penghapusan ditolak."))return;const {error}=await supabase.from("classes").delete().eq("id",id);if(error){showAdminMasterError("Gagal menghapus kelas: "+error.message);return;}await loadAdminMasterClasses();await loadAdminStudentFilters();showAdminMasterSuccess("Kelas berhasil dihapus.");}
-async function deleteAdminStudent(id){if(!confirm("Hapus siswa ini? Penghapusan akan ditolak jika masih memiliki data kelas/nilai yang terhubung."))return;const {error}=await supabase.from("students").delete().eq("id",id);if(error){showAdminMasterError("Gagal menghapus siswa: "+error.message);return;}await loadAdminStudents();showAdminMasterSuccess("Siswa berhasil dihapus.");}
-async function deleteAdminSubject(id){if(!confirm("Hapus mata pelajaran ini? Penghapusan akan ditolak jika masih digunakan pada penilaian."))return;const {error}=await supabase.from("subjects").delete().eq("id",id);if(error){showAdminMasterError("Gagal menghapus mata pelajaran: "+error.message);return;}await loadAdminSubjects();showAdminMasterSuccess("Mata pelajaran berhasil dihapus.");}
+
+
+let ziesorraConfirmResolver = null;
+function showConfirm(message, options = {}) {
+  const modal = document.getElementById("ziesorra-confirm-modal");
+  const messageEl = document.getElementById("ziesorra-confirm-message");
+  const titleEl = document.getElementById("ziesorra-confirm-title");
+  const confirmBtn = document.getElementById("ziesorra-confirm-ok");
+  if (!modal || !messageEl || !titleEl || !confirmBtn) return Promise.resolve(false);
+  titleEl.textContent = options.title || "Konfirmasi Tindakan";
+  messageEl.textContent = message;
+  confirmBtn.textContent = options.confirmText || "Lanjutkan";
+  confirmBtn.className = options.danger === false ? "primary-button" : "danger-button";
+  modal.classList.add("show");
+  modal.setAttribute("aria-hidden", "false");
+  return new Promise(resolve => { ziesorraConfirmResolver = resolve; });
+}
+function closeConfirmModal(result) {
+  const modal = document.getElementById("ziesorra-confirm-modal");
+  if (modal) { modal.classList.remove("show"); modal.setAttribute("aria-hidden", "true"); }
+  if (ziesorraConfirmResolver) { const resolve = ziesorraConfirmResolver; ziesorraConfirmResolver = null; resolve(result); }
+}
+function initConfirmModal() {
+  const modal = document.getElementById("ziesorra-confirm-modal");
+  if (!modal) return;
+  document.getElementById("ziesorra-confirm-ok")?.addEventListener("click", () => closeConfirmModal(true));
+  document.getElementById("ziesorra-confirm-cancel")?.addEventListener("click", () => closeConfirmModal(false));
+  modal.addEventListener("click", e => { if (e.target === modal) closeConfirmModal(false); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && modal.classList.contains("show")) closeConfirmModal(false); });
+}
+async function deleteAdminYear(id){if(!(await showConfirm("Data yang masih terhubung dapat membuat penghapusan ditolak.", {title:"Hapus Tahun Ajaran", confirmText:"Hapus"})))return;const {error}=await supabase.from("academic_years").delete().eq("id",id);if(error){showAdminMasterError("Gagal menghapus tahun ajaran: "+error.message);return;}await loadAdminMasterYears();await loadAdminStudentFilters();showAdminMasterSuccess("Tahun ajaran berhasil dihapus.");}
+async function deleteAdminClass(id){if(!(await showConfirm("Data yang masih terhubung dapat membuat penghapusan ditolak.", {title:"Hapus Kelas", confirmText:"Hapus"})))return;const {error}=await supabase.from("classes").delete().eq("id",id);if(error){showAdminMasterError("Gagal menghapus kelas: "+error.message);return;}await loadAdminMasterClasses();await loadAdminStudentFilters();showAdminMasterSuccess("Kelas berhasil dihapus.");}
+async function deleteAdminStudent(id){if(!(await showConfirm("Penghapusan akan ditolak jika masih memiliki data kelas/nilai yang terhubung.", {title:"Hapus Siswa", confirmText:"Hapus"})))return;const {error}=await supabase.from("students").delete().eq("id",id);if(error){showAdminMasterError("Gagal menghapus siswa: "+error.message);return;}await loadAdminStudents();showAdminMasterSuccess("Siswa berhasil dihapus.");}
+async function deleteAdminSubject(id){if(!(await showConfirm("Penghapusan akan ditolak jika masih digunakan pada penilaian.", {title:"Hapus Mata Pelajaran", confirmText:"Hapus"})))return;const {error}=await supabase.from("subjects").delete().eq("id",id);if(error){showAdminMasterError("Gagal menghapus mata pelajaran: "+error.message);return;}await loadAdminSubjects();showAdminMasterSuccess("Mata pelajaran berhasil dihapus.");}
 
 async function openAdminStudentMove(studentId,enrollmentId,name){
   adminStudentMoveStudentId=studentId; adminStudentMoveEnrollmentId=enrollmentId;
@@ -1649,7 +1679,7 @@ adminStudentDownloadTemplate.addEventListener("click",downloadAdminStudentTempla
 adminStudentConfirmImport.addEventListener("click",confirmAdminStudentImport);
 adminStudentCancelImport.addEventListener("click",clearAdminStudentImport);
 
-async function deactivateAdminStudent(id){if(!confirm("Nonaktifkan siswa ini?"))return;const {error}=await supabase.from("students").update({is_active:false}).eq("id",id);if(error){showAdminMasterError("Gagal menonaktifkan siswa: "+error.message);return;}await loadAdminStudents();}
+async function deactivateAdminStudent(id){if(!(await showConfirm("Siswa tidak akan muncul pada daftar aktif.", {title:"Nonaktifkan Siswa", confirmText:"Nonaktifkan"})))return;const {error}=await supabase.from("students").update({is_active:false}).eq("id",id);if(error){showAdminMasterError("Gagal menonaktifkan siswa: "+error.message);return;}await loadAdminStudents();}
 
 async function loadAdminDashboard() {
   const [
@@ -1879,7 +1909,7 @@ async function loadAdminFreezeControls() {
 }
 
 async function toggleAdminFreeze(yearId, classId, semester, frozen) {
-  if (!window.confirm(frozen ? "Buka kembali input nilai untuk kelas ini?" : "Bekukan input nilai untuk kelas ini? Guru tidak akan dapat menambah atau mengubah nilai.")) return;
+  if (!(await showConfirm(frozen ? "Input nilai akan dibuka kembali untuk kelas ini." : "Guru tidak akan dapat menambah atau mengubah nilai untuk kelas ini.", {title: frozen ? "Buka Input Nilai" : "Freeze Input Nilai", confirmText: frozen ? "Buka Input" : "Freeze Input"}))) return;
   const existing = adminFreezeRows.find(row => row.academicYearId === yearId && row.classId === classId && row.semester === semester);
   const result = existing?.id
     ? await supabase.from("grade_input_locks").update({ is_frozen: !frozen }).eq("id", existing.id)
@@ -1890,7 +1920,7 @@ async function toggleAdminFreeze(yearId, classId, semester, frozen) {
 }
 
 async function deleteAdminFreeze(id) {
-  if (!window.confirm("Hapus pengaturan freeze ini? Input akan kembali terbuka.")) return;
+  if (!(await showConfirm("Input nilai akan kembali terbuka setelah pengaturan ini dihapus.", {title:"Hapus Pengaturan Freeze", confirmText:"Hapus"}))) return;
   const { error } = await supabase.from("grade_input_locks").delete().eq("id", id);
   if (error) { showAdminMasterError("Gagal menghapus pengaturan freeze: " + error.message); return; }
   showAdminMasterSuccess("Pengaturan freeze berhasil dihapus.");
@@ -1981,7 +2011,7 @@ async function loadAdminComponents() {
 }
 
 async function deleteAdminComponent(id) {
-  if (!window.confirm("Hapus komponen ini? Jika sudah digunakan pada nilai, database akan menolak penghapusan.")) return;
+  if (!(await showConfirm("Jika sudah digunakan pada nilai, database akan menolak penghapusan.", {title:"Hapus Komponen", confirmText:"Hapus"}))) return;
   const { error } = await supabase.from("assessment_components").delete().eq("id", id);
   if (error) { showAdminMasterError("Gagal menghapus komponen: " + error.message); return; }
   showAdminMasterSuccess("Komponen berhasil dihapus.");
@@ -2001,7 +2031,7 @@ function startAdminComponentEdit(id, rows) {
 }
 
 async function toggleAdminComponent(id, active) {
-  if (!window.confirm((active ? "Nonaktifkan" : "Aktifkan") + " komponen penilaian ini?")) return;
+  if (!(await showConfirm(active ? "Komponen penilaian akan dinonaktifkan." : "Komponen penilaian akan diaktifkan.", {title: active ? "Nonaktifkan Komponen" : "Aktifkan Komponen", confirmText: active ? "Nonaktifkan" : "Aktifkan", danger: active}))) return;
 
   const { error } = await supabase
     .from("assessment_components")
@@ -2201,7 +2231,7 @@ tahfidzForm.addEventListener("submit", async (event) => {
 cancelTahfidzEdit.addEventListener("click", resetTahfidzForm);
 
 async function hardDeleteTahfidz(id) {
-  if (!window.confirm("Hapus materi Tahfidz secara permanen? Jika sudah digunakan pada nilai, database akan menolak penghapusan.")) return;
+  if (!(await showConfirm("Jika sudah digunakan pada nilai, database akan menolak penghapusan.", {title:"Hapus Materi Tahfidz", confirmText:"Hapus"}))) return;
   const { error } = await supabase.from("tahfidz_materials").delete().eq("id", id);
   if (error) { showAdminError("Gagal menghapus materi Tahfidz: " + error.message); return; }
   adminTahfidzSuccess.textContent = "Materi Tahfidz berhasil dihapus.";
@@ -2212,7 +2242,7 @@ async function hardDeleteTahfidz(id) {
 async function deactivateTahfidz(id) {
   const item = adminTahfidzMaterials.find(row => row.id === id);
   if (!item) return;
-  if (!window.confirm("Nonaktifkan materi " + item.surah_name + " ayat " + item.ayat_start + "–" + item.ayat_end + "?")) return;
+  if (!(await showConfirm("Materi " + item.surah_name + " ayat " + item.ayat_start + "–" + item.ayat_end + " akan dinonaktifkan.", {title:"Nonaktifkan Materi Tahfidz", confirmText:"Nonaktifkan"}))) return;
   clearAdminMessages();
   const { error } = await supabase.from("tahfidz_materials").update({ is_active: false }).eq("id", id);
   if (error) {
@@ -2363,7 +2393,7 @@ fiqihForm.addEventListener("submit", async (event) => {
 cancelFiqihEdit.addEventListener("click", resetFiqihForm);
 
 async function hardDeleteFiqih(id) {
-  if (!window.confirm("Hapus komponen Fiqih secara permanen? Jika sudah digunakan pada nilai, database akan menolak penghapusan.")) return;
+  if (!(await showConfirm("Jika sudah digunakan pada nilai, database akan menolak penghapusan.", {title:"Hapus Komponen Fiqih", confirmText:"Hapus"}))) return;
   const { error } = await supabase.from("assessment_components").delete().eq("id", id);
   if (error) { showAdminError("Gagal menghapus komponen Fiqih: " + error.message); return; }
   adminTahfidzSuccess.textContent = "Komponen Fiqih berhasil dihapus.";
@@ -2374,7 +2404,7 @@ async function hardDeleteFiqih(id) {
 async function deactivateFiqih(id) {
   const item = adminFiqihComponents.find(row => row.id === id);
   if (!item) return;
-  if (!window.confirm("Nonaktifkan komponen " + item.name + "?")) return;
+  if (!(await showConfirm("Komponen " + item.name + " akan dinonaktifkan.", {title:"Nonaktifkan Komponen Fiqih", confirmText:"Nonaktifkan"}))) return;
 
   clearAdminMessages();
   const { error } = await supabase
@@ -3105,6 +3135,8 @@ backButton.addEventListener("click", () => {
   teacherContext = null;
   showEntryPage();
 });
+
+initConfirmModal();
 
 (async function init() {
   try {
