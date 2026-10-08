@@ -77,6 +77,10 @@ begin
     is_active = true,
     updated_at = now();
 
+  delete from public.teacher_access_sessions
+  where academic_year_id = p_academic_year_id
+    and class_id = p_class_id;
+
   return jsonb_build_object('success', true, 'hint', right(v_code, 4));
 end;
 $$;
@@ -98,6 +102,13 @@ begin
   update public.teacher_access_credentials
   set is_active = p_is_active, updated_at = now()
   where academic_year_id = p_academic_year_id and class_id = p_class_id;
+
+  if p_is_active = false then
+    delete from public.teacher_access_sessions
+    where academic_year_id = p_academic_year_id
+      and class_id = p_class_id;
+  end if;
+
   return found;
 end;
 $$;
