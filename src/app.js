@@ -3247,11 +3247,23 @@ adminForm.addEventListener("submit", async (event) => {
   submitButton.disabled = true;
   submitButton.textContent = "Memeriksa...";
   try {
-    const { error } = await supabase.auth.signInWithPassword({
+    await supabase.auth.signOut();
+
+    const { data, error } = await supabase.auth.signInWithPassword({
       email: ADMIN_CONFIG.email,
       password,
     });
     if (error) throw error;
+
+    const adminUser = data?.user;
+    if (!adminUser || adminUser.email?.toLowerCase() !== ADMIN_CONFIG.email.toLowerCase()) {
+      await supabase.auth.signOut();
+      throw new Error("Sesi admin tidak valid.");
+    }
+
+    clearTeacherContext();
+    teacherContext = null;
+    teacherAccessActive = false;
     closeAdminModal();
     await openAdminPage();
   } catch (error) {
