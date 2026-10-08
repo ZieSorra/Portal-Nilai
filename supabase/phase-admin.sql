@@ -82,6 +82,62 @@ to authenticated
 using (auth.email() = 'hendaltezza@gmail.com');
 
 
+
+-- Admin-only assessment component master management.
+-- Generic component master is limited to standard components.
+-- Tahfidz and Fiqih have their own dedicated admin screens.
+grant select, insert, update on public.assessment_components to authenticated;
+
+drop policy if exists "admin_select_assessment_components" on public.assessment_components;
+create policy "admin_select_assessment_components"
+on public.assessment_components
+for select
+to authenticated
+using (auth.email() = 'hendaltezza@gmail.com');
+
+drop policy if exists "admin_insert_standard_assessment_components" on public.assessment_components;
+create policy "admin_insert_standard_assessment_components"
+on public.assessment_components
+for insert
+to authenticated
+with check (
+  auth.email() = 'hendaltezza@gmail.com'
+  and assessment_type = 'standard'
+  and exists (
+    select 1
+    from public.subjects s
+    where s.id = subject_id
+      and s.name <> 'Fiqih Ibadah'
+  )
+);
+
+drop policy if exists "admin_update_standard_assessment_components" on public.assessment_components;
+create policy "admin_update_standard_assessment_components"
+on public.assessment_components
+for update
+to authenticated
+using (
+  auth.email() = 'hendaltezza@gmail.com'
+  and assessment_type = 'standard'
+  and exists (
+    select 1
+    from public.subjects s
+    where s.id = subject_id
+      and s.name <> 'Fiqih Ibadah'
+  )
+)
+with check (
+  auth.email() = 'hendaltezza@gmail.com'
+  and assessment_type = 'standard'
+  and exists (
+    select 1
+    from public.subjects s
+    where s.id = subject_id
+      and s.name <> 'Fiqih Ibadah'
+  )
+);
+
+
 -- Admin-only subject master management.
 grant insert, update on public.subjects to authenticated;
 
