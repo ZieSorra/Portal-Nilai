@@ -80,3 +80,29 @@ on public.student_enrollments
 for select
 to authenticated
 using (auth.email() = 'hendaltezza@gmail.com');
+
+
+-- Admin-only subject master management.
+grant insert, update on public.subjects to authenticated;
+
+drop policy if exists "admin_insert_subjects" on public.subjects;
+create policy "admin_insert_subjects"
+on public.subjects
+for insert
+to authenticated
+with check (auth.email() = 'hendaltezza@gmail.com');
+
+drop policy if exists "admin_update_subjects" on public.subjects;
+create policy "admin_update_subjects"
+on public.subjects
+for update
+to authenticated
+using (auth.email() = 'hendaltezza@gmail.com')
+with check (auth.email() = 'hendaltezza@gmail.com');
+
+drop policy if exists "admin_select_subjects" on public.subjects;
+create policy "admin_select_subjects"
+on public.subjects
+for select
+to authenticated
+using (auth.email() = 'hendaltezza@gmail.com');
