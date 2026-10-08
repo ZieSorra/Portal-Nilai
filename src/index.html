@@ -445,6 +445,46 @@
           </label>
         </div>
         <div id="admin-tahfidz-error" class="message error hidden"></div>
+        <div class="admin-section" id="admin-component-section">
+          <h3>Master Komponen Penilaian</h3>
+          <p class="muted">Kelola komponen penilaian standar untuk mata pelajaran pada tahun ajaran dan kelas yang dipilih.</p>
+          <div class="message info">Komponen standar yang tersedia: <strong>Sumatif 1, Sumatif 2, Sumatif 3, STS, SAS</strong>. Tahfidz dan Fiqih Ibadah dikelola melalui menu khusus di bawah.</div>
+          <form id="admin-component-form" class="tahfidz-form" novalidate>
+            <input id="admin-component-edit-id" type="hidden" />
+            <label>Mata Pelajaran
+              <select id="admin-component-subject-select" required>
+                <option value="">Memuat...</option>
+              </select>
+            </label>
+            <label>Komponen Penilaian
+              <select id="admin-component-name" required>
+                <option value="">Pilih komponen</option>
+                <option value="Sumatif 1">Sumatif 1</option>
+                <option value="Sumatif 2">Sumatif 2</option>
+                <option value="Sumatif 3">Sumatif 3</option>
+                <option value="STS">STS</option>
+                <option value="SAS">SAS</option>
+              </select>
+            </label>
+            <label>Urutan
+              <input id="admin-component-sequence" type="number" min="1" value="1" required />
+            </label>
+            <div class="tahfidz-form-actions">
+              <button id="cancel-admin-component-edit" type="button" class="secondary-button hidden">Batal Edit</button>
+              <button type="submit" class="primary-button">Simpan Komponen</button>
+            </div>
+          </form>
+          <div class="table-wrap">
+            <table class="grade-table">
+              <thead><tr><th>No.</th><th>Mata Pelajaran</th><th>Komponen</th><th>Urutan</th><th>Status</th><th>Aksi</th></tr></thead>
+              <tbody id="admin-component-table-body">
+                <tr><td colspan="6" class="empty-state">Pilih tahun ajaran dan kelas.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+
         <div id="admin-tahfidz-success" class="message success hidden"></div>
         <form id="tahfidz-form" class="tahfidz-form" novalidate>
           <input id="tahfidz-edit-id" type="hidden" />
@@ -563,6 +603,6 @@
       </div>
     </div>
   </main>
-  <script type="module" src="./app.js?v=20261007-30"></script>
+  <script type="module" src="./app.js?v=20261008-31"></script>
 </body>
 </html>
