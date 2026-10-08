@@ -1459,7 +1459,8 @@ async function loadAdminMasterYears() {
       <button type="button" class="danger-button toggle-admin-year" data-id="${item.id}" data-active="${item.is_active}">${item.is_active ? "Nonaktifkan" : "Aktifkan"}</button><button type="button" class="danger-button delete-admin-year" data-id="${item.id}">Hapus</button>
     </div></td></tr>`).join("") || '<tr><td colspan="4" class="empty-state">Belum ada tahun ajaran.</td></tr>';
   document.querySelectorAll(".edit-admin-year").forEach(b=>b.addEventListener("click",()=>startAdminYearEdit(b.dataset.id,data)));
-  document.querySelectorAll(".toggle-admin-year").forEach(b=>b.addEventListener("click",()=>toggleAdminYear(b.dataset.id,b.dataset.active==="true")));\n  document.querySelectorAll(".delete-admin-year").forEach(b=>b.addEventListener("click",()=>deleteAdminYear(b.dataset.id)));
+  document.querySelectorAll(".toggle-admin-year").forEach(b=>b.addEventListener("click",()=>toggleAdminYear(b.dataset.id,b.dataset.active==="true")));
+  document.querySelectorAll(".delete-admin-year").forEach(b=>b.addEventListener("click",()=>deleteAdminYear(b.dataset.id)));
 }
 
 function startAdminYearEdit(id,data) {
@@ -1507,7 +1508,8 @@ async function loadAdminMasterClasses() {
     <td><div class="row-actions"><button type="button" class="secondary-button edit-admin-class" data-id="${item.id}">Edit</button>
     <button type="button" class="danger-button toggle-admin-class" data-id="${item.id}" data-active="${item.is_active}">${item.is_active?"Nonaktifkan":"Aktifkan"}</button><button type="button" class="danger-button delete-admin-class" data-id="${item.id}">Hapus</button></div></td></tr>`).join("") || '<tr><td colspan="4" class="empty-state">Belum ada kelas.</td></tr>';
   document.querySelectorAll(".edit-admin-class").forEach(b=>b.addEventListener("click",()=>startAdminClassEdit(b.dataset.id,data)));
-  document.querySelectorAll(".toggle-admin-class").forEach(b=>b.addEventListener("click",()=>toggleAdminClass(b.dataset.id,b.dataset.active==="true")));\n  document.querySelectorAll(".delete-admin-class").forEach(b=>b.addEventListener("click",()=>deleteAdminClass(b.dataset.id)));
+  document.querySelectorAll(".toggle-admin-class").forEach(b=>b.addEventListener("click",()=>toggleAdminClass(b.dataset.id,b.dataset.active==="true")));
+  document.querySelectorAll(".delete-admin-class").forEach(b=>b.addEventListener("click",()=>deleteAdminClass(b.dataset.id)));
   setSelectOptions(adminStudentClassFilter,(data??[]).map(x=>({value:x.id,label:x.name})),"Pilih kelas");
 }
 function startAdminClassEdit(id,data){const item=data.find(x=>x.id===id);if(!item)return;adminClassEditId.value=item.id;adminClassName.value=item.name;adminClassActive.checked=item.is_active;cancelAdminClassEdit.classList.remove("hidden");}
@@ -1705,7 +1707,8 @@ async function loadAdminSubjects() {
     <button type="button" class="danger-button toggle-admin-subject" data-id="${item.id}" data-active="${item.is_active}">${item.is_active ? "Nonaktifkan" : "Aktifkan"}</button><button type="button" class="danger-button delete-admin-subject" data-id="${item.id}">Hapus</button></div></td></tr>`).join("")
     || '<tr><td colspan="6" class="empty-state">Belum ada mata pelajaran.</td></tr>';
   document.querySelectorAll(".edit-admin-subject").forEach(b=>b.addEventListener("click",()=>startAdminSubjectEdit(b.dataset.id,data)));
-  document.querySelectorAll(".toggle-admin-subject").forEach(b=>b.addEventListener("click",()=>toggleAdminSubject(b.dataset.id,b.dataset.active==="true")));\n  document.querySelectorAll(".delete-admin-subject").forEach(b=>b.addEventListener("click",()=>deleteAdminSubject(b.dataset.id)));
+  document.querySelectorAll(".toggle-admin-subject").forEach(b=>b.addEventListener("click",()=>toggleAdminSubject(b.dataset.id,b.dataset.active==="true")));
+  document.querySelectorAll(".delete-admin-subject").forEach(b=>b.addEventListener("click",()=>deleteAdminSubject(b.dataset.id)));
 }
 function startAdminSubjectEdit(id,data){const item=data.find(x=>x.id===id);if(!item)return;adminSubjectEditId.value=item.id;adminSubjectCode.value=item.code||"";adminSubjectName.value=item.name;adminSubjectType.value=item.subject_type||"standard";adminSubjectActive.checked=item.is_active;cancelAdminSubjectEdit.classList.remove("hidden");}
 function resetAdminSubjectForm(){adminSubjectEditId.value="";adminSubjectCode.value="";adminSubjectName.value="";adminSubjectType.value="standard";adminSubjectActive.checked=true;cancelAdminSubjectEdit.classList.add("hidden");}
