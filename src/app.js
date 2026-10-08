@@ -2936,13 +2936,13 @@ async function loadGrades() {
 
 function renderGradeRows(enabled) {
   if (!students.length) {
-    gradeTableBody.innerHTML = '<tr><td colspan="3" class="empty-state">Belum ada siswa.</td></tr>';
+    gradeTableBody.innerHTML = '<tr><td colspan="5" class="empty-state">Belum ada siswa.</td></tr>';
     saveGradesButton.disabled = true;
     return;
   }
 
   if (!enabled) {
-    gradeTableBody.innerHTML = '<tr><td colspan="3" class="empty-state">Pilih komponen penilaian untuk menampilkan kolom nilai.</td></tr>';
+    gradeTableBody.innerHTML = '<tr><td colspan="5" class="empty-state">Pilih komponen penilaian untuk menampilkan kolom nilai.</td></tr>';
     saveGradesButton.disabled = true;
     return;
   }
@@ -2953,10 +2953,9 @@ function renderGradeRows(enabled) {
     return `
       <tr>
         <td>${index + 1}</td>
-        <td>
-          <strong>${escapeHtml(student.name)}</strong>
-          ${student.nis ? `<div class="student-meta">${escapeHtml(student.nis)}</div>` : ""}
-        </td>
+        <td>${escapeHtml(student.nis || "—")}</td>
+        <td>${escapeHtml(student.nisn || "—")}</td>
+        <td><strong>${escapeHtml(student.name)}</strong></td>
         <td>
           <input
             class="score-input"
