@@ -22,7 +22,7 @@
 
 body{
   color:var(--pn-text);
-  background:var(--pn-bg) url("./assets/ziesorra-background.svg") center/cover fixed no-repeat;
+  background:var(--pn-bg) url("../assets/ziesorra-background.svg") center/cover fixed no-repeat;
 }
 
 .ziesorra-topbar{
