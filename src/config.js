@@ -1,6 +1,6 @@
 export const APP_CONFIG = {
-  name: "ZIESORRA",
-  subtitle: "Sistem Input Nilai",
+  name: "Portal Nilai",
+  subtitle: "Sistem Pengelolaan Nilai Siswa",
   defaultSemesterOptions: ["Ganjil", "Genap"],
 };
 
