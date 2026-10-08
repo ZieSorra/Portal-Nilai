@@ -378,3 +378,6 @@ button {
 .admin-move-panel { margin:18px 0; padding:18px; border:1px solid #cbd5e1; border-radius:16px; background:#f8fafc; }
 .admin-move-panel > div:first-child { margin-bottom:12px; }
 .admin-move-panel .admin-filter-bar { margin-bottom:0; }
+
+.admin-component-note { margin:14px 0 0; }
+.admin-component-table td:nth-child(3) { font-weight:700; }
