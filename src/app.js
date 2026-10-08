@@ -2748,7 +2748,8 @@ async function ensureAnonymousTeacherSession() {
   if (current?.user) {
     const isAnonymous = current.user.is_anonymous === true ||
       current.user.user_metadata?.is_anonymous === true;
-    if (!isAnonymous) await supabase.auth.signOut();
+    if (isAnonymous) return current.user;
+    await supabase.auth.signOut();
   }
 
   const { data, error } = await supabase.auth.signInAnonymously();
