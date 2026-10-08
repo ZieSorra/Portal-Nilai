@@ -445,6 +445,29 @@
           </label>
         </div>
         <div id="admin-tahfidz-error" class="message error hidden"></div>
+        <div class="admin-section" id="admin-freeze-section">
+          <h3>Kontrol Input Nilai</h3>
+          <p class="muted">Bekukan input nilai berdasarkan tahun ajaran, semester, dan kelas. Guru tetap dapat melihat nilai, tetapi tidak dapat menambah atau mengubah nilai saat dibekukan.</p>
+          <div class="admin-filter-bar">
+            <label>Semester
+              <select id="admin-freeze-semester">
+                <option value="">Pilih semester</option>
+                <option value="Ganjil">Ganjil</option>
+                <option value="Genap">Genap</option>
+              </select>
+            </label>
+          </div>
+          <div class="table-wrap">
+            <table class="grade-table">
+              <thead><tr><th>No.</th><th>Tahun Ajaran</th><th>Semester</th><th>Kelas</th><th>Status</th><th>Aksi</th></tr></thead>
+              <tbody id="admin-freeze-table-body">
+                <tr><td colspan="6" class="empty-state">Pilih tahun ajaran dan kelas.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+
         <div class="admin-section" id="admin-component-section">
           <h3>Master Komponen Penilaian</h3>
           <p class="muted">Kelola komponen penilaian standar untuk mata pelajaran pada tahun ajaran dan kelas yang dipilih.</p>
@@ -603,6 +626,6 @@
       </div>
     </div>
   </main>
-  <script type="module" src="./app.js?v=20261008-31"></script>
+  <script type="module" src="./app.js?v=20261008-32"></script>
 </body>
 </html>
