@@ -25,6 +25,7 @@ jobs:
         run: |
           mkdir -p _site
           cp -R src/. _site/
+          if [ -d assets ]; then cp -R assets _site/assets; fi
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
