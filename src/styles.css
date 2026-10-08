@@ -277,6 +277,11 @@ button {
   border-radius: 10px;
 }
 
+@media (max-width: 900px) {
+  .admin-layout { grid-template-columns:1fr; }
+  .admin-sidebar { position:static; }
+  .admin-stat-grid { grid-template-columns:repeat(2,1fr); }
+}
 @media (max-width: 850px) {
   .input-toolbar, .admin-toolbar, .tahfidz-form { grid-template-columns:1fr; }
   .input-header { flex-direction:column; }
