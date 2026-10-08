@@ -1427,8 +1427,8 @@ function startAdminYearEdit(id,data) {
 }
 function resetAdminYearForm(){ adminYearEditId.value=""; adminYearName.value=""; adminYearActive.checked=false; cancelAdminYearEdit.classList.add("hidden"); }
 adminYearForm.addEventListener("submit",async e=>{
-  e.preventDefault(); clearAdminMessages();
-  const name=adminYearName.value.trim(); if(!name){showAdminError("Tahun ajaran wajib diisi.");return;}
+  e.preventDefault(); clearAdminMasterMessages();
+  const name=adminYearName.value.trim(); if(!name){showAdminMasterError("Tahun ajaran wajib diisi.");return;}
   const id=adminYearEditId.value; const payload={name,is_active:adminYearActive.checked};
   if(payload.is_active){
     const deactivateResult = await supabase
@@ -1436,7 +1436,7 @@ adminYearForm.addEventListener("submit",async e=>{
       .update({is_active:false})
       .neq("id",id||"00000000-0000-0000-0000-000000000000");
     if(deactivateResult.error){
-      showAdminError("Gagal mengatur tahun ajaran aktif: "+deactivateResult.error.message);
+      showAdminMasterError("Gagal mengatur tahun ajaran aktif: "+deactivateResult.error.message);
       return;
     }
   }
@@ -1445,9 +1445,9 @@ adminYearForm.addEventListener("submit",async e=>{
     : await supabase.from("academic_years").insert(payload);
   if(result.error){
     if(result.error.code === "23505"){
-      showAdminError("Tahun ajaran tersebut sudah ada. Gunakan tombol Edit pada data yang sudah tersedia.");
+      showAdminMasterError("Tahun ajaran tersebut sudah ada. Gunakan tombol Edit pada data yang sudah tersedia.");
     }else{
-      showAdminError("Gagal menyimpan tahun ajaran: "+result.error.message);
+      showAdminMasterError("Gagal menyimpan tahun ajaran: "+result.error.message);
     }
     return;
   }
@@ -1455,7 +1455,7 @@ adminYearForm.addEventListener("submit",async e=>{
   await loadAdminMasterData();
 });
 cancelAdminYearEdit.addEventListener("click",resetAdminYearForm);
-async function toggleAdminYear(id,active){ const {error}=await supabase.from("academic_years").update({is_active:!active}).eq("id",id); if(error){showAdminError(error.message);return;} await loadAdminMasterData(); }
+async function toggleAdminYear(id,active){ const {error}=await supabase.from("academic_years").update({is_active:!active}).eq("id",id); if(error){showAdminMasterError(error.message);return;} await loadAdminMasterData(); }
 
 async function loadAdminMasterClasses() {
   const { data, error } = await supabase.from("classes").select("id,name,is_active").order("name",{ascending:true});
@@ -1470,9 +1470,9 @@ async function loadAdminMasterClasses() {
 }
 function startAdminClassEdit(id,data){const item=data.find(x=>x.id===id);if(!item)return;adminClassEditId.value=item.id;adminClassName.value=item.name;adminClassActive.checked=item.is_active;cancelAdminClassEdit.classList.remove("hidden");}
 function resetAdminClassForm(){adminClassEditId.value="";adminClassName.value="";adminClassActive.checked=true;cancelAdminClassEdit.classList.add("hidden");}
-adminClassForm.addEventListener("submit",async e=>{e.preventDefault();clearAdminMessages();const name=adminClassName.value.trim();if(!name){showAdminError("Nama kelas wajib diisi.");return;}const id=adminClassEditId.value;const result=id?await supabase.from("classes").update({name,is_active:adminClassActive.checked}).eq("id",id):await supabase.from("classes").insert({name,is_active:adminClassActive.checked});if(result.error){showAdminError("Gagal menyimpan kelas: "+result.error.message);return;}resetAdminClassForm();adminTahfidzSuccess.textContent="Kelas berhasil disimpan.";adminTahfidzSuccess.classList.remove("hidden");await loadAdminMasterData();});
+adminClassForm.addEventListener("submit",async e=>{e.preventDefault();clearAdminMasterMessages();const name=adminClassName.value.trim();if(!name){showAdminMasterError("Nama kelas wajib diisi.");return;}const id=adminClassEditId.value;const result=id?await supabase.from("classes").update({name,is_active:adminClassActive.checked}).eq("id",id):await supabase.from("classes").insert({name,is_active:adminClassActive.checked});if(result.error){showAdminMasterError("Gagal menyimpan kelas: "+result.error.message);return;}resetAdminClassForm();adminTahfidzSuccess.textContent="Kelas berhasil disimpan.";adminTahfidzSuccess.classList.remove("hidden");await loadAdminMasterData();});
 cancelAdminClassEdit.addEventListener("click",resetAdminClassForm);
-async function toggleAdminClass(id,active){const {error}=await supabase.from("classes").update({is_active:!active}).eq("id",id);if(error){showAdminError(error.message);return;}await loadAdminMasterData();}
+async function toggleAdminClass(id,active){const {error}=await supabase.from("classes").update({is_active:!active}).eq("id",id);if(error){showAdminMasterError(error.message);return;}await loadAdminMasterData();}
 
 
 function clearAdminStudentImport() {
@@ -1530,8 +1530,8 @@ function renderAdminStudentImportPreview(rows) {
 
 async function processAdminStudentImportFile(file) {
   clearAdminStudentImport();
-  if(!adminYearSelect.value||!adminClassSelect.value){showAdminError("Pilih tahun ajaran dan kelas pada toolbar admin terlebih dahulu.");return;}
-  if(!window.XLSX){showAdminError("Modul Excel belum tersedia. Muat ulang halaman lalu coba lagi.");return;}
+  if(!adminYearSelect.value||!adminClassSelect.value){showAdminMasterError("Pilih tahun ajaran dan kelas pada toolbar admin terlebih dahulu.");return;}
+  if(!window.XLSX){showAdminMasterError("Modul Excel belum tersedia. Muat ulang halaman lalu coba lagi.");return;}
   try {
     const buffer=await file.arrayBuffer();
     const workbook=window.XLSX.read(buffer,{type:"array"});
@@ -1571,7 +1571,7 @@ async function confirmAdminStudentImport() {
 }
 
 function downloadAdminStudentTemplate() {
-  if(!window.XLSX){showAdminError("Modul Excel belum tersedia. Muat ulang halaman lalu coba lagi.");return;}
+  if(!window.XLSX){showAdminMasterError("Modul Excel belum tersedia. Muat ulang halaman lalu coba lagi.");return;}
   const sheet=window.XLSX.utils.json_to_sheet([{NIS:"",NISN:"",Nama:"","Jenis Kelamin":""}]);
   const workbook=window.XLSX.utils.book_new();
   window.XLSX.utils.book_append_sheet(workbook,sheet,"Siswa");
@@ -1590,14 +1590,14 @@ async function loadAdminStudents() {
 }
 async function startAdminStudentEdit(id,enrollmentId){const [{data:s},{data:e}]=await Promise.all([supabase.from("students").select("id,nis,nisn,name,gender,is_active").eq("id",id).single(),supabase.from("student_enrollments").select("id,academic_year_id,class_id").eq("id",enrollmentId).single()]);if(!s||!e)return;adminStudentEditId.value=s.id;adminStudentNis.value=s.nis||"";adminStudentNisn.value=s.nisn||"";adminStudentName.value=s.name;adminStudentGender.value=s.gender||"L";adminStudentYear.value=e.academic_year_id;adminStudentClass.value=e.class_id;cancelAdminStudentEdit.classList.remove("hidden");}
 function resetAdminStudentForm(){adminStudentEditId.value="";adminStudentNis.value="";adminStudentNisn.value="";adminStudentName.value="";adminStudentGender.value="L";adminStudentYear.value="";adminStudentClass.value="";cancelAdminStudentEdit.classList.add("hidden");}
-adminStudentForm.addEventListener("submit",async e=>{e.preventDefault();clearAdminMessages();const name=adminStudentName.value.trim();if(!name||!adminStudentYear.value||!adminStudentClass.value){showAdminError("Nama, tahun ajaran, dan kelas wajib diisi.");return;}const id=adminStudentEditId.value;let studentId=id;if(id){const {error}=await supabase.from("students").update({nis:adminStudentNis.value.trim()||null,nisn:adminStudentNisn.value.trim()||null,name,gender:adminStudentGender.value}).eq("id",id);if(error){showAdminError("Gagal memperbarui siswa: "+error.message);return;}}else{const {data,error}=await supabase.from("students").insert({nis:adminStudentNis.value.trim()||null,nisn:adminStudentNisn.value.trim()||null,name,gender:adminStudentGender.value,is_active:true}).select("id").single();if(error){showAdminError("Gagal menambah siswa: "+error.message);return;}studentId=data.id;}const {data:existing,error:findError}=await supabase.from("student_enrollments").select("id").eq("student_id",studentId).eq("academic_year_id",adminStudentYear.value).maybeSingle();if(findError){showAdminError("Gagal memeriksa kelas siswa: "+findError.message);return;}const ep={student_id:studentId,academic_year_id:adminStudentYear.value,class_id:adminStudentClass.value,is_active:true};const er=existing?await supabase.from("student_enrollments").update(ep).eq("id",existing.id):await supabase.from("student_enrollments").insert(ep);if(er.error){showAdminError("Gagal menyimpan kelas siswa: "+er.error.message);return;}resetAdminStudentForm();adminTahfidzSuccess.textContent="Data siswa berhasil disimpan.";adminTahfidzSuccess.classList.remove("hidden");await loadAdminStudents();});
+adminStudentForm.addEventListener("submit",async e=>{e.preventDefault();clearAdminMasterMessages();const name=adminStudentName.value.trim();if(!name||!adminStudentYear.value||!adminStudentClass.value){showAdminMasterError("Nama, tahun ajaran, dan kelas wajib diisi.");return;}const id=adminStudentEditId.value;let studentId=id;if(id){const {error}=await supabase.from("students").update({nis:adminStudentNis.value.trim()||null,nisn:adminStudentNisn.value.trim()||null,name,gender:adminStudentGender.value}).eq("id",id);if(error){showAdminMasterError("Gagal memperbarui siswa: "+error.message);return;}}else{const {data,error}=await supabase.from("students").insert({nis:adminStudentNis.value.trim()||null,nisn:adminStudentNisn.value.trim()||null,name,gender:adminStudentGender.value,is_active:true}).select("id").single();if(error){showAdminMasterError("Gagal menambah siswa: "+error.message);return;}studentId=data.id;}const {data:existing,error:findError}=await supabase.from("student_enrollments").select("id").eq("student_id",studentId).eq("academic_year_id",adminStudentYear.value).maybeSingle();if(findError){showAdminMasterError("Gagal memeriksa kelas siswa: "+findError.message);return;}const ep={student_id:studentId,academic_year_id:adminStudentYear.value,class_id:adminStudentClass.value,is_active:true};const er=existing?await supabase.from("student_enrollments").update(ep).eq("id",existing.id):await supabase.from("student_enrollments").insert(ep);if(er.error){showAdminMasterError("Gagal menyimpan kelas siswa: "+er.error.message);return;}resetAdminStudentForm();adminTahfidzSuccess.textContent="Data siswa berhasil disimpan.";adminTahfidzSuccess.classList.remove("hidden");await loadAdminStudents();});
 cancelAdminStudentEdit.addEventListener("click",resetAdminStudentForm);
 adminStudentFileInput.addEventListener("change",async event=>{const file=event.target.files?.[0];if(file)await processAdminStudentImportFile(file);});
 adminStudentDownloadTemplate.addEventListener("click",downloadAdminStudentTemplate);
 adminStudentConfirmImport.addEventListener("click",confirmAdminStudentImport);
 adminStudentCancelImport.addEventListener("click",clearAdminStudentImport);
 
-async function deactivateAdminStudent(id){if(!confirm("Nonaktifkan siswa ini?"))return;const {error}=await supabase.from("students").update({is_active:false}).eq("id",id);if(error){showAdminError("Gagal menonaktifkan siswa: "+error.message);return;}await loadAdminStudents();}
+async function deactivateAdminStudent(id){if(!confirm("Nonaktifkan siswa ini?"))return;const {error}=await supabase.from("students").update({is_active:false}).eq("id",id);if(error){showAdminMasterError("Gagal menonaktifkan siswa: "+error.message);return;}await loadAdminStudents();}
 
 async function loadAdminDashboard() {
   const [
@@ -1684,7 +1684,7 @@ function setAdminView(view) {
   });
 
   if (view === "dashboard") {
-    loadAdminDashboard().catch(error => showAdminError(error.message));
+    loadAdminDashboard().catch(error => showAdminMasterError(error.message));
   }
 }
 
