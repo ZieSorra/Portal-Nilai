@@ -461,3 +461,46 @@ button:disabled { cursor:not-allowed; opacity:.55; }
 .row-actions { align-items:center; }
 .toast { box-shadow:0 10px 30px rgba(15,23,42,.18); border:1px solid rgba(255,255,255,.1); }
 @media (max-width:900px) { .app-shell { padding:20px 14px; } .admin-section { padding:16px; } }
+
+
+/* Phase UI/UX — full-page application layout */
+.app-shell { display:block; width:100%; min-height:100vh; padding:24px; }
+.page { width:100%; max-width:none; margin:0; }
+.page:not(#entry-page) { min-height:calc(100vh - 48px); }
+.page:not(#entry-page) > .card { width:100%; min-height:calc(100vh - 48px); margin:0; }
+.entry-card { width:min(100%,560px); margin:7vh auto 0; }
+.welcome-card { width:100%; max-width:none; margin:0; }
+.wide-page { width:100%; max-width:none; }
+.input-card,.leger-card,.report-card,.admin-card { width:100%; max-width:none; }
+.input-card,.leger-card,.report-card { padding:30px 34px 34px; }
+.admin-card { padding:26px 30px 30px; }
+.input-header { padding-bottom:22px; border-bottom:1px solid var(--zs-border); }
+.input-toolbar { margin-top:24px; grid-template-columns:minmax(240px,1.2fr) minmax(240px,1.2fr) minmax(240px,1fr); }
+.input-mode-note { border:1px solid var(--zs-border); background:#f8fafc; padding:14px 16px; }
+.table-wrap { width:100%; }
+.grade-table { min-width:760px; }
+.grade-table th,.grade-table td { padding:13px 15px; }
+.leger-toolbar { padding:0 0 4px; }
+.leger-table-wrap { width:100%; }
+.leger-table { min-width:1100px; }
+.admin-layout { grid-template-columns:240px minmax(0,1fr); gap:24px; }
+.admin-sidebar { min-height:calc(100vh - 190px); }
+.admin-content { min-width:0; }
+.admin-section { padding:22px; }
+.admin-stat-grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
+.report-toolbar { grid-template-columns:minmax(220px,280px) minmax(260px,1fr) auto; }
+@media (max-width:1100px) {
+  .app-shell { padding:18px; }
+  .page:not(#entry-page) { min-height:calc(100vh - 36px); }
+  .page:not(#entry-page) > .card { min-height:calc(100vh - 36px); }
+  .input-card,.leger-card,.report-card,.admin-card { padding:24px; }
+  .admin-layout { grid-template-columns:210px minmax(0,1fr); }
+}
+@media (max-width:700px) {
+  .app-shell { padding:10px; }
+  .page:not(#entry-page) { min-height:calc(100vh - 20px); }
+  .page:not(#entry-page) > .card { min-height:calc(100vh - 20px); border-radius:16px; }
+  .input-card,.leger-card,.report-card,.admin-card { padding:18px; }
+  .entry-card { margin-top:4vh; }
+  .admin-sidebar { min-height:auto; }
+}
