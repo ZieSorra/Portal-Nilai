@@ -244,26 +244,34 @@
         <div class="admin-layout">
           <aside class="admin-sidebar">
             <div class="admin-nav-title">MENU ADMIN</div>
-            <button type="button" class="admin-nav-button active" data-admin-view="dashboard">📊 Dashboard</button>
+            <button type="button" class="admin-nav-button active" data-admin-view="dashboard"><span class="material-symbols-outlined">dashboard</span><span>Dashboard</span></button>
+
             <div class="admin-nav-group">DATA MASTER</div>
-            <button type="button" class="admin-nav-button" data-admin-view="master">🗂️ Data Master</button>
+            <button type="button" class="admin-nav-button" data-admin-view="master"><span class="material-symbols-outlined">database</span><span>Data Master</span></button>
             <div class="admin-nav-sub">
               <span>Tahun Ajaran</span><span>Kelas</span><span>Siswa</span><span>Mata Pelajaran</span>
             </div>
+
             <div class="admin-nav-group">PENILAIAN</div>
-            <button type="button" class="admin-nav-button" data-admin-view="assessment">📝 Penilaian</button>
+            <button type="button" class="admin-nav-button" data-admin-view="assessment"><span class="material-symbols-outlined">tune</span><span>Penilaian</span></button>
             <div class="admin-nav-sub">
-              <span>Komponen</span><span>Tahfidz</span><span>Fiqih Ibadah</span>
+              <span>Komponen</span><span>Tahfidz</span><span>Fiqih Ibadah</span><span>Kontrol Input Nilai</span>
             </div>
-            <div class="admin-nav-group">RAPOR</div>
-            <button type="button" class="admin-nav-button" data-admin-view="report">🖨️ Identitas Rapor</button>
+
+            <div class="admin-nav-group">PENGATURAN</div>
+            <button type="button" class="admin-nav-button" data-admin-view="report"><span class="material-symbols-outlined">badge</span><span>Identitas Rapor</span></button>
+
+            <div class="admin-nav-footer">
+              <span>Powered by</span>
+              <strong>ZIESORRA</strong>
+            </div>
           </aside>
 
           <main class="admin-content">
             <section id="admin-dashboard-view" class="admin-view">
               <div class="admin-page-heading">
                 <h3>Dashboard</h3>
-                <p class="muted">Ringkasan data utama ZIESORRA.</p>
+                <p class="muted">Ringkasan data utama Portal Nilai.</p>
               </div>
               <div class="admin-stat-grid">
                 <div class="admin-stat-card"><span>Tahun Ajaran Aktif</span><strong id="admin-stat-year">—</strong></div>
@@ -443,7 +451,7 @@
         </section>
 
         <section id="admin-assessment-view" class="admin-view hidden">
-        <div class="admin-page-heading"><h3>Penilaian</h3><p class="muted">Atur master penilaian berdasarkan tahun ajaran dan kelas.</p></div>
+        <div class="admin-page-heading"><div><div class="admin-eyebrow">PENILAIAN</div><h3>Penilaian</h3><p class="muted">Atur master penilaian berdasarkan tahun ajaran dan kelas.</p></div></div>
         <div class="admin-toolbar">
           <label>Tahun Ajaran
             <select id="admin-year-select"><option value="">Memuat...</option></select>
