@@ -110,6 +110,22 @@ const adminStudentYear = document.querySelector("#admin-student-year");
 const adminStudentClass = document.querySelector("#admin-student-class");
 const cancelAdminStudentEdit = document.querySelector("#cancel-admin-student-edit");
 const adminStudentTableBody = document.querySelector("#admin-student-table-body");
+const adminMasterError = document.querySelector("#admin-master-error");
+const adminMasterSuccess = document.querySelector("#admin-master-success");
+const adminMasterTabs = [...document.querySelectorAll(".admin-tab")];
+const adminMasterPanels = [...document.querySelectorAll(".admin-master-panel")];
+const adminStudentYearFilter = document.querySelector("#admin-student-year-filter");
+const adminStudentClassFilter = document.querySelector("#admin-student-class-filter");
+const adminReportYearFilter = document.querySelector("#admin-report-year-filter");
+const adminReportClassFilter = document.querySelector("#admin-report-class-filter");
+const adminSubjectForm = document.querySelector("#admin-subject-form");
+const adminSubjectEditId = document.querySelector("#admin-subject-edit-id");
+const adminSubjectCode = document.querySelector("#admin-subject-code");
+const adminSubjectName = document.querySelector("#admin-subject-name");
+const adminSubjectType = document.querySelector("#admin-subject-type");
+const adminSubjectActive = document.querySelector("#admin-subject-active");
+const cancelAdminSubjectEdit = document.querySelector("#cancel-admin-subject-edit");
+const adminSubjectTableBody = document.querySelector("#admin-subject-table-body");
 const adminStudentFileInput = document.querySelector("#admin-student-file-input");
 const adminStudentDownloadTemplate = document.querySelector("#admin-student-download-template");
 const adminStudentImportPanel = document.querySelector("#admin-student-import-panel");
@@ -1563,7 +1579,7 @@ function downloadAdminStudentTemplate() {
 }
 
 async function loadAdminStudents() {
-  const yearId=adminYearSelect.value, classId=adminClassSelect.value;
+  const yearId=adminStudentYearFilter.value, classId=adminStudentClassFilter.value;
   if(!yearId||!classId){adminStudentTableBody.innerHTML='<tr><td colspan="7" class="empty-state">Pilih tahun ajaran dan kelas di atas.</td></tr>';return;}
   const {data:enrollments,error:e}=await supabase.from("student_enrollments").select("id,student_id,students(id,nis,nisn,name,gender,is_active)").eq("academic_year_id",yearId).eq("class_id",classId).order("created_at",{ascending:true});
   if(e)throw new Error("Gagal memuat siswa: "+e.message);
@@ -1586,7 +1602,7 @@ async function deactivateAdminStudent(id){if(!confirm("Nonaktifkan siswa ini?"))
 async function loadAdminDashboard() {
   const [
     { data: years, error: yearError },
-    { data: classes, error: classError },
+    { count: classCount, error: classError },
     { count: studentCount, error: studentError },
     { count: subjectCount, error: subjectError }
   ] = await Promise.all([
@@ -1602,10 +1618,50 @@ async function loadAdminDashboard() {
   if (subjectError) throw new Error("Gagal memuat statistik mata pelajaran: " + subjectError.message);
 
   adminStatYear.textContent = years?.[0]?.name ?? "—";
-  adminStatClass.textContent = String(classes?.length ?? 0);
+  adminStatClass.textContent = String(classCount ?? 0);
   adminStatStudent.textContent = String(studentCount ?? 0);
   adminStatSubject.textContent = String(subjectCount ?? 0);
 }
+
+function setAdminMasterTab(tab) {
+  adminMasterTabs.forEach(button => button.classList.toggle("active", button.dataset.masterTab === tab));
+  adminMasterPanels.forEach(panel => panel.classList.toggle("hidden", panel.dataset.masterPanel !== tab));
+  if (tab === "student") loadAdminStudents().catch(error => showAdminMasterError(error.message));
+  if (tab === "subject") loadAdminSubjects().catch(error => showAdminMasterError(error.message));
+}
+
+function showAdminMasterError(message) {
+  clearError(adminMasterSuccess);
+  showError(adminMasterError, message);
+}
+function showAdminMasterSuccess(message) {
+  clearError(adminMasterError);
+  showError(adminMasterSuccess, message);
+}
+function clearAdminMasterMessages() {
+  clearError(adminMasterError);
+  clearError(adminMasterSuccess);
+}
+
+async function loadAdminSubjects() {
+  const { data, error } = await supabase.from("subjects")
+    .select("id,code,name,subject_type,is_active")
+    .order("name", { ascending: true });
+  if (error) throw new Error("Gagal memuat mata pelajaran: " + error.message);
+  adminSubjectTableBody.innerHTML = (data ?? []).map((item,index) => `
+    <tr><td>${index+1}</td><td>${escapeHtml(item.code || "—")}</td><td>${escapeHtml(item.name)}</td>
+    <td>${item.subject_type === "quran" ? "Al-Qur'an" : "Standar"}</td><td>${item.is_active ? "Aktif" : "Nonaktif"}</td>
+    <td><div class="row-actions"><button type="button" class="secondary-button edit-admin-subject" data-id="${item.id}">Edit</button>
+    <button type="button" class="danger-button toggle-admin-subject" data-id="${item.id}" data-active="${item.is_active}">${item.is_active ? "Nonaktifkan" : "Aktifkan"}</button></div></td></tr>`).join("")
+    || '<tr><td colspan="6" class="empty-state">Belum ada mata pelajaran.</td></tr>';
+  document.querySelectorAll(".edit-admin-subject").forEach(b=>b.addEventListener("click",()=>startAdminSubjectEdit(b.dataset.id,data)));
+  document.querySelectorAll(".toggle-admin-subject").forEach(b=>b.addEventListener("click",()=>toggleAdminSubject(b.dataset.id,b.dataset.active==="true")));
+}
+function startAdminSubjectEdit(id,data){const item=data.find(x=>x.id===id);if(!item)return;adminSubjectEditId.value=item.id;adminSubjectCode.value=item.code||"";adminSubjectName.value=item.name;adminSubjectType.value=item.subject_type||"standard";adminSubjectActive.checked=item.is_active;cancelAdminSubjectEdit.classList.remove("hidden");}
+function resetAdminSubjectForm(){adminSubjectEditId.value="";adminSubjectCode.value="";adminSubjectName.value="";adminSubjectType.value="standard";adminSubjectActive.checked=true;cancelAdminSubjectEdit.classList.add("hidden");}
+async function toggleAdminSubject(id,active){const {error}=await supabase.from("subjects").update({is_active:!active}).eq("id",id);if(error){showAdminMasterError("Gagal mengubah status mata pelajaran: "+error.message);return;}await loadAdminSubjects();}
+adminSubjectForm.addEventListener("submit",async e=>{e.preventDefault();clearAdminMasterMessages();const name=adminSubjectName.value.trim();if(!name){showAdminMasterError("Nama mata pelajaran wajib diisi.");return;}const payload={code:adminSubjectCode.value.trim()||null,name,subject_type:adminSubjectType.value,is_active:adminSubjectActive.checked};const id=adminSubjectEditId.value;const result=id?await supabase.from("subjects").update(payload).eq("id",id):await supabase.from("subjects").insert(payload);if(result.error){showAdminMasterError(result.error.code==="23505"?"Kode atau nama mata pelajaran sudah digunakan.":"Gagal menyimpan mata pelajaran: "+result.error.message);return;}resetAdminSubjectForm();showAdminMasterSuccess("Mata pelajaran berhasil disimpan.");await loadAdminSubjects();});
+cancelAdminSubjectEdit.addEventListener("click",resetAdminSubjectForm);
 
 function setAdminView(view) {
   const views = {
@@ -1632,8 +1688,36 @@ function setAdminView(view) {
   }
 }
 
-async function loadAdminMasterData(){await loadAdminMasterYears();await loadAdminMasterClasses();await loadAdminSelectors();await loadAdminStudents();await loadAdminTahfidz();await loadAdminFiqih();await loadReportSettingsAdmin();}
+async function loadAdminMasterData(){
+  await loadAdminMasterYears();
+  await loadAdminMasterClasses();
+  await loadAdminSelectors();
+  await loadAdminStudentFilters();
+  await loadAdminReportFilters();
+  await loadAdminSubjects();
+  setAdminMasterTab("year");
+}
 
+async function loadAdminStudentFilters(){
+  const [{data:years},{data:classes}]=await Promise.all([
+    supabase.from("academic_years").select("id,name").order("name",{ascending:false}),
+    supabase.from("classes").select("id,name").order("name",{ascending:true})
+  ]);
+  setSelectOptions(adminStudentYearFilter,(years??[]).map(x=>({value:x.id,label:x.name})),"Pilih tahun ajaran");
+  setSelectOptions(adminStudentClassFilter,(classes??[]).map(x=>({value:x.id,label:x.name})),"Pilih kelas");
+  if(adminYearSelect.value) adminStudentYearFilter.value=adminYearSelect.value;
+  if(adminClassSelect.value) adminStudentClassFilter.value=adminClassSelect.value;
+}
+async function loadAdminReportFilters(){
+  const [{data:years},{data:classes}]=await Promise.all([
+    supabase.from("academic_years").select("id,name").order("name",{ascending:false}),
+    supabase.from("classes").select("id,name").order("name",{ascending:true})
+  ]);
+  setSelectOptions(adminReportYearFilter,(years??[]).map(x=>({value:x.id,label:x.name})),"Pilih tahun ajaran");
+  setSelectOptions(adminReportClassFilter,(classes??[]).map(x=>({value:x.id,label:x.name})),"Pilih kelas");
+  if(adminYearSelect.value) adminReportYearFilter.value=adminYearSelect.value;
+  if(adminClassSelect.value) adminReportClassFilter.value=adminClassSelect.value;
+}
 async function loadAdminSelectors() {
   const [{ data: years, error: yearsError }, { data: classes, error: classesError }] =
     await Promise.all([
@@ -1946,7 +2030,7 @@ async function deactivateFiqih(id) {
 }
 
 async function loadReportSettingsAdmin() {
-  if (!adminYearSelect.value || !adminClassSelect.value) {
+  if (!adminReportYearFilter.value || !adminReportClassFilter.value) {
     reportPrincipalName.value = "";
     reportHomeroomName.value = "";
     return;
@@ -1955,7 +2039,7 @@ async function loadReportSettingsAdmin() {
   const [{ data: principal, error: principalError }, { data: homeroom, error: homeroomError }] =
     await Promise.all([
       supabase.from("report_settings").select("principal_name").eq("id", true).maybeSingle(),
-      supabase.from("homeroom_teachers").select("id,teacher_name").eq("academic_year_id", adminYearSelect.value).eq("class_id", adminClassSelect.value).maybeSingle(),
+      supabase.from("homeroom_teachers").select("id,teacher_name").eq("academic_year_id", adminReportYearFilter.value).eq("class_id", adminReportClassFilter.value).maybeSingle(),
     ]);
 
   if (principalError) throw principalError;
@@ -1967,10 +2051,10 @@ async function loadReportSettingsAdmin() {
 
 reportSettingsForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  clearAdminMessages();
+  clearAdminMasterMessages();
 
-  if (!adminYearSelect.value || !adminClassSelect.value) {
-    showAdminError("Pilih tahun ajaran dan kelas terlebih dahulu.");
+  if (!adminReportYearFilter.value || !adminReportClassFilter.value) {
+    showAdminMasterError("Pilih tahun ajaran dan kelas terlebih dahulu.");
     return;
   }
 
@@ -1978,7 +2062,7 @@ reportSettingsForm.addEventListener("submit", async (event) => {
   const homeroomName = reportHomeroomName.value.trim();
 
   if (!principalName || !homeroomName) {
-    showAdminError("Nama Kepala Sekolah dan Wali Kelas wajib diisi.");
+    showAdminMasterError("Nama Kepala Sekolah dan Wali Kelas wajib diisi.");
     return;
   }
 
@@ -1987,25 +2071,25 @@ reportSettingsForm.addEventListener("submit", async (event) => {
     .upsert({ id: true, principal_name: principalName }, { onConflict: "id" });
 
   if (principalError) {
-    showAdminError("Gagal menyimpan nama Kepala Sekolah: " + principalError.message);
+    showAdminMasterError("Gagal menyimpan nama Kepala Sekolah: " + principalError.message);
     return;
   }
 
   const { data: existing, error: findError } = await supabase
     .from("homeroom_teachers")
     .select("id")
-    .eq("academic_year_id", adminYearSelect.value)
-    .eq("class_id", adminClassSelect.value)
+    .eq("academic_year_id", adminReportYearFilter.value)
+    .eq("class_id", adminReportClassFilter.value)
     .maybeSingle();
 
   if (findError) {
-    showAdminError("Gagal membaca data Wali Kelas: " + findError.message);
+    showAdminMasterError("Gagal membaca data Wali Kelas: " + findError.message);
     return;
   }
 
   const payload = {
-    academic_year_id: adminYearSelect.value,
-    class_id: adminClassSelect.value,
+    academic_year_id: adminReportYearFilter.value,
+    class_id: adminReportClassFilter.value,
     teacher_name: homeroomName,
   };
 
@@ -2014,7 +2098,7 @@ reportSettingsForm.addEventListener("submit", async (event) => {
     : await supabase.from("homeroom_teachers").insert(payload);
 
   if (result.error) {
-    showAdminError("Gagal menyimpan nama Wali Kelas: " + result.error.message);
+    showAdminMasterError("Gagal menyimpan nama Wali Kelas: " + result.error.message);
     return;
   }
 
@@ -2620,21 +2704,23 @@ adminYearSelect.addEventListener("change", async () => {
   try {
     await loadAdminTahfidz();
     await loadAdminFiqih();
-    await loadAdminStudents();
-    await loadReportSettingsAdmin();
-  } catch (error) {
-    showAdminError(error.message);
-  }
+    await loadAdminStudentFilters();
+    await loadAdminReportFilters();
+  } catch (error) { showAdminError(error.message); }
 });
 adminClassSelect.addEventListener("change", async () => {
   try {
     await loadAdminTahfidz();
     await loadAdminFiqih();
-    await loadReportSettingsAdmin();
-  } catch (error) {
-    showAdminError(error.message);
-  }
+    await loadAdminStudentFilters();
+    await loadAdminReportFilters();
+  } catch (error) { showAdminError(error.message); }
 });
+adminStudentYearFilter.addEventListener("change",()=>loadAdminStudents().catch(e=>showAdminMasterError(e.message)));
+adminStudentClassFilter.addEventListener("change",()=>loadAdminStudents().catch(e=>showAdminMasterError(e.message)));
+adminReportYearFilter.addEventListener("change",()=>loadReportSettingsAdmin().catch(e=>showAdminMasterError(e.message)));
+adminReportClassFilter.addEventListener("change",()=>loadReportSettingsAdmin().catch(e=>showAdminMasterError(e.message)));
+adminMasterTabs.forEach(tab=>tab.addEventListener("click",()=>setAdminMasterTab(tab.dataset.masterTab)));
 adminNavButtons.forEach(button => {
   button.addEventListener("click", () => setAdminView(button.dataset.adminView));
 });
