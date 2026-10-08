@@ -373,3 +373,8 @@ button {
 .report-intern-sheet .report-footer { margin-top:8px; }
 
 @media print { .report-intern-sheet { padding-top:8mm !important; } }
+.checkbox-label { display:flex; flex-direction:row; align-items:center; gap:8px; width:max-content; white-space:nowrap; }
+.checkbox-label input[type="checkbox"] { width:22px; height:22px; margin:0; flex:0 0 auto; }
+.admin-move-panel { margin:18px 0; padding:18px; border:1px solid #cbd5e1; border-radius:16px; background:#f8fafc; }
+.admin-move-panel > div:first-child { margin-bottom:12px; }
+.admin-move-panel .admin-filter-bar { margin-bottom:0; }
