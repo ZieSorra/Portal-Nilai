@@ -131,6 +131,10 @@ const adminComponentName = document.querySelector("#admin-component-name");
 const adminComponentSequence = document.querySelector("#admin-component-sequence");
 const cancelAdminComponentEdit = document.querySelector("#cancel-admin-component-edit");
 const adminComponentTableBody = document.querySelector("#admin-component-table-body");
+const adminFreezeSemester = document.querySelector("#admin-freeze-semester");
+const adminFreezeTableBody = document.querySelector("#admin-freeze-table-body");
+let adminFreezeRows = [];
+let teacherInputFrozen = false;
 
 const adminStudentMovePanel = document.querySelector("#admin-student-move-panel");
 const adminStudentMoveInfo = document.querySelector("#admin-student-move-info");
@@ -299,6 +303,8 @@ async function processImportFile(file) {
 }
 
 async function confirmImport() {
+  await loadTeacherInputLock();
+  if (teacherInputFrozen) { showError(inputError, "Input nilai sedang dibekukan oleh admin."); return; }
   if (!pendingImportRows.length || pendingImportRows.some(r => !r.valid)) return;
 
   const componentId = componentSelect.value;
@@ -1745,6 +1751,7 @@ function setAdminView(view) {
     loadAdminComponents().catch(error => showAdminMasterError(error.message));
     loadAdminTahfidz().catch(error => showAdminMasterError(error.message));
     loadAdminFiqih().catch(error => showAdminMasterError(error.message));
+    loadAdminFreezeControls().catch(error => showAdminMasterError(error.message));
   }
   if (view === "report") {
     adminReportYearFilter.value = "";
@@ -1822,6 +1829,101 @@ async function loadAdminComponentSubjects() {
   setSelectOptions(adminComponentSubjectSelect, options, "Pilih mata pelajaran");
 }
 
+async function loadAdminFreezeControls() {
+  adminFreezeTableBody.innerHTML = '<tr><td colspan="6" class="empty-state">Memuat kontrol input...</td></tr>';
+  if (!adminFreezeSemester.value) {
+    adminFreezeTableBody.innerHTML = '<tr><td colspan="6" class="empty-state">Pilih semester.</td></tr>';
+    return;
+  }
+  const [{ data: years, error: yearError }, { data: classes, error: classError }, { data: locks, error: lockError }] =
+    await Promise.all([
+      supabase.from("academic_years").select("id,name").order("name", { ascending: false }),
+      supabase.from("classes").select("id,name").order("name", { ascending: true }),
+      supabase.from("grade_input_locks").select("id,academic_year_id,semester,class_id,is_frozen").eq("semester", adminFreezeSemester.value)
+    ]);
+  const firstError = yearError || classError || lockError;
+  if (firstError) throw new Error("Gagal memuat kontrol input nilai: " + firstError.message);
+
+  const lockMap = new Map((locks ?? []).map(row => [row.academic_year_id + ":" + row.class_id, row]));
+  adminFreezeRows = [];
+  for (const year of (years ?? [])) {
+    for (const cls of (classes ?? [])) {
+      const lock = lockMap.get(year.id + ":" + cls.id);
+      adminFreezeRows.push({
+        id: lock?.id ?? "",
+        academicYearId: year.id,
+        academicYear: year.name,
+        classId: cls.id,
+        className: cls.name,
+        semester: adminFreezeSemester.value,
+        isFrozen: lock?.is_frozen === true
+      });
+    }
+  }
+  adminFreezeTableBody.innerHTML = adminFreezeRows.map((row, index) => `
+    <tr>
+      <td>${index + 1}</td><td>${escapeHtml(row.academicYear)}</td><td>${row.semester}</td>
+      <td>${escapeHtml(row.className)}</td><td>${row.isFrozen ? "Dibekukan" : "Dibuka"}</td>
+      <td><div class="row-actions">
+        <button type="button" class="secondary-button toggle-admin-freeze" data-year="${row.academicYearId}" data-class="${row.classId}" data-semester="${row.semester}" data-frozen="${row.isFrozen}">${row.isFrozen ? "Buka Input" : "Freeze Input"}</button>
+        ${row.id ? `<button type="button" class="danger-button delete-admin-freeze" data-id="${row.id}">Hapus</button>` : ""}
+      </div></td>
+    </tr>`).join("") || '<tr><td colspan="6" class="empty-state">Belum ada data kelas.</td></tr>';
+
+  document.querySelectorAll(".toggle-admin-freeze").forEach(button =>
+    button.addEventListener("click", () => toggleAdminFreeze(button.dataset.year, button.dataset.class, button.dataset.semester, button.dataset.frozen === "true"))
+  );
+  document.querySelectorAll(".delete-admin-freeze").forEach(button =>
+    button.addEventListener("click", () => deleteAdminFreeze(button.dataset.id))
+  );
+}
+
+async function toggleAdminFreeze(yearId, classId, semester, frozen) {
+  if (!window.confirm(frozen ? "Buka kembali input nilai untuk kelas ini?" : "Bekukan input nilai untuk kelas ini? Guru tidak akan dapat menambah atau mengubah nilai.")) return;
+  const existing = adminFreezeRows.find(row => row.academicYearId === yearId && row.classId === classId && row.semester === semester);
+  const result = existing?.id
+    ? await supabase.from("grade_input_locks").update({ is_frozen: !frozen }).eq("id", existing.id)
+    : await supabase.from("grade_input_locks").insert({ academic_year_id: yearId, class_id: classId, semester, is_frozen: !frozen });
+  if (result.error) { showAdminMasterError("Gagal mengubah status input nilai: " + result.error.message); return; }
+  showAdminMasterSuccess(frozen ? "Input nilai berhasil dibuka kembali." : "Input nilai berhasil dibekukan.");
+  await loadAdminFreezeControls();
+}
+
+async function deleteAdminFreeze(id) {
+  if (!window.confirm("Hapus pengaturan freeze ini? Input akan kembali terbuka.")) return;
+  const { error } = await supabase.from("grade_input_locks").delete().eq("id", id);
+  if (error) { showAdminMasterError("Gagal menghapus pengaturan freeze: " + error.message); return; }
+  showAdminMasterSuccess("Pengaturan freeze berhasil dihapus.");
+  await loadAdminFreezeControls();
+}
+
+async function loadTeacherInputLock() {
+  teacherInputFrozen = false;
+  if (!teacherContext?.academicYearId || !teacherContext?.classId || !teacherContext?.semester) return;
+  const { data, error } = await supabase.from("grade_input_locks")
+    .select("is_frozen")
+    .eq("academic_year_id", teacherContext.academicYearId)
+    .eq("class_id", teacherContext.classId)
+    .eq("semester", teacherContext.semester)
+    .maybeSingle();
+  if (error) throw new Error("Gagal memeriksa status input nilai: " + error.message);
+  teacherInputFrozen = data?.is_frozen === true;
+}
+
+function applyTeacherInputLockUI() {
+  const fileInput = document.querySelector("#grade-file-input");
+  const uploadButton = document.querySelector('label[for="grade-file-input"]');
+  saveGradesButton.disabled = teacherInputFrozen || saveGradesButton.disabled;
+  saveGradesButton.title = teacherInputFrozen ? "Input nilai sedang dibekukan oleh admin." : "";
+  if (fileInput) fileInput.disabled = teacherInputFrozen;
+  if (uploadButton) {
+    uploadButton.style.pointerEvents = teacherInputFrozen ? "none" : "";
+    uploadButton.style.opacity = teacherInputFrozen ? "0.55" : "";
+    uploadButton.title = teacherInputFrozen ? "Input nilai sedang dibekukan oleh admin." : "";
+  }
+  if (teacherInputFrozen) showError(inputError, "Input nilai untuk kelas dan semester ini sedang dibekukan oleh admin.");
+}
+
 async function loadAdminComponents() {
   clearAdminMessages();
   resetAdminComponentForm();
@@ -1863,6 +1965,7 @@ async function loadAdminComponents() {
           <button type="button" class="danger-button toggle-admin-component" data-id="${item.id}" data-active="${item.is_active}">
             ${item.is_active ? "Nonaktifkan" : "Aktifkan"}
           </button>
+          <button type="button" class="danger-button hard-delete-admin-component" data-id="${item.id}">Hapus</button>
         </div>
       </td>
     </tr>
@@ -1873,7 +1976,16 @@ async function loadAdminComponents() {
   );
   document.querySelectorAll(".toggle-admin-component").forEach(button =>
     button.addEventListener("click", () => toggleAdminComponent(button.dataset.id, button.dataset.active === "true"))
-  );
+  );  document.querySelectorAll(".hard-delete-admin-component").forEach(button => button.addEventListener("click", () => deleteAdminComponent(button.dataset.id)));
+
+}
+
+async function deleteAdminComponent(id) {
+  if (!window.confirm("Hapus komponen ini? Jika sudah digunakan pada nilai, database akan menolak penghapusan.")) return;
+  const { error } = await supabase.from("assessment_components").delete().eq("id", id);
+  if (error) { showAdminMasterError("Gagal menghapus komponen: " + error.message); return; }
+  showAdminMasterSuccess("Komponen berhasil dihapus.");
+  await loadAdminComponents();
 }
 
 function startAdminComponentEdit(id, rows) {
@@ -1959,6 +2071,7 @@ adminComponentForm.addEventListener("submit", async event => {
 });
 
 cancelAdminComponentEdit.addEventListener("click", resetAdminComponentForm);
+adminFreezeSemester.addEventListener("change", () => loadAdminFreezeControls().catch(error => showAdminMasterError(error.message)));
 
 async function loadAdminTahfidz() {
   clearAdminMessages();
@@ -2024,6 +2137,7 @@ function renderAdminTahfidz() {
   `).join("");
   document.querySelectorAll(".edit-tahfidz").forEach(button => button.addEventListener("click", () => startTahfidzEdit(button.dataset.id)));
   document.querySelectorAll(".delete-tahfidz").forEach(button => button.addEventListener("click", () => deactivateTahfidz(button.dataset.id)));
+  document.querySelectorAll(".hard-delete-tahfidz").forEach(button => button.addEventListener("click", () => hardDeleteTahfidz(button.dataset.id)));
 }
 
 function startTahfidzEdit(id) {
@@ -2085,6 +2199,15 @@ tahfidzForm.addEventListener("submit", async (event) => {
 });
 
 cancelTahfidzEdit.addEventListener("click", resetTahfidzForm);
+
+async function hardDeleteTahfidz(id) {
+  if (!window.confirm("Hapus materi Tahfidz secara permanen? Jika sudah digunakan pada nilai, database akan menolak penghapusan.")) return;
+  const { error } = await supabase.from("tahfidz_materials").delete().eq("id", id);
+  if (error) { showAdminError("Gagal menghapus materi Tahfidz: " + error.message); return; }
+  adminTahfidzSuccess.textContent = "Materi Tahfidz berhasil dihapus.";
+  adminTahfidzSuccess.classList.remove("hidden");
+  await loadAdminTahfidz();
+}
 
 async function deactivateTahfidz(id) {
   const item = adminTahfidzMaterials.find(row => row.id === id);
@@ -2174,6 +2297,7 @@ function renderAdminFiqih() {
   document.querySelectorAll(".delete-fiqih").forEach(button =>
     button.addEventListener("click", () => deactivateFiqih(button.dataset.id))
   );
+  document.querySelectorAll(".hard-delete-fiqih").forEach(button => button.addEventListener("click", () => hardDeleteFiqih(button.dataset.id)));
 }
 
 function startFiqihEdit(id) {
@@ -2237,6 +2361,15 @@ fiqihForm.addEventListener("submit", async (event) => {
 });
 
 cancelFiqihEdit.addEventListener("click", resetFiqihForm);
+
+async function hardDeleteFiqih(id) {
+  if (!window.confirm("Hapus komponen Fiqih secara permanen? Jika sudah digunakan pada nilai, database akan menolak penghapusan.")) return;
+  const { error } = await supabase.from("assessment_components").delete().eq("id", id);
+  if (error) { showAdminError("Gagal menghapus komponen Fiqih: " + error.message); return; }
+  adminTahfidzSuccess.textContent = "Komponen Fiqih berhasil dihapus.";
+  adminTahfidzSuccess.classList.remove("hidden");
+  await loadAdminFiqih();
+}
 
 async function deactivateFiqih(id) {
   const item = adminFiqihComponents.find(row => row.id === id);
@@ -2662,6 +2795,11 @@ function renderGradeRows(enabled) {
 
 async function saveGrades() {
   clearError(inputError);
+  await loadTeacherInputLock();
+  if (teacherInputFrozen) {
+    showError(inputError, "Input nilai sedang dibekukan oleh admin.");
+    return;
+  }
   inputSuccess.classList.add("hidden");
 
   const componentId = componentSelect.value;
@@ -2753,6 +2891,7 @@ async function openInputPage() {
   inputSuccess.classList.add("hidden");
 
   try {
+    await loadTeacherInputLock();
     await loadSubjects();
     await loadStudents();
   } catch (error) {
