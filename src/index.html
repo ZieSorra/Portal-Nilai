@@ -30,6 +30,10 @@
           <label>Kelas
             <select id="class" required><option value="">Memuat...</option></select>
           </label>
+          <label>Kode Akses Guru
+            <input id="teacher-access-code" type="password" inputmode="text" maxlength="8" autocomplete="off" placeholder="Masukkan kode dari admin" required />
+            <small class="field-help">Kode akses diberikan oleh admin sekolah untuk kelas yang dipilih.</small>
+          </label>
           <div id="entry-error" class="message error hidden"></div>
           <button type="submit" class="primary-button">Masuk</button>
         </form>
@@ -445,6 +449,22 @@
           </label>
         </div>
         <div id="admin-tahfidz-error" class="message error hidden"></div>
+        <div class="admin-section" id="admin-access-section">
+          <h3>Akses Guru</h3>
+          <p class="muted">Buat atau ganti kode akses untuk guru pada tahun ajaran dan kelas yang dipilih. Kode hanya ditampilkan saat baru dibuat atau diganti.</p>
+          <div class="access-code-panel">
+            <div class="access-code-status">
+              <strong id="admin-access-status">Belum ada kode akses</strong>
+              <span id="admin-access-hint" class="muted"></span>
+            </div>
+            <div class="input-actions">
+              <button id="admin-access-generate" type="button" class="primary-button">Buat / Ganti Kode</button>
+              <button id="admin-access-toggle" type="button" class="secondary-button" disabled>Nonaktifkan</button>
+            </div>
+          </div>
+          <div id="admin-access-result" class="message success hidden"></div>
+        </div>
+
         <div class="admin-section" id="admin-freeze-section">
           <h3>Kontrol Input Nilai</h3>
           <p class="muted">Bekukan input nilai berdasarkan tahun ajaran, semester, dan kelas. Guru tetap dapat melihat nilai, tetapi tidak dapat menambah atau mengubah nilai saat dibekukan.</p>
@@ -640,7 +660,7 @@
       </div>
     </div>
   </main>
-  <script type="module" src="./app.js?v=20261008-40"></script>
+  <script type="module" src="./app.js?v=20261008-41"></script>
 <script>
 document.addEventListener("DOMContentLoaded",function(){
   const bind=(a,b)=>{const x=document.getElementById(a),y=document.getElementById(b);if(x&&y)x.addEventListener("click",()=>y.click())};
