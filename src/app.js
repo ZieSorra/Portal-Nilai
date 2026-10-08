@@ -16,6 +16,7 @@ const reportPage = document.querySelector("#report-page");
 const yearSelect = document.querySelector("#academic-year");
 const semesterSelect = document.querySelector("#semester");
 const classSelect = document.querySelector("#class");
+const teacherAccessCode = document.querySelector("#teacher-access-code");
 const teacherForm = document.querySelector("#teacher-form");
 const entryError = document.querySelector("#entry-error");
 
@@ -133,8 +134,14 @@ const cancelAdminComponentEdit = document.querySelector("#cancel-admin-component
 const adminComponentTableBody = document.querySelector("#admin-component-table-body");
 const adminFreezeSemester = document.querySelector("#admin-freeze-semester");
 const adminFreezeTableBody = document.querySelector("#admin-freeze-table-body");
+const adminAccessStatus = document.querySelector("#admin-access-status");
+const adminAccessHint = document.querySelector("#admin-access-hint");
+const adminAccessGenerate = document.querySelector("#admin-access-generate");
+const adminAccessToggle = document.querySelector("#admin-access-toggle");
+const adminAccessResult = document.querySelector("#admin-access-result");
 let adminFreezeRows = [];
 let teacherInputFrozen = false;
+let teacherAccessActive = false;
 
 const adminStudentMovePanel = document.querySelector("#admin-student-move-panel");
 const adminStudentMoveInfo = document.querySelector("#admin-student-move-info");
@@ -1782,12 +1789,116 @@ function setAdminView(view) {
     loadAdminTahfidz().catch(error => showAdminMasterError(error.message));
     loadAdminFiqih().catch(error => showAdminMasterError(error.message));
     loadAdminFreezeControls().catch(error => showAdminMasterError(error.message));
+    loadAdminTeacherAccess().catch(error => showAdminMasterError(error.message));
   }
   if (view === "report") {
     adminReportYearFilter.value = "";
     adminReportClassFilter.value = "";
     loadReportSettingsAdmin().catch(error => showAdminMasterError(error.message));
   }
+}
+
+async function loadAdminTeacherAccess() {
+  clearError(adminAccessResult);
+  adminAccessStatus.textContent = "Belum ada kode akses";
+  adminAccessHint.textContent = "";
+  adminAccessToggle.disabled = true;
+  adminAccessToggle.textContent = "Nonaktifkan";
+
+  const yearId = adminYearSelect.value;
+  const classId = adminClassSelect.value;
+  if (!yearId || !classId) return;
+
+  const { data, error } = await supabase
+    .from("teacher_access_credentials")
+    .select("id,is_active,access_code_hint")
+    .eq("academic_year_id", yearId)
+    .eq("class_id", classId)
+    .maybeSingle();
+
+  if (error) throw new Error("Gagal memuat status akses guru: " + error.message);
+
+  if (!data) {
+    adminAccessStatus.textContent = "Belum ada kode akses";
+    return;
+  }
+
+  adminAccessStatus.textContent = data.is_active ? "Kode akses aktif" : "Kode akses nonaktif";
+  adminAccessHint.textContent = data.access_code_hint ? "4 karakter terakhir: ••••" + data.access_code_hint : "";
+  adminAccessToggle.disabled = false;
+  adminAccessToggle.textContent = data.is_active ? "Nonaktifkan" : "Aktifkan";
+}
+
+function generateTeacherAccessCode() {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const values = new Uint32Array(8);
+  crypto.getRandomValues(values);
+  return Array.from(values, value => alphabet[value % alphabet.length]).join("");
+}
+
+async function saveTeacherAccessCode() {
+  const yearId = adminYearSelect.value;
+  const classId = adminClassSelect.value;
+  if (!yearId || !classId) {
+    showAdminMasterError("Pilih tahun ajaran dan kelas terlebih dahulu.");
+    return;
+  }
+
+  const code = generateTeacherAccessCode();
+  const confirmed = await showConfirm(
+    "Ganti Kode Akses Guru",
+    "Kode lama akan langsung tidak berlaku. Pastikan kode baru siap dibagikan kepada guru."
+  );
+  if (!confirmed) return;
+
+  adminAccessGenerate.disabled = true;
+  adminAccessGenerate.textContent = "Menyimpan...";
+  try {
+    const { error } = await supabase.rpc("admin_set_teacher_access_code", {
+      p_academic_year_id: yearId,
+      p_class_id: classId,
+      p_access_code: code,
+    });
+    if (error) throw error;
+
+    adminAccessStatus.textContent = "Kode akses aktif";
+    adminAccessHint.textContent = "Kode baru: " + code;
+    adminAccessToggle.disabled = false;
+    adminAccessToggle.textContent = "Nonaktifkan";
+    adminAccessResult.textContent = "Kode ini ditampilkan sekali di sini. Simpan dan bagikan kepada guru kelas yang bersangkutan.";
+    adminAccessResult.classList.remove("hidden");
+  } catch (error) {
+    showAdminMasterError("Gagal membuat kode akses: " + error.message);
+  } finally {
+    adminAccessGenerate.disabled = false;
+    adminAccessGenerate.textContent = "Buat / Ganti Kode";
+  }
+}
+
+async function toggleTeacherAccess() {
+  const yearId = adminYearSelect.value;
+  const classId = adminClassSelect.value;
+  if (!yearId || !classId) return;
+
+  const disable = adminAccessToggle.textContent === "Nonaktifkan";
+  const confirmed = await showConfirm(
+    disable ? "Nonaktifkan Kode Akses" : "Aktifkan Kode Akses",
+    disable
+      ? "Guru tidak dapat masuk menggunakan kode ini sampai kode diaktifkan kembali."
+      : "Kode akses akan kembali dapat digunakan."
+  );
+  if (!confirmed) return;
+
+  const { error } = await supabase.rpc("admin_toggle_teacher_access", {
+    p_academic_year_id: yearId,
+    p_class_id: classId,
+    p_is_active: !disable,
+  });
+  if (error) {
+    showAdminMasterError("Gagal mengubah status kode akses: " + error.message);
+    return;
+  }
+  await loadAdminTeacherAccess();
 }
 
 async function loadAdminMasterData(){
@@ -2102,6 +2213,8 @@ adminComponentForm.addEventListener("submit", async event => {
 
 cancelAdminComponentEdit.addEventListener("click", resetAdminComponentForm);
 adminFreezeSemester.addEventListener("change", () => loadAdminFreezeControls().catch(error => showAdminMasterError(error.message)));
+adminAccessGenerate.addEventListener("click", saveTeacherAccessCode);
+adminAccessToggle.addEventListener("click", toggleTeacherAccess);
 
 async function loadAdminTahfidz() {
   clearAdminMessages();
@@ -2627,6 +2740,43 @@ async function validateClassEnrollment(academicYearId, classId) {
   return data === true;
 }
 
+async function ensureAnonymousTeacherSession() {
+  const { data: current } = await supabase.auth.getUser();
+  if (current?.user) {
+    const isAnonymous = current.user.is_anonymous === true ||
+      current.user.user_metadata?.is_anonymous === true;
+    if (!isAnonymous) await supabase.auth.signOut();
+  }
+
+  const { data, error } = await supabase.auth.signInAnonymously();
+  if (error || !data?.user) {
+    throw new Error("Akses guru belum dapat diaktifkan. Aktifkan Anonymous Sign-Ins di Supabase Auth lalu coba lagi.");
+  }
+  return data.user;
+}
+
+async function activateTeacherAccess(academicYearId, semester, classId, accessCode) {
+  const { data, error } = await supabase.rpc("activate_teacher_access", {
+    p_academic_year_id: academicYearId,
+    p_semester: semester,
+    p_class_id: classId,
+    p_access_code: accessCode,
+  });
+  if (error) throw new Error("Gagal memeriksa kode akses: " + error.message);
+  if (data !== true) throw new Error("Kode akses salah, tidak aktif, atau tidak berlaku untuk kelas yang dipilih.");
+  teacherAccessActive = true;
+}
+
+async function hasTeacherAccess(context) {
+  const { data, error } = await supabase.rpc("has_teacher_access", {
+    p_academic_year_id: context.academicYearId,
+    p_semester: context.semester,
+    p_class_id: context.classId,
+  });
+  if (error) return false;
+  return data === true;
+}
+
 async function loadSubjects() {
   setSelectOptions(subjectSelect, [], "Memuat mata pelajaran...");
   setSelectOptions(componentSelect, [], "Pilih mata pelajaran");
@@ -3023,9 +3173,15 @@ teacherForm.addEventListener("submit", async (event) => {
   const semester = semesterSelect.value;
   const classId = classSelect.value;
   const className = classSelect.selectedOptions[0]?.textContent ?? "";
+  const accessCode = teacherAccessCode.value.trim().toUpperCase();
 
-  if (!academicYearId || !semester || !classId) {
-    showError(entryError, "Silakan lengkapi Tahun Ajaran, Semester, dan Kelas.");
+  if (!academicYearId || !semester || !classId || !accessCode) {
+    showError(entryError, "Silakan lengkapi Tahun Ajaran, Semester, Kelas, dan Kode Akses Guru.");
+    return;
+  }
+
+  if (!/^[A-Z0-9]{8}$/.test(accessCode)) {
+    showError(entryError, "Kode akses harus terdiri dari 8 karakter A-Z/0-9.");
     return;
   }
 
@@ -3039,6 +3195,9 @@ teacherForm.addEventListener("submit", async (event) => {
       showError(entryError, "Kelas ini belum memiliki data siswa aktif pada tahun ajaran yang dipilih.");
       return;
     }
+
+    await ensureAnonymousTeacherSession();
+    await activateTeacherAccess(academicYearId, semester, classId, accessCode);
 
     teacherContext = {
       academicYearId,
@@ -3106,6 +3265,8 @@ adminYearSelect.addEventListener("change", async () => {
     await loadAdminFiqih();
     await loadAdminStudentFilters();
     await loadAdminReportFilters();
+    await loadAdminFreezeControls();
+    await loadAdminTeacherAccess();
   } catch (error) { showAdminError(error.message); }
 });
 adminClassSelect.addEventListener("change", async () => {
@@ -3115,6 +3276,8 @@ adminClassSelect.addEventListener("change", async () => {
     await loadAdminFiqih();
     await loadAdminStudentFilters();
     await loadAdminReportFilters();
+    await loadAdminFreezeControls();
+    await loadAdminTeacherAccess();
   } catch (error) { showAdminError(error.message); }
 });
 adminStudentConfirmMove.addEventListener("click",confirmAdminStudentMove);
@@ -3130,9 +3293,12 @@ adminNavButtons.forEach(button => {
 
 adminLogoutButton.addEventListener("click", adminLogout);
 
-backButton.addEventListener("click", () => {
+backButton.addEventListener("click", async () => {
   clearTeacherContext();
   teacherContext = null;
+  teacherAccessActive = false;
+  teacherAccessCode.value = "";
+  await supabase.auth.signOut();
   showEntryPage();
 });
 
@@ -3146,15 +3312,19 @@ initConfirmModal();
     if (saved?.academicYearId && saved?.semester && saved?.classId) {
       const matchingYear = [...yearSelect.options].some((option) => option.value === saved.academicYearId);
       const matchingClass = [...classSelect.options].some((option) => option.value === saved.classId);
+      const hasAccess = matchingYear && matchingClass ? await hasTeacherAccess(saved) : false;
 
-      if (matchingYear && matchingClass) {
+      if (matchingYear && matchingClass && hasAccess) {
         teacherContext = saved;
+        teacherAccessActive = true;
         yearSelect.value = saved.academicYearId;
         semesterSelect.value = saved.semester;
         classSelect.value = saved.classId;
         showWelcomePage(saved);
       } else {
         clearTeacherContext();
+        teacherAccessActive = false;
+        teacherAccessCode.value = "";
       }
     }
   } catch (error) {
