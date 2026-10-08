@@ -106,8 +106,6 @@ const adminStudentNis = document.querySelector("#admin-student-nis");
 const adminStudentNisn = document.querySelector("#admin-student-nisn");
 const adminStudentName = document.querySelector("#admin-student-name");
 const adminStudentGender = document.querySelector("#admin-student-gender");
-const adminStudentYear = document.querySelector("#admin-student-year");
-const adminStudentClass = document.querySelector("#admin-student-class");
 const cancelAdminStudentEdit = document.querySelector("#cancel-admin-student-edit");
 const adminStudentTableBody = document.querySelector("#admin-student-table-body");
 const adminMasterError = document.querySelector("#admin-master-error");
@@ -1417,7 +1415,6 @@ async function loadAdminMasterYears() {
     </div></td></tr>`).join("") || '<tr><td colspan="4" class="empty-state">Belum ada tahun ajaran.</td></tr>';
   document.querySelectorAll(".edit-admin-year").forEach(b=>b.addEventListener("click",()=>startAdminYearEdit(b.dataset.id,data)));
   document.querySelectorAll(".toggle-admin-year").forEach(b=>b.addEventListener("click",()=>toggleAdminYear(b.dataset.id,b.dataset.active==="true")));
-  setSelectOptions(adminStudentYear,(data ?? []).map(x=>({value:x.id,label:x.name})),"Pilih tahun ajaran");
 }
 
 function startAdminYearEdit(id,data) {
