@@ -379,6 +379,25 @@
             </div>
           </div>
 
+          <div id="admin-student-move-panel" class="admin-move-panel hidden">
+            <div>
+              <strong>Pindah Kelas</strong>
+              <p id="admin-student-move-info" class="muted"></p>
+            </div>
+            <div class="admin-filter-bar">
+              <label>Tahun Ajaran Tujuan
+                <select id="admin-student-move-year"></select>
+              </label>
+              <label>Kelas Tujuan
+                <select id="admin-student-move-class"></select>
+              </label>
+            </div>
+            <div class="input-actions">
+              <button id="admin-student-cancel-move" type="button" class="secondary-button">Batal</button>
+              <button id="admin-student-confirm-move" type="button" class="primary-button">Pindahkan</button>
+            </div>
+          </div>
+
           <div class="table-wrap"><table class="grade-table">
             <thead><tr><th>No.</th><th>NIS</th><th>NISN</th><th>Nama</th><th>L/P</th><th>Kelas</th><th>Aksi</th></tr></thead>
             <tbody id="admin-student-table-body"><tr><td colspan="7" class="empty-state">Memuat...</td></tr></tbody>
@@ -544,6 +563,6 @@
       </div>
     </div>
   </main>
-  <script type="module" src="./app.js?v=20261007-28"></script>
+  <script type="module" src="./app.js?v=20261007-29"></script>
 </body>
 </html>
