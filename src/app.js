@@ -324,7 +324,12 @@ async function processImportFile(file) {
 }
 
 async function confirmImport() {
-  await loadTeacherInputLock();
+  try {
+    await loadTeacherInputLock();
+  } catch (error) {
+    showError(document.querySelector("#import-error"), error.message || "Gagal memeriksa status penguncian nilai.");
+    return;
+  }
   if (teacherInputFrozen) { showError(inputError, "Input nilai sedang dibekukan oleh admin."); return; }
   if (!pendingImportRows.length || pendingImportRows.some(r => !r.valid)) return;
 
@@ -3113,7 +3118,12 @@ function renderGradeRows(enabled) {
 
 async function saveGrades() {
   clearError(inputError);
-  await loadTeacherInputLock();
+  try {
+    await loadTeacherInputLock();
+  } catch (error) {
+    showError(inputError, error.message || "Gagal memeriksa status penguncian nilai.");
+    return;
+  }
   if (teacherInputFrozen) {
     showError(inputError, "Input nilai sedang dibekukan oleh admin.");
     return;
