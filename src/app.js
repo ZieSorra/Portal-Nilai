@@ -1512,36 +1512,104 @@ function startAdminYearEdit(id,data) {
   cancelAdminYearEdit.classList.remove("hidden");
 }
 function resetAdminYearForm(){ adminYearEditId.value=""; adminYearName.value=""; adminYearActive.checked=false; cancelAdminYearEdit.classList.add("hidden"); }
-adminYearForm.addEventListener("submit",async e=>{
-  e.preventDefault(); clearAdminMasterMessages();
-  const name=adminYearName.value.trim(); if(!name){showAdminMasterError("Tahun ajaran wajib diisi.");return;}
-  const id=adminYearEditId.value; const payload={name,is_active:adminYearActive.checked};
-  if(payload.is_active){
-    const deactivateResult = await supabase
-      .from("academic_years")
-      .update({is_active:false})
-      .neq("id",id||"00000000-0000-0000-0000-000000000000");
-    if(deactivateResult.error){
-      showAdminMasterError("Gagal mengatur tahun ajaran aktif: "+deactivateResult.error.message);
-      return;
-    }
-  }
-  const result=id
-    ? await supabase.from("academic_years").update(payload).eq("id",id)
-    : await supabase.from("academic_years").insert(payload);
-  if(result.error){
-    if(result.error.code === "23505"){
-      showAdminMasterError("Tahun ajaran tersebut sudah ada. Gunakan tombol Edit pada data yang sudah tersedia.");
-    }else{
-      showAdminMasterError("Gagal menyimpan tahun ajaran: "+result.error.message);
-    }
+adminYearForm.addEventListener("submit", async event => {
+  event.preventDefault();
+  clearAdminMasterMessages();
+
+  const name = adminYearName.value.trim();
+  if (!name) {
+    showAdminMasterError("Tahun ajaran wajib diisi.");
     return;
   }
-  resetAdminYearForm(); adminTahfidzSuccess.textContent="Tahun ajaran berhasil disimpan."; adminTahfidzSuccess.classList.remove("hidden");
+
+  const id = adminYearEditId.value;
+  const shouldBeActive = adminYearActive.checked;
+
+  try {
+    if (shouldBeActive) {
+      // Save without changing the current active year; then switch atomically.
+      let targetId = id;
+      const result = id
+        ? await supabase.from("academic_years").update({ name }).eq("id", id)
+        : await supabase.from("academic_years").insert({ name, is_active: false }).select("id").single();
+
+      if (result.error) throw result.error;
+      if (!targetId) targetId = result.data?.id;
+      if (!targetId) throw new Error("ID tahun ajaran tidak ditemukan setelah disimpan.");
+
+      const { error: activationError } = await supabase.rpc("admin_set_active_academic_year", {
+        p_academic_year_id: targetId,
+      });
+      if (activationError) {
+        throw new Error("Data tersimpan, tetapi aktivasi tahun ajaran gagal. Jalankan pembaruan SQL admin terlebih dahulu. " + activationError.message);
+      }
+    } else if (id) {
+      const { data: current, error: currentError } = await supabase
+        .from("academic_years")
+        .select("id,is_active")
+        .eq("id", id)
+        .maybeSingle();
+      if (currentError) throw currentError;
+
+      if (current?.is_active) {
+        const { count, error: countError } = await supabase
+          .from("academic_years")
+          .select("id", { count: "exact", head: true })
+          .eq("is_active", true);
+        if (countError) throw countError;
+        if ((count ?? 0) <= 1) {
+          throw new Error("Minimal satu tahun ajaran harus tetap aktif. Aktifkan tahun ajaran lain terlebih dahulu.");
+        }
+      }
+
+      const { error } = await supabase.from("academic_years").update({ name, is_active: false }).eq("id", id);
+      if (error) throw error;
+    } else {
+      const { error } = await supabase.from("academic_years").insert({ name, is_active: false });
+      if (error) throw error;
+    }
+  } catch (error) {
+    showAdminMasterError(
+      error.code === "23505"
+        ? "Tahun ajaran tersebut sudah ada. Gunakan tombol Edit pada data yang sudah tersedia."
+        : "Gagal menyimpan tahun ajaran: " + (error.message || "Terjadi kesalahan.")
+    );
+    return;
+  }
+
+  resetAdminYearForm();
+  adminTahfidzSuccess.textContent = "Tahun ajaran berhasil disimpan.";
+  adminTahfidzSuccess.classList.remove("hidden");
   await loadAdminMasterData();
 });
-cancelAdminYearEdit.addEventListener("click",resetAdminYearForm);
-async function toggleAdminYear(id,active){ const {error}=await supabase.from("academic_years").update({is_active:!active}).eq("id",id); if(error){showAdminMasterError(error.message);return;} await loadAdminMasterData(); }
+cancelAdminYearEdit.addEventListener("click", resetAdminYearForm);
+
+async function toggleAdminYear(id, active) {
+  try {
+    if (active) {
+      const { count, error: countError } = await supabase
+        .from("academic_years")
+        .select("id", { count: "exact", head: true })
+        .eq("is_active", true);
+      if (countError) throw countError;
+      if ((count ?? 0) <= 1) {
+        throw new Error("Minimal satu tahun ajaran harus tetap aktif. Aktifkan tahun ajaran lain terlebih dahulu.");
+      }
+
+      const { error } = await supabase.from("academic_years").update({ is_active: false }).eq("id", id);
+      if (error) throw error;
+    } else {
+      const { error } = await supabase.rpc("admin_set_active_academic_year", {
+        p_academic_year_id: id,
+      });
+      if (error) throw new Error("Gagal mengaktifkan tahun ajaran. Pastikan pembaruan SQL admin sudah dijalankan. " + error.message);
+    }
+
+    await loadAdminMasterData();
+  } catch (error) {
+    showAdminMasterError(error.message || "Gagal mengubah status tahun ajaran.");
+  }
+}
 
 async function loadAdminMasterClasses() {
   const { data, error } = await supabase.from("classes").select("id,name,is_active").order("name",{ascending:true});
