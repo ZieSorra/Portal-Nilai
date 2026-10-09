@@ -329,3 +329,34 @@ grant select on public.students, public.student_enrollments, public.subjects,
   public.assessment_components, public.tahfidz_materials, public.grades
   to authenticated;
 grant insert, update on public.grades to authenticated;
+
+
+-- Atomically activate exactly one academic year.
+create or replace function public.admin_set_active_academic_year(
+  p_academic_year_id uuid
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if auth.email() is distinct from 'hendaltezza@gmail.com' then
+    raise exception 'UNAUTHORIZED';
+  end if;
+
+  if not exists (
+    select 1 from public.academic_years where id = p_academic_year_id
+  ) then
+    raise exception 'ACADEMIC_YEAR_NOT_FOUND';
+  end if;
+
+  update public.academic_years
+  set is_active = (id = p_academic_year_id);
+
+  return true;
+end;
+$$;
+
+revoke all on function public.admin_set_active_academic_year(uuid) from public;
+grant execute on function public.admin_set_active_academic_year(uuid) to authenticated;
