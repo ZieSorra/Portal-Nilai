@@ -1708,7 +1708,9 @@ async function confirmAdminStudentImport() {
       (error.message || "Terjadi kesalahan.")
     );
   }
-}e() {
+}
+
+function downloadAdminStudentTemplate() {
   if(!window.XLSX){showAdminMasterError("Modul Excel belum tersedia. Muat ulang halaman lalu coba lagi.");return;}
   const sheet=window.XLSX.utils.json_to_sheet([{NIS:"",NISN:"",Nama:"","Jenis Kelamin":""}]);
   const workbook=window.XLSX.utils.book_new();
