@@ -179,3 +179,34 @@ grant execute on function public.admin_set_teacher_access_code(uuid, uuid, text)
 grant execute on function public.admin_toggle_teacher_access(uuid, uuid, boolean) to authenticated;
 grant execute on function public.activate_teacher_access(uuid, text, uuid, text) to authenticated;
 grant execute on function public.has_teacher_access(uuid, text, uuid) to authenticated;
+
+
+-- Public-safe pre-login check: reveal only whether a selected active class has
+-- active enrollments, never student names, IDs, or enrollment counts.
+create or replace function public.check_class_has_students(
+  p_academic_year_id uuid,
+  p_class_id uuid
+)
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (
+    select 1
+    from public.student_enrollments se
+    join public.students s on s.id = se.student_id
+    join public.academic_years ay on ay.id = se.academic_year_id
+    join public.classes c on c.id = se.class_id
+    where se.academic_year_id = p_academic_year_id
+      and se.class_id = p_class_id
+      and se.is_active = true
+      and s.is_active = true
+      and ay.is_active = true
+      and c.is_active = true
+  );
+$$;
+
+revoke all on function public.check_class_has_students(uuid, uuid) from public;
+grant execute on function public.check_class_has_students(uuid, uuid) to anon, authenticated;
