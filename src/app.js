@@ -222,7 +222,13 @@ function validateImportRows(rawRows) {
   clearError(importError);
   const seen = new Set();
   const enrolledByNis = new Map(students.filter(s => s.nis).map(s => [normalizeName(s.nis), s]));
-  const enrolledByName = new Map(students.map(s => [normalizeName(s.name), s]));
+  const enrolledByName = new Map();
+  for (const student of students) {
+    const key = normalizeName(student.name);
+    const matches = enrolledByName.get(key) ?? [];
+    matches.push(student);
+    enrolledByName.set(key, matches);
+  }
 
   if (!rawRows.length) throw new Error("File tidak memiliki data.");
   const headers = Object.keys(rawRows[0]).map(normalizeHeader);
@@ -237,12 +243,20 @@ function validateImportRows(rawRows) {
 
     const nis = String(normalized.nis ?? "").trim();
     const name = String(normalized.nama ?? "").trim();
-    const student = (nis && enrolledByNis.get(normalizeName(nis))) || enrolledByName.get(normalizeName(name));
+    const matchedByNis = nis ? enrolledByNis.get(normalizeName(nis)) : null;
+    const nameMatches = name ? (enrolledByName.get(normalizeName(name)) ?? []) : [];
+    const student = nis
+      ? matchedByNis
+      : nameMatches.length === 1
+        ? nameMatches[0]
+        : null;
     const score = parseScore(normalized.nilai);
     const key = student?.enrollmentId ?? ("row-" + index);
 
     let status = "OK";
-    if (!student) status = "Siswa tidak ditemukan di kelas aktif";
+    if (nis && !matchedByNis) status = "NIS tidak ditemukan di kelas aktif";
+    else if (!nis && nameMatches.length > 1) status = "Nama tidak unik; gunakan NIS";
+    else if (!student) status = "Siswa tidak ditemukan di kelas aktif";
     else if (seen.has(student.enrollmentId)) status = "Duplikat siswa";
     else if (score === null) status = "Nilai tidak valid (0–100)";
     seen.add(student?.enrollmentId ?? key);
