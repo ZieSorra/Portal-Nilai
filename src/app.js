@@ -204,11 +204,11 @@ function clearImportPanel() {
 }
 
 function normalizeHeader(value) {
-  return String(value ?? "").trim().toLowerCase().replace(/\\s+/g, " ");
+  return String(value ?? "").trim().toLowerCase().replace(/\s+/g, " ");
 }
 
 function normalizeName(value) {
-  return String(value ?? "").trim().toLowerCase().replace(/\\s+/g, " ");
+  return String(value ?? "").trim().toLowerCase().replace(/\s+/g, " ");
 }
 
 function parseScore(value) {
@@ -1634,30 +1634,81 @@ async function processAdminStudentImportFile(file) {
 }
 
 async function confirmAdminStudentImport() {
-  if(!pendingAdminStudentImportRows.length||pendingAdminStudentImportRows.some(x=>!x.valid)) return;
-  if(!adminYearSelect.value||!adminClassSelect.value) return;
-  adminStudentConfirmImport.disabled=true;
-  adminStudentConfirmImport.textContent="Menyimpan...";
-  try {
-    const payload=pendingAdminStudentImportRows.map(x=>({nis:x.nis,nisn:x.nisn,name:x.name,gender:x.gender,is_active:true}));
-    const {data:inserted,error}=await supabase.from("students").insert(payload).select("id");
-    if(error) throw error;
-    if(!inserted||inserted.length!==payload.length) throw new Error("Jumlah siswa tersimpan tidak sesuai data import.");
-    const enrollments=inserted.map(x=>({student_id:x.id,academic_year_id:adminYearSelect.value,class_id:adminClassSelect.value,is_active:true}));
-    const {error:enrollmentError}=await supabase.from("student_enrollments").insert(enrollments);
-    if(enrollmentError) throw enrollmentError;
-    clearAdminStudentImport();
-    adminTahfidzSuccess.textContent=inserted.length+" siswa berhasil diimport.";
-    adminTahfidzSuccess.classList.remove("hidden");
-    await loadAdminStudents();
-  } catch(error) {
-    showError(adminStudentImportError,"Gagal menyimpan import: "+error.message);
-    adminStudentConfirmImport.disabled=false;
-    adminStudentConfirmImport.textContent="Konfirmasi & Simpan";
-  }
-}
+  if (!pendingAdminStudentImportRows.length || pendingAdminStudentImportRows.some(row => !row.valid)) return;
+  if (!adminYearSelect.value || !adminClassSelect.value) return;
 
-function downloadAdminStudentTemplate() {
+  adminStudentConfirmImport.disabled = true;
+  adminStudentConfirmImport.textContent = "Menyimpan...";
+
+  let insertedStudentIds = [];
+  try {
+    const payload = pendingAdminStudentImportRows.map(row => ({
+      nis: row.nis,
+      nisn: row.nisn,
+      name: row.name,
+      gender: row.gender,
+      is_active: true,
+    }));
+
+    const { data: inserted, error: studentError } = await supabase
+      .from("students")
+      .insert(payload)
+      .select("id");
+
+    if (studentError) throw studentError;
+    insertedStudentIds = (inserted ?? []).map(row => row.id);
+
+    if (insertedStudentIds.length !== payload.length) {
+      throw new Error("Jumlah siswa tersimpan tidak sesuai data import.");
+    }
+
+    const enrollments = insertedStudentIds.map(studentId => ({
+      student_id: studentId,
+      academic_year_id: adminYearSelect.value,
+      class_id: adminClassSelect.value,
+      is_active: true,
+    }));
+
+    const { error: enrollmentError } = await supabase
+      .from("student_enrollments")
+      .insert(enrollments);
+
+    if (enrollmentError) throw enrollmentError;
+  } catch (error) {
+    let cleanupMessage = "";
+    if (insertedStudentIds.length) {
+      const { error: cleanupError } = await supabase
+        .from("students")
+        .delete()
+        .in("id", insertedStudentIds);
+
+      cleanupMessage = cleanupError
+        ? " Pembersihan data sementara juga gagal; periksa daftar siswa sebelum mencoba import ulang."
+        : " Data siswa sementara yang sempat dibuat sudah dibersihkan.";
+    }
+
+    showError(
+      adminStudentImportError,
+      "Import gagal disimpan: " + (error.message || "Terjadi kesalahan.") + cleanupMessage
+    );
+    adminStudentConfirmImport.disabled = false;
+    adminStudentConfirmImport.textContent = "Konfirmasi & Simpan";
+    return;
+  }
+
+  clearAdminStudentImport();
+  adminTahfidzSuccess.textContent = insertedStudentIds.length + " siswa berhasil diimport.";
+  adminTahfidzSuccess.classList.remove("hidden");
+
+  try {
+    await loadAdminStudents();
+  } catch (error) {
+    showAdminMasterError(
+      "Import berhasil disimpan, tetapi daftar siswa gagal diperbarui: " +
+      (error.message || "Terjadi kesalahan.")
+    );
+  }
+}e() {
   if(!window.XLSX){showAdminMasterError("Modul Excel belum tersedia. Muat ulang halaman lalu coba lagi.");return;}
   const sheet=window.XLSX.utils.json_to_sheet([{NIS:"",NISN:"",Nama:"","Jenis Kelamin":""}]);
   const workbook=window.XLSX.utils.book_new();
