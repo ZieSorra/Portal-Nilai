@@ -21,6 +21,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Validate JavaScript syntax
+        run: |
+          node --input-type=module --check < src/app.js
+          node --input-type=module --check < src/config.js
+          node --input-type=module --check < src/session.js
+          node --input-type=module --check < src/quotes.js
+
+      - name: Verify static assets
+        run: |
+          test -f src/index.html
+          test -f src/styles.css
+          test -f src/portal-ui.css
+          test -f src/assets/favicon.svg
+
       - name: Prepare site
         run: |
           mkdir -p _site
