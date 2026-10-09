@@ -1,4 +1,4 @@
-import { APP_CONFIG, SUPABASE_CONFIG, ADMIN_CONFIG } from "./config.js";
+import { APP_CONFIG, SUPABASE_CONFIG, ADMIN_CONFIG } from "./config.js?v=20261009-04";
 import { getRandomQuote } from "./quotes.js";
 import {
   saveTeacherContext,
