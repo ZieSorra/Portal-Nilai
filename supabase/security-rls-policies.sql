@@ -197,6 +197,15 @@ with check (
       where se.id = grades.enrollment_id
     )
   )
+  and exists (
+    select 1
+    from public.assessment_components ac
+    join public.student_enrollments se
+      on se.academic_year_id = ac.academic_year_id
+     and se.class_id = ac.class_id
+    where ac.id = grades.assessment_component_id
+      and se.id = grades.enrollment_id
+  )
   and not public.is_grade_input_frozen(grades.enrollment_id, grades.semester)
 );
 
