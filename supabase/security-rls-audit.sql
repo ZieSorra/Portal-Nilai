@@ -57,7 +57,7 @@ as $$
 declare
   v_code text := upper(trim(p_access_code));
 begin
-  if auth.email() <> 'hendaltezza@gmail.com' then
+  if auth.email() is distinct from 'hendaltezza@gmail.com' then
     raise exception 'UNAUTHORIZED';
   end if;
   if v_code !~ '^[A-Z0-9]{8}$' then
@@ -96,7 +96,7 @@ security definer
 set search_path = public
 as $$
 begin
-  if auth.email() <> 'hendaltezza@gmail.com' then
+  if auth.email() is distinct from 'hendaltezza@gmail.com' then
     raise exception 'UNAUTHORIZED';
   end if;
   update public.teacher_access_credentials
