@@ -40,6 +40,8 @@ jobs:
           mkdir -p _site
           cp -R src/. _site/
           if [ -d assets ]; then cp -R assets _site/assets; fi
+          # Preserve a repository-level GitHub Pages custom-domain file when configured.
+          if [ -f CNAME ]; then cp CNAME _site/CNAME; fi
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
