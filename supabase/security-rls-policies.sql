@@ -45,6 +45,7 @@ drop policy if exists "public_read_active_students" on public.students;
 drop policy if exists "public_read_active_enrollments" on public.student_enrollments;
 drop policy if exists "public_read_active_subjects" on public.subjects;
 drop policy if exists "public_read_active_assessment_components" on public.assessment_components;
+drop policy if exists "public_read_active_components" on public.assessment_components;
 drop policy if exists "public_read_active_tahfidz_materials" on public.tahfidz_materials;
 drop policy if exists "public_read_grades" on public.grades;
 drop policy if exists "public_insert_grades" on public.grades;
