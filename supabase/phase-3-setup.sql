@@ -175,3 +175,24 @@ where ay.is_active = true
 
 -- 7. Tajwid follows the standard five components.
 -- The general step above already creates these for Tajwid.
+
+-- 8. SECURITY GUARD: keep this legacy setup script safe if it is rerun
+-- after security-rls-policies.sql. Teacher access now requires an authenticated
+-- anonymous-auth session with a valid teacher access code. Do not restore public
+-- reads/writes on student and grade tables.
+drop policy if exists "public_read_active_subjects" on public.subjects;
+drop policy if exists "public_read_active_components" on public.assessment_components;
+drop policy if exists "public_read_active_students" on public.students;
+drop policy if exists "public_read_active_enrollments" on public.student_enrollments;
+drop policy if exists "public_read_active_tahfidz_materials" on public.tahfidz_materials;
+drop policy if exists "public_read_grades" on public.grades;
+drop policy if exists "public_insert_grades" on public.grades;
+drop policy if exists "public_update_grades" on public.grades;
+
+revoke all on public.students, public.student_enrollments, public.subjects,
+  public.assessment_components, public.tahfidz_materials, public.grades
+  from anon;
+
+grant select on public.subjects, public.assessment_components, public.students,
+  public.student_enrollments, public.tahfidz_materials to authenticated;
+grant select, insert, update on public.grades to authenticated;
