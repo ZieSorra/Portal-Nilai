@@ -161,7 +161,19 @@ with check (
       on se.academic_year_id = ac.academic_year_id
      and se.class_id = ac.class_id
     where ac.id = grades.assessment_component_id
+      and ac.subject_id = grades.subject_id
       and se.id = grades.enrollment_id
+      and (
+        (ac.assessment_type = 'tahfidz'
+          and grades.tahfidz_material_id is not null
+          and exists (
+            select 1 from public.tahfidz_materials tm
+            where tm.id = grades.tahfidz_material_id
+              and tm.assessment_component_id = ac.id
+          ))
+        or
+        (ac.assessment_type <> 'tahfidz' and grades.tahfidz_material_id is null)
+      )
   )
   and not public.is_grade_input_frozen(grades.enrollment_id, grades.semester)
 );
@@ -205,7 +217,19 @@ with check (
       on se.academic_year_id = ac.academic_year_id
      and se.class_id = ac.class_id
     where ac.id = grades.assessment_component_id
+      and ac.subject_id = grades.subject_id
       and se.id = grades.enrollment_id
+      and (
+        (ac.assessment_type = 'tahfidz'
+          and grades.tahfidz_material_id is not null
+          and exists (
+            select 1 from public.tahfidz_materials tm
+            where tm.id = grades.tahfidz_material_id
+              and tm.assessment_component_id = ac.id
+          ))
+        or
+        (ac.assessment_type <> 'tahfidz' and grades.tahfidz_material_id is null)
+      )
   )
   and not public.is_grade_input_frozen(grades.enrollment_id, grades.semester)
 );
