@@ -133,6 +133,7 @@ using (
      and tas.semester = grades.semester
      and tas.expires_at > now()
     where se.id = grades.enrollment_id
+      and se.is_active = true
   )
 );
 
@@ -152,6 +153,7 @@ with check (
        and tas.semester = grades.semester
        and tas.expires_at > now()
       where se.id = grades.enrollment_id
+        and se.is_active = true
     )
   )
   and exists (
@@ -192,6 +194,7 @@ using (
      and tas.semester = grades.semester
      and tas.expires_at > now()
     where se.id = grades.enrollment_id
+      and se.is_active = true
   )
 )
 with check (
@@ -208,6 +211,7 @@ with check (
        and tas.semester = grades.semester
        and tas.expires_at > now()
       where se.id = grades.enrollment_id
+        and se.is_active = true
     )
   )
   and exists (
