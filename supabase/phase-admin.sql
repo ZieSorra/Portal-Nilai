@@ -311,3 +311,21 @@ create policy "admin_delete_tahfidz_materials"
 on public.tahfidz_materials
 for delete to authenticated
 using (auth.email() = 'hendaltezza@gmail.com');
+
+-- 9. SECURITY GUARD: this legacy admin migration must not reopen public grade access
+-- after security-rls-policies.sql has scoped all records to teacher sessions/admin.
+drop policy if exists "public_read_grade_input_locks" on public.grade_input_locks;
+drop policy if exists "public_insert_grades" on public.grades;
+drop policy if exists "public_update_grades" on public.grades;
+
+revoke all on public.students, public.student_enrollments, public.subjects,
+  public.assessment_components, public.tahfidz_materials, public.grades,
+  public.grade_input_locks, public.report_settings, public.homeroom_teachers
+  from anon;
+revoke execute on function public.is_grade_input_frozen(uuid, text) from anon;
+
+grant select on public.grade_input_locks to authenticated;
+grant select on public.students, public.student_enrollments, public.subjects,
+  public.assessment_components, public.tahfidz_materials, public.grades
+  to authenticated;
+grant insert, update on public.grades to authenticated;
