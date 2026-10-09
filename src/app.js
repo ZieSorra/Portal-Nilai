@@ -1,4 +1,4 @@
-import { APP_CONFIG, SUPABASE_CONFIG, ADMIN_CONFIG } from "./config.js?v=20261009-04";
+import { APP_CONFIG, SUPABASE_CONFIG, ADMIN_CONFIG } from "./config.js?v=20261009-05";
 import { getRandomQuote } from "./quotes.js";
 import {
   saveTeacherContext,
@@ -347,29 +347,20 @@ async function confirmImport() {
   button.textContent = "Menyimpan...";
 
   try {
-    for (const row of pendingImportRows) {
+    const batch = pendingImportRows.map((row) => {
       const existing = currentGrades.get(row.enrollmentId);
-      if (existing) {
-        const { data, error } = await supabase
-          .from("grades")
-          .update({ score: row.score })
-          .eq("id", existing.id)
-          .select("id")
-          .maybeSingle();
-        if (error) throw error;
-        if (!data) throw new Error("Nilai siswa tidak diperbarui. Periksa sesi akses, status siswa, dan penguncian nilai.");
-      } else {
-        const { error } = await supabase.from("grades").insert({
-          enrollment_id: row.enrollmentId,
-          semester: teacherContext.semester,
-          subject_id: subjectSelect.value,
-          assessment_component_id: componentId,
-          tahfidz_material_id: materialId,
-          score: row.score,
-        });
-        if (error) throw error;
-      }
-    }
+      return {
+        ...(existing ? { id: existing.id } : {}),
+        enrollment_id: row.enrollmentId,
+        semester: teacherContext.semester,
+        subject_id: subjectSelect.value,
+        assessment_component_id: componentId,
+        tahfidz_material_id: materialId,
+        score: row.score,
+      };
+    });
+    const { error: batchError } = await supabase.rpc("save_grade_batch", { p_rows: batch });
+    if (batchError) throw batchError;
 
     await loadGrades();
     showSuccess("Import berhasil disimpan.");
@@ -3180,32 +3171,20 @@ async function saveGrades() {
   saveGradesButton.textContent = "Menyimpan...";
 
   try {
-    for (const row of rows) {
+    const batch = rows.map((row) => {
       const existing = currentGrades.get(row.enrollmentId);
-
-      if (existing) {
-        const { data, error } = await supabase
-          .from("grades")
-          .update({ score: row.score })
-          .eq("id", existing.id)
-          .select("id")
-          .maybeSingle();
-        if (error) throw error;
-        if (!data) throw new Error("Nilai siswa tidak diperbarui. Periksa sesi akses, status siswa, dan penguncian nilai.");
-      } else {
-        const payload = {
-          enrollment_id: row.enrollmentId,
-          semester: teacherContext.semester,
-          subject_id: subjectSelect.value,
-          assessment_component_id: componentId,
-          tahfidz_material_id: materialId,
-          score: row.score,
-        };
-
-        const { error } = await supabase.from("grades").insert(payload);
-        if (error) throw error;
-      }
-    }
+      return {
+        ...(existing ? { id: existing.id } : {}),
+        enrollment_id: row.enrollmentId,
+        semester: teacherContext.semester,
+        subject_id: subjectSelect.value,
+        assessment_component_id: componentId,
+        tahfidz_material_id: materialId,
+        score: row.score,
+      };
+    });
+    const { error: batchError } = await supabase.rpc("save_grade_batch", { p_rows: batch });
+    if (batchError) throw batchError;
 
     await loadGrades();
     showSuccess("Nilai berhasil disimpan.");
