@@ -350,8 +350,14 @@ async function confirmImport() {
     for (const row of pendingImportRows) {
       const existing = currentGrades.get(row.enrollmentId);
       if (existing) {
-        const { error } = await supabase.from("grades").update({ score: row.score }).eq("id", existing.id);
+        const { data, error } = await supabase
+          .from("grades")
+          .update({ score: row.score })
+          .eq("id", existing.id)
+          .select("id")
+          .maybeSingle();
         if (error) throw error;
+        if (!data) throw new Error("Nilai siswa tidak diperbarui. Periksa sesi akses, status siswa, dan penguncian nilai.");
       } else {
         const { error } = await supabase.from("grades").insert({
           enrollment_id: row.enrollmentId,
@@ -3177,11 +3183,14 @@ async function saveGrades() {
       const existing = currentGrades.get(row.enrollmentId);
 
       if (existing) {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from("grades")
           .update({ score: row.score })
-          .eq("id", existing.id);
+          .eq("id", existing.id)
+          .select("id")
+          .maybeSingle();
         if (error) throw error;
+        if (!data) throw new Error("Nilai siswa tidak diperbarui. Periksa sesi akses, status siswa, dan penguncian nilai.");
       } else {
         const payload = {
           enrollment_id: row.enrollmentId,
