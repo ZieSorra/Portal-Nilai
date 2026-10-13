@@ -1480,7 +1480,24 @@ function initConfirmModal() {
 }
 async function deleteAdminYear(id){if(!(await showConfirm("Data yang masih terhubung dapat membuat penghapusan ditolak.", {title:"Hapus Tahun Ajaran", confirmText:"Hapus"})))return;const {error}=await supabase.from("academic_years").delete().eq("id",id);if(error){showAdminMasterError(error.code === "23503" ? "Tahun ajaran tidak dapat dihapus karena masih digunakan oleh data nilai atau pengaturan input. Nonaktifkan saja jika sudah tidak digunakan." : "Gagal menghapus tahun ajaran: "+error.message);return;}await loadAdminMasterYears();await loadAdminStudentFilters();showAdminMasterSuccess("Tahun ajaran berhasil dihapus.");}
 async function deleteAdminClass(id){if(!(await showConfirm("Data yang masih terhubung dapat membuat penghapusan ditolak.", {title:"Hapus Kelas", confirmText:"Hapus"})))return;const {error}=await supabase.from("classes").delete().eq("id",id);if(error){showAdminMasterError(error.code === "23503" ? "Kelas tidak dapat dihapus karena masih digunakan oleh data siswa, nilai, atau pengaturan input. Nonaktifkan saja jika sudah tidak digunakan." : "Gagal menghapus kelas: "+error.message);return;}await loadAdminMasterClasses();await loadAdminStudentFilters();showAdminMasterSuccess("Kelas berhasil dihapus.");}
-async function deleteAdminStudent(id){if(!(await showConfirm("Penghapusan akan ditolak jika masih memiliki data kelas/nilai yang terhubung.", {title:"Hapus Siswa", confirmText:"Hapus"})))return;const {error}=await supabase.from("students").delete().eq("id",id);if(error){showAdminMasterError("Gagal menghapus siswa: "+error.message);return;}await loadAdminStudents();showAdminMasterSuccess("Siswa berhasil dihapus.");}
+async function deleteAdminStudent(id){
+  if(!(await showConfirm("Siswa akan dihapus bersama riwayat kelasnya hanya jika belum memiliki nilai. Jika sudah memiliki nilai, data dipertahankan dan siswa sebaiknya dinonaktifkan.", {title:"Hapus Siswa", confirmText:"Hapus"})))return;
+  const {error}=await supabase.rpc("admin_delete_student", {p_student_id:id});
+  if(error){
+    const message=String(error.message||"");
+    if(message.includes("STUDENT_HAS_GRADES")){
+      showAdminMasterError("Siswa tidak dapat dihapus karena sudah memiliki nilai. Gunakan tombol Nonaktifkan agar riwayat nilai tetap aman.");
+    }else if(message.includes("STUDENT_NOT_FOUND")){
+      showAdminMasterError("Siswa tidak ditemukan atau sudah dihapus.");
+    }else{
+      showAdminMasterError("Gagal menghapus siswa: "+message);
+    }
+    return;
+  }
+  resetAdminStudentForm();
+  await loadAdminStudents();
+  showAdminMasterSuccess("Siswa dan riwayat kelas yang tidak memiliki nilai berhasil dihapus.");
+}
 async function deleteAdminSubject(id){if(!(await showConfirm("Penghapusan akan ditolak jika masih digunakan pada penilaian.", {title:"Hapus Mata Pelajaran", confirmText:"Hapus"})))return;const {error}=await supabase.from("subjects").delete().eq("id",id);if(error){showAdminMasterError(error.code === "23503" ? "Mata pelajaran tidak dapat dihapus karena masih digunakan pada komponen atau nilai. Nonaktifkan saja jika sudah tidak digunakan." : "Gagal menghapus mata pelajaran: "+error.message);return;}await loadAdminSubjects();showAdminMasterSuccess("Mata pelajaran berhasil dihapus.");}
 
 async function openAdminStudentMove(studentId,enrollmentId,name){
