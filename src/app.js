@@ -1702,7 +1702,7 @@ function renderAdminStudentImportPreview(rows) {
 
 async function processAdminStudentImportFile(file) {
   clearAdminStudentImport();
-  if(!adminYearSelect.value||!adminClassSelect.value){showAdminMasterError("Pilih tahun ajaran dan kelas pada toolbar admin terlebih dahulu.");return;}
+  if(!adminStudentYearFilter.value||!adminStudentClassFilter.value){showAdminMasterError("Pilih tahun ajaran dan kelas pada tab Siswa terlebih dahulu.");return;}
   if(!window.XLSX){showAdminMasterError("Modul Excel belum tersedia. Muat ulang halaman lalu coba lagi.");return;}
   try {
     const buffer=await file.arrayBuffer();
@@ -1720,7 +1720,7 @@ async function processAdminStudentImportFile(file) {
 
 async function confirmAdminStudentImport() {
   if (!pendingAdminStudentImportRows.length || pendingAdminStudentImportRows.some(row => !row.valid)) return;
-  if (!adminYearSelect.value || !adminClassSelect.value) return;
+  if (!adminStudentYearFilter.value || !adminStudentClassFilter.value) return;
 
   adminStudentConfirmImport.disabled = true;
   adminStudentConfirmImport.textContent = "Menyimpan...";
@@ -1749,8 +1749,8 @@ async function confirmAdminStudentImport() {
 
     const enrollments = insertedStudentIds.map(studentId => ({
       student_id: studentId,
-      academic_year_id: adminYearSelect.value,
-      class_id: adminClassSelect.value,
+      academic_year_id: adminStudentYearFilter.value,
+      class_id: adminStudentClassFilter.value,
       is_active: true,
     }));
 
@@ -2053,14 +2053,18 @@ async function loadAdminMasterData(){
 }
 
 async function loadAdminStudentFilters(){
-  const [{data:years},{data:classes}]=await Promise.all([
+  const previousYear = adminStudentYearFilter.value;
+  const previousClass = adminStudentClassFilter.value;
+  const [{data:years,error:yearError},{data:classes,error:classError}]=await Promise.all([
     supabase.from("academic_years").select("id,name").order("name",{ascending:false}),
     supabase.from("classes").select("id,name").order("name",{ascending:true})
   ]);
+  if(yearError) throw new Error("Gagal memuat filter tahun ajaran siswa: "+yearError.message);
+  if(classError) throw new Error("Gagal memuat filter kelas siswa: "+classError.message);
   setSelectOptions(adminStudentYearFilter,(years??[]).map(x=>({value:x.id,label:x.name})),"Pilih tahun ajaran");
   setSelectOptions(adminStudentClassFilter,(classes??[]).map(x=>({value:x.id,label:x.name})),"Pilih kelas");
-  if(adminYearSelect.value) adminStudentYearFilter.value=adminYearSelect.value;
-  if(adminClassSelect.value) adminStudentClassFilter.value=adminClassSelect.value;
+  if((years??[]).some(x=>x.id===previousYear)) adminStudentYearFilter.value=previousYear;
+  if((classes??[]).some(x=>x.id===previousClass)) adminStudentClassFilter.value=previousClass;
 }
 async function loadAdminReportFilters(){
   const [{data:years},{data:classes}]=await Promise.all([
