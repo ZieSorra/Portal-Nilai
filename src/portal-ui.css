@@ -732,3 +732,100 @@ select,input{
     border-bottom:1px solid #dbe4ed!important;
   }
 }
+
+
+/* 2026-10-13 UI refinement: remove the duplicate main navigation and fit Leger on screen. */
+.ziesorra-topbar {
+  grid-template-columns: auto minmax(0, 1fr) auto !important;
+}
+.ziesorra-context-pill {
+  justify-self: center;
+}
+.ziesorra-sidebar {
+  display: none !important;
+}
+.page:not(#entry-page) {
+  margin-left: 0 !important;
+  width: auto !important;
+  padding-left: clamp(12px, 2.4vw, 32px) !important;
+  padding-right: clamp(12px, 2.4vw, 32px) !important;
+}
+.ziesorra-powered-by {
+  position: fixed;
+  z-index: 80;
+  right: 18px;
+  bottom: 10px;
+  padding: 5px 9px;
+  border: 1px solid rgba(203, 215, 228, .8);
+  border-radius: 8px;
+  background: rgba(255,255,255,.92);
+  color: #718096;
+  font-size: 10px;
+  letter-spacing: .02em;
+  box-shadow: 0 2px 8px rgba(15,23,42,.04);
+}
+.ziesorra-powered-by strong {
+  color: var(--pn-navy);
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+body:has(#entry-page:not(.hidden)) .ziesorra-powered-by,
+body:has(#admin-page:not(.hidden)) .ziesorra-powered-by {
+  display: none;
+}
+
+/* Leger is a full-width, wrapped table instead of an independently scrolling grid. */
+.leger-table-wrap { overflow: visible; }
+.leger-table { min-width: 0; }
+.leger-table th,
+.leger-table td { overflow-wrap: anywhere; }
+@media screen {
+  .leger-table-wrap {
+    overflow: visible !important;
+    max-width: 100%;
+  }
+  .leger-table {
+    width: 100% !important;
+    min-width: 0 !important;
+    table-layout: fixed;
+    font-size: clamp(6px, .58vw, 9px);
+  }
+  .leger-table th,
+  .leger-table td {
+    padding: 4px 2px !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    word-break: normal;
+    line-height: 1.2;
+  }
+  .leger-table th:first-child,
+  .leger-table td:first-child {
+    width: 30px;
+    position: static !important;
+  }
+  .leger-table th:nth-child(2),
+  .leger-table td:nth-child(2) {
+    width: 135px;
+    position: static !important;
+  }
+  .leger-table thead th {
+    position: static !important;
+  }
+}
+@media (max-width: 900px) {
+  .ziesorra-topbar {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+  }
+  .ziesorra-powered-by {
+    right: 8px;
+    bottom: 6px;
+    font-size: 9px;
+  }
+  .leger-table {
+    font-size: 6px;
+  }
+  .leger-table th:nth-child(2),
+  .leger-table td:nth-child(2) {
+    width: 90px;
+  }
+}
