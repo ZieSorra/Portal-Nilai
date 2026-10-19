@@ -3123,6 +3123,7 @@ function renderGradeRows(enabled) {
   if (!students.length) {
     gradeTableBody.innerHTML = '<tr><td colspan="5" class="empty-state">Belum ada siswa.</td></tr>';
     saveGradesButton.disabled = true;
+    updateInputMetrics();
     return;
   }
 
@@ -3159,6 +3160,24 @@ function renderGradeRows(enabled) {
   }).join("");
 
   saveGradesButton.disabled = false;
+  updateInputMetrics();
+}
+
+
+function updateInputMetrics() {
+  const values = [...document.querySelectorAll("#grade-table-body .score-input")];
+  const filled = values.filter((input) => input.value.trim() !== "" && Number.isFinite(Number(input.value)));
+  const kkm = Number(document.querySelector("#input-kkm")?.value ?? 75);
+  const passed = filled.filter((input) => Number(input.value) >= kkm).length;
+  const remedial = filled.length - passed;
+  const set = (id, value) => {
+    const node = document.getElementById(id);
+    if (node) node.textContent = value;
+  };
+  set("input-stat-total", students.length + " siswa");
+  set("input-stat-filled", filled.length + " siswa");
+  set("input-stat-passed", passed + " siswa");
+  set("input-stat-remedial", remedial + " siswa");
 }
 
 async function saveGrades() {
@@ -3289,6 +3308,10 @@ materialSelect.addEventListener("change", async () => {
   } catch (error) {
     showError(inputError, error.message || "Gagal memuat nilai Tahfidz.");
   }
+});
+
+document.querySelector("#grade-table-body").addEventListener("input", (event) => {
+  if (event.target.matches(".score-input")) updateInputMetrics();
 });
 
 saveGradesButton.addEventListener("click", saveGrades);
