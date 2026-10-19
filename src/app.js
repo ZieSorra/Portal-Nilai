@@ -53,6 +53,11 @@ const reportPrintAllButton = document.querySelector("#report-print-all-button");
 const reportContext = document.querySelector("#report-context");
 const reportError = document.querySelector("#report-error");
 const reportPreview = document.querySelector("#report-preview");
+const reportRosterBody = document.querySelector("#report-roster-body");
+const reportStudentSearch = document.querySelector("#report-student-search");
+const reportRosterCount = document.querySelector("#report-roster-count");
+const reportRosterStatus = document.querySelector("#report-roster-status");
+const reportPreviewPrintButton = document.querySelector("#report-preview-print-button");
 const backButton = document.querySelector("#back-button");
 
 const inputBackButton = document.querySelector("#input-back-button");
@@ -952,6 +957,27 @@ function renderInternReport(student) {
   `;
 }
 
+function renderReportRoster() {
+  if (!reportData?.students) return;
+  const query = (reportStudentSearch?.value ?? "").trim().toLocaleLowerCase("id-ID");
+  const filtered = reportData.students.filter(student =>
+    String(student.name ?? "").toLocaleLowerCase("id-ID").includes(query) ||
+    String(student.nis ?? "").toLocaleLowerCase("id-ID").includes(query) ||
+    String(student.nisn ?? "").toLocaleLowerCase("id-ID").includes(query)
+  );
+  if (reportRosterCount) reportRosterCount.textContent = `${filtered.length} dari ${reportData.students.length} siswa`;
+  if (reportRosterStatus) reportRosterStatus.textContent = reportData.students.length ? "Pilih siswa untuk melihat rapor" : "";
+  if (!reportRosterBody) return;
+  reportRosterBody.innerHTML = filtered.length ? filtered.map((student, index) => {
+    const selected = student.enrollmentId === reportStudentSelect.value;
+    return `<tr class="${selected ? "selected" : ""}">
+      <td>${index + 1}</td>
+      <td><button type="button" class="report-roster-student" data-report-student="${escapeHtml(student.enrollmentId)}"><strong>${escapeHtml(student.name ?? "Tanpa nama")}</strong><small>NIS: ${escapeHtml(student.nis ?? "—")} · NISN: ${escapeHtml(student.nisn ?? "—")}</small></button></td>
+      <td><span class="report-roster-pill">${selected ? "Dipilih" : "Siap ditinjau"}</span></td>
+      <td><button type="button" class="report-roster-open" data-report-student="${escapeHtml(student.enrollmentId)}" aria-label="Tinjau rapor ${escapeHtml(student.name ?? "siswa")}">↗</button></td>
+    </tr>`;
+  }).join("") : '<tr><td colspan="4" class="report-roster-empty">Siswa tidak ditemukan.</td></tr>';
+}
 function renderSelectedReport() {
   if (!reportData) return;
   const student = reportData.students.find(item => item.enrollmentId === reportStudentSelect.value) || reportData.students[0];
@@ -3369,6 +3395,14 @@ reportBackButton.addEventListener("click", () => {
 });
 
 reportTypeSelect.addEventListener("change", renderSelectedReport);
+reportStudentSearch?.addEventListener("input", renderReportRoster);
+reportRosterBody?.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-report-student]");
+  if (!button) return;
+  reportStudentSelect.value = button.dataset.reportStudent;
+  renderSelectedReport();
+});
+reportPreviewPrintButton?.addEventListener("click", () => reportPrintButton.click());
 reportStudentSelect.addEventListener("change", renderSelectedReport);
 
 reportPrintButton.addEventListener("click", () => {
