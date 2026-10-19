@@ -34,6 +34,9 @@ jobs:
           test -f src/styles.css
           test -f src/portal-ui.css
           test -f src/assets/favicon.svg
+          test -f src/manifest.webmanifest
+          test -f src/assets/portal-nilai-logo.webp
+          node -e "const m = JSON.parse(require('fs').readFileSync('src/manifest.webmanifest', 'utf8')); if (!m.name || !m.start_url || !m.theme_color || !m.icons?.length) process.exit(1); for (const icon of m.icons) if (!require('fs').existsSync('src/' + icon.src.replace(/^\.\//, ''))) process.exit(1)"
 
       - name: Prepare site
         run: |
