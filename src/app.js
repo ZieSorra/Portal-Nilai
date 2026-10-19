@@ -3317,7 +3317,7 @@ document.querySelectorAll("[data-portal-nav]").forEach((button) => {
     }
   });
 });
-document.querySelector("#chrome-admin-button")?.addEventListener("click", () => adminLink.click());
+document.querySelector("#chrome-admin-button")?.addEventListener("click", () => adminLoginTab.click());
 
 inputGradeButton.addEventListener("click", openInputPage);
 legerButton.addEventListener("click", openLegerPage);
