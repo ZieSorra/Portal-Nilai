@@ -20,8 +20,10 @@ const teacherAccessCode = document.querySelector("#teacher-access-code");
 const teacherForm = document.querySelector("#teacher-form");
 const entryError = document.querySelector("#entry-error");
 
-const adminLink = document.querySelector("#admin-link");
-const adminModal = document.querySelector("#admin-modal");
+const teacherLoginTab = document.querySelector("#teacher-login-tab");
+const adminLoginTab = document.querySelector("#admin-login-tab");
+const teacherLoginPanel = document.querySelector("#teacher-login-panel");
+const adminLoginPanel = document.querySelector("#admin-login-panel");
 const adminForm = document.querySelector("#admin-form");
 const adminPassword = document.querySelector("#admin-password");
 const adminError = document.querySelector("#admin-error");
@@ -3416,19 +3418,29 @@ teacherForm.addEventListener("submit", async (event) => {
   }
 });
 
-adminLink.addEventListener("click", () => {
-  clearError(adminError);
-  adminPassword.value = "";
-  adminModal.classList.remove("hidden");
-  adminPassword.focus();
-});
-
-function closeAdminModal() {
-  adminModal.classList.add("hidden");
+function setLoginMode(mode) {
+  const isAdmin = mode === "admin";
+  teacherLoginPanel.classList.toggle("hidden", isAdmin);
+  adminLoginPanel.classList.toggle("hidden", !isAdmin);
+  teacherLoginTab.classList.toggle("active", !isAdmin);
+  adminLoginTab.classList.toggle("active", isAdmin);
+  teacherLoginTab.setAttribute("aria-selected", String(!isAdmin));
+  adminLoginTab.setAttribute("aria-selected", String(isAdmin));
+  if (isAdmin) {
+    clearError(adminError);
+    adminPassword.value = "";
+    adminPassword.focus();
+  } else {
+    clearError(entryError);
+  }
 }
-
-document.querySelector("#close-admin").addEventListener("click", closeAdminModal);
-document.querySelector("#cancel-admin").addEventListener("click", closeAdminModal);
+teacherLoginTab.addEventListener("click", () => setLoginMode("teacher"));
+adminLoginTab.addEventListener("click", () => setLoginMode("admin"));
+document.querySelector("#toggle-admin-password").addEventListener("click", () => {
+  const showing = adminPassword.type === "text";
+  adminPassword.type = showing ? "password" : "text";
+  document.querySelector("#toggle-admin-password").setAttribute("aria-label", showing ? "Tampilkan password" : "Sembunyikan password");
+});
 
 adminForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -3459,7 +3471,7 @@ adminForm.addEventListener("submit", async (event) => {
     clearTeacherContext();
     teacherContext = null;
     teacherAccessActive = false;
-    closeAdminModal();
+    setLoginMode("teacher");
     await openAdminPage();
   } catch (error) {
     showError(adminError, "Login admin gagal. Periksa password admin.");
