@@ -2839,7 +2839,7 @@ function updatePortalChrome(context, activePage = "home") {
     const target = button.dataset.portalNav;
     button.classList.toggle("active",
       target === activePage ||
-      (activePage === "input" && target === "import"));
+      (activePage === "import" && target === "import"));
   });
 }
 
