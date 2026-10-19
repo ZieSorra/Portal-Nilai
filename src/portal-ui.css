@@ -2188,3 +2188,143 @@ body:has(#admin-page:not(.hidden)) .app-shell { padding-top:24px !important; }
 @media(max-width:700px){
   .login-brand-panel::before{width:min(75%,360px);top:50%}
 }
+
+
+/* Input Nilai workspace refresh — presentation only; existing IDs and grade logic stay intact */
+#input-page.input-workspace{
+  max-width:1500px;
+  margin:0 auto;
+  padding:26px 24px 112px;
+}
+#input-page .input-card{
+  width:100%;
+  max-width:none;
+  padding:26px;
+  border:1px solid #dce5ef;
+  border-top:4px solid #0f2942!important;
+  border-radius:18px;
+  background:#fff;
+  box-shadow:0 12px 34px rgba(15,41,66,.06);
+}
+#input-page .input-workspace-header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:20px;
+  padding:0 0 24px;
+  margin-bottom:22px;
+  border-bottom:1px solid #e8eef5;
+}
+#input-page .input-title-block{min-width:0}
+#input-page .input-eyebrow{
+  display:flex;align-items:center;gap:8px;
+  margin-bottom:9px;color:#087f8c;
+  font-size:10px;font-weight:800;letter-spacing:.14em;
+}
+#input-page .input-eyebrow-dot{
+  display:inline-block;width:7px;height:7px;border-radius:50%;
+  background:#14b8a6;box-shadow:0 0 0 4px #d9f7f1;
+}
+#input-page .input-workspace-header h2{
+  margin:0;color:#102b46;font-size:clamp(25px,3vw,32px);
+  line-height:1.2;letter-spacing:-.035em;font-weight:800;
+}
+#input-page .input-workspace-header p{
+  margin:8px 0 0;color:#52677e;font-size:13px;line-height:1.6;
+}
+#input-page .input-context-chip{
+  display:inline-flex;align-items:center;gap:7px;
+  margin-top:13px;padding:7px 11px;
+  border:1px solid #dce8f5;border-radius:999px;
+  background:#f3f7fc;color:#294862;font-size:12px;font-weight:600;
+}
+#input-page .input-back-action{
+  flex-shrink:0;min-height:40px!important;padding:9px 13px!important;
+  color:#294862!important;background:#f6f9fc!important;
+}
+#input-page .input-toolbar{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,.8fr);
+  gap:16px;padding:20px;margin:0 0 18px;
+  border:1px solid #e1eaf3;border-radius:14px;background:#f7faff;
+}
+#input-page .input-toolbar label{
+  display:flex;flex-direction:column;gap:8px;
+  color:#354d65;font-size:12px;font-weight:700;
+}
+#input-page .input-toolbar select,
+#input-page .input-toolbar input{
+  width:100%;min-width:0;min-height:44px;
+  padding:10px 12px;border:1px solid #cfdae7;border-radius:9px;
+  background:#fff;color:#152f49;font-size:13px;
+}
+#input-page .input-toolbar select:focus,
+#input-page .input-toolbar input:focus,
+#input-page .score-input:focus{
+  outline:none;border-color:#168b9b;
+  box-shadow:0 0 0 3px rgba(20,184,166,.14);
+}
+#input-page .input-mode-note{
+  display:flex;align-items:center;justify-content:space-between;gap:18px;
+  margin:0 0 16px;padding:15px 17px;
+  border:1px solid #dce8f5;border-radius:13px;
+  background:#f1f6fd;
+}
+#input-page .input-mode-note>div:first-child{
+  display:flex;flex-direction:column;gap:5px;
+}
+#input-page .input-mode-note strong{color:#15334e;font-size:13px}
+#input-page .input-mode-note span{color:#5b7086;font-size:12px;line-height:1.5}
+#input-page .import-actions{display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap}
+#input-page .upload-button{display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+#input-page .table-wrap{
+  max-width:100%;overflow:auto;border:1px solid #dce5ef;border-radius:13px;
+  background:#fff;
+}
+#input-page .grade-table{width:100%;border-collapse:separate;border-spacing:0}
+#input-page .grade-table th{
+  position:sticky;top:0;z-index:1;padding:13px 15px;
+  background:#edf3fa;color:#314a63;border-bottom:1px solid #d8e3ef;
+  font-size:11px;font-weight:800;letter-spacing:.035em;white-space:nowrap;
+}
+#input-page .grade-table td{
+  padding:12px 15px;border-bottom:1px solid #edf1f6;
+  color:#30475e;font-size:12px;vertical-align:middle;
+}
+#input-page .grade-table tbody tr:last-child td{border-bottom:0}
+#input-page .grade-table tbody tr:hover td{background:#f7fbff}
+#input-page .grade-table td strong{color:#122d47;font-size:13px;font-weight:700}
+#input-page .score-input{
+  width:100px;min-width:86px;min-height:40px;
+  padding:8px 10px;border:1px solid #cdd9e6;border-radius:9px;
+  background:#f8fbff;color:#0e2b45;text-align:center;
+  font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;
+}
+#input-page .input-actions{
+  position:static;z-index:auto;display:flex;justify-content:flex-end;gap:10px;
+  padding:16px 0 0;border:0;background:transparent;backdrop-filter:none;
+}
+#input-page .input-actions .primary-button{min-height:42px!important;padding:11px 20px!important}
+#input-page .input-actions .secondary-button{min-height:42px!important}
+#input-page #input-error,#input-page #input-success{margin:0 0 14px}
+#input-page .empty-state{padding:30px 16px;text-align:center;color:#62778d}
+#input-page #import-panel{margin:18px 0;padding:18px;border:1px solid #dce5ef;border-radius:14px;background:#fbfdff}
+#input-page .import-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+#input-page .import-head strong{color:#15334e}
+#input-page .import-head p{margin:5px 0 0;color:#5b7086;font-size:12px}
+@media(max-width:900px){
+  #input-page .input-toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #input-page .input-toolbar label:last-child{grid-column:1/-1}
+}
+@media(max-width:650px){
+  #input-page.input-workspace{padding:16px 10px 92px}
+  #input-page .input-card{padding:17px 12px;border-radius:14px}
+  #input-page .input-workspace-header{flex-direction:column;align-items:stretch;gap:14px}
+  #input-page .input-back-action{align-self:flex-start}
+  #input-page .input-toolbar{grid-template-columns:minmax(0,1fr);gap:13px;padding:14px}
+  #input-page .input-toolbar label:last-child{grid-column:auto}
+  #input-page .input-mode-note{align-items:stretch;flex-direction:column}
+  #input-page .import-actions{justify-content:flex-start}
+  #input-page .grade-table th,#input-page .grade-table td{padding:10px 11px}
+  #input-page .input-actions{justify-content:stretch}
+  #input-page .input-actions button{flex:1}
+}
