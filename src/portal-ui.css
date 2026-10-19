@@ -1676,6 +1676,7 @@ body:has(#admin-page:not(.hidden)) .app-shell { padding-top:24px !important; }
 
 /* Dashboard refinement — denser layout without fabricated academic metrics */
 #welcome-page{
+  margin-left:0!important;
   width:100%;
   max-width:none;
   padding:94px 28px 42px;
