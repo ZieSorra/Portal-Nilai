@@ -989,6 +989,7 @@ function renderSelectedReport() {
   reportPreview.innerHTML = reportTypeSelect.value === "STS"
     ? renderStsReport(student)
     : renderInternReport(student);
+  renderReportRoster();
 }
 
 function renderAllReports() {
@@ -1037,6 +1038,7 @@ async function loadReportData() {
   ).join("");
 
   renderSelectedReport();
+  renderReportRoster();
 }
 
 function showReportPage() {
