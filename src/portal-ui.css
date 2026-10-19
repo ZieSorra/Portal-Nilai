@@ -1202,3 +1202,216 @@ body:has(#admin-page:not(.hidden)) .ziesorra-powered-by { display:none; }
   #entry-page { width:min(100%,520px); }
   .ziesorra-powered-by { position:static; width:fit-content; margin:8px 10px 10px auto; }
 }
+
+
+/* 2026-10-19: align Portal Nilai with the supplied Stitch academic dashboard design.
+   Visual layer only: keep the existing DOM, workflows, formulas, and Supabase behavior. */
+:root {
+  --pn-navy: #0f2942;
+  --pn-navy-2: #1e3a5f;
+  --pn-blue: #2563eb;
+  --pn-cyan: #0891b2;
+  --pn-teal: #0d9488;
+  --pn-green: #0d9488;
+  --pn-amber: #d97706;
+  --pn-purple: #6d5bd0;
+  --pn-red: #e11d48;
+  --pn-text: #0f172a;
+  --pn-muted: #475569;
+  --pn-bg: #f8fafc;
+  --pn-page-bg: #f8fafc;
+  --pn-surface: #ffffff;
+  --pn-soft: #f1f5f9;
+  --pn-border: #e2e8f0;
+  --pn-border-soft: #e2e8f0;
+  --pn-shadow: 0 1px 3px rgba(15,23,42,.045), 0 1px 2px rgba(15,23,42,.025);
+}
+html, body {
+  font-family: Inter, "Plus Jakarta Sans", system-ui, sans-serif !important;
+  color: #0f172a !important;
+  background: #f8fafc !important;
+  font-feature-settings: "tnum" 1, "cv05" 1;
+}
+body {
+  background-image: none !important;
+}
+.ziesorra-brand-rail {
+  background: #fff !important;
+  border-right: 1px solid #e2e8f0 !important;
+  box-shadow: 2px 0 8px rgba(15,41,66,.025) !important;
+}
+.ziesorra-rail-logo {
+  background: #0f2942 !important;
+  box-shadow: none !important;
+}
+.ziesorra-rail-name { color: #0f2942 !important; }
+.ziesorra-rail-name span:last-child { color: #0d9488 !important; }
+.ziesorra-rail-divider {
+  background: #e2e8f0 !important;
+}
+.ziesorra-rail-subtitle { color: #64748b !important; }
+.ziesorra-rail-accent {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+.ziesorra-utility-bar { gap: 8px !important; }
+.ziesorra-context-pill {
+  background: #fff !important;
+  border-color: #e2e8f0 !important;
+  color: #475569 !important;
+  box-shadow: none !important;
+}
+.ziesorra-top-button {
+  background: #0f2942 !important;
+  border-color: #0f2942 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+.ziesorra-top-button:hover { background: #1e3a5f !important; }
+.app-shell {
+  background: #f8fafc !important;
+}
+.page:not(#entry-page) > .card {
+  background: #fff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 3px rgba(15,23,42,.045), 0 1px 2px rgba(15,23,42,.025) !important;
+}
+.page h1, .page h2, .page h3,
+.admin-content h1, .admin-content h2, .admin-content h3 {
+  color: #0f2942 !important;
+  font-family: "Plus Jakarta Sans", Inter, sans-serif !important;
+  letter-spacing: -.025em;
+}
+.page .input-header {
+  border-bottom-color: #e2e8f0 !important;
+}
+.page .brand, .page .eyebrow, .admin-content .eyebrow {
+  color: #64748b !important;
+}
+.menu-card, .admin-stat-card, .admin-section,
+.input-toolbar, .input-mode-note, .report-toolbar, .admin-toolbar, .admin-filter-bar {
+  border-color: #e2e8f0 !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+.menu-card {
+  background: #fff !important;
+}
+.menu-card:nth-child(n) {
+  border-top: 1px solid #e2e8f0 !important;
+  background: #fff !important;
+}
+.menu-card:hover {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
+.admin-stitch-header {
+  background: #0f2942 !important;
+  color: #fff !important;
+}
+.admin-stitch-hero {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+}
+.admin-stat-card:nth-child(n) {
+  background: #fff !important;
+  border-top: 3px solid #cbd5e1 !important;
+  box-shadow: none !important;
+}
+.admin-stat-card:nth-child(1) { border-top-color: #2563eb !important; }
+.admin-stat-card:nth-child(2) { border-top-color: #0d9488 !important; }
+.admin-stat-card:nth-child(3) { border-top-color: #f59e0b !important; }
+.admin-stat-card:nth-child(4) { border-top-color: #e11d48 !important; }
+.admin-nav-button.active {
+  background: #0f2942 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+.primary-button, button.primary-button, .admin-content .primary-button {
+  background: #0f2942 !important;
+  border-color: #0f2942 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+.primary-button:hover, button.primary-button:hover {
+  background: #1e3a5f !important;
+}
+.secondary-button, .ghost-button, .admin-content button:not(.primary-button) {
+  box-shadow: none !important;
+}
+input:not([type="checkbox"]):not([type="radio"]),
+select, textarea {
+  border-color: #cbd5e1 !important;
+  border-radius: 8px !important;
+  background-color: #fff !important;
+  color: #0f172a !important;
+  box-shadow: none !important;
+}
+input:not([type="checkbox"]):not([type="radio"]):focus,
+select:focus, textarea:focus {
+  outline: none !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37,99,235,.13) !important;
+}
+table:not(.leger-table) {
+  border-color: #e2e8f0 !important;
+}
+table:not(.leger-table) thead th {
+  background: #f8fafc !important;
+  color: #475569 !important;
+  border-bottom: 2px solid #e2e8f0 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: .035em;
+  text-transform: uppercase;
+}
+table:not(.leger-table) tbody tr {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+table:not(.leger-table) tbody tr:hover {
+  background: #f8fafc !important;
+}
+.leger-table-wrap {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+.leger-table th {
+  background: #f8fafc !important;
+  color: #475569 !important;
+  border-color: #e2e8f0 !important;
+}
+.leger-table td {
+  border-color: #e2e8f0 !important;
+  font-feature-settings: "tnum" 1, "cv05" 1;
+}
+.status-badge, .status-chip, .badge {
+  box-shadow: none !important;
+}
+.ziesorra-powered-by {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  color: #64748b !important;
+  box-shadow: none !important;
+  background: rgba(255,255,255,.96) !important;
+}
+#entry-page .entry-card {
+  border-top: 3px solid #0f2942 !important;
+  border-right: 1px solid #e2e8f0 !important;
+  box-shadow: 0 8px 24px rgba(15,23,42,.055) !important;
+}
+.welcome-card, .input-card, .leger-card, .report-card {
+  border-top-color: #e2e8f0 !important;
+}
+.admin-content { background: #fff !important; }
+@media (max-width: 600px) {
+  .ziesorra-brand-rail {
+    background: #fff !important;
+    border-bottom-color: #e2e8f0 !important;
+  }
+  .app-shell { background: #f8fafc !important; }
+  .page:not(#entry-page) > .card {
+    border-radius: 10px !important;
+  }
+}
