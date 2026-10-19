@@ -1007,3 +1007,198 @@ body {
     margin: 8px 10px 10px auto;
   }
 }
+
+/* 2026-10-19: vertical identity rail, compact utility controls, and richer accent colors. */
+.ziesorra-topbar { display:none !important; }
+.ziesorra-ui-chrome { background:transparent !important; }
+.ziesorra-brand-rail {
+  position:fixed;
+  z-index:90;
+  inset:0 auto 0 0;
+  width:148px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:28px 14px 22px;
+  background:linear-gradient(180deg,#ffffff 0%,#f4f8ff 48%,#edf5ff 100%);
+  border-right:1px solid #d7e4f2;
+  box-shadow:6px 0 24px rgba(22,65,112,.055);
+}
+.ziesorra-rail-logo {
+  width:54px;
+  height:54px;
+  display:grid;
+  place-items:center;
+  border-radius:17px;
+  background:linear-gradient(145deg,#0b2545 0%,#174b82 72%,#0e7490 100%);
+  box-shadow:0 8px 18px rgba(11,37,69,.18);
+}
+.ziesorra-rail-logo img {
+  display:block;
+  width:31px;
+  height:31px;
+  object-fit:contain;
+}
+.ziesorra-rail-name {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:1px;
+  margin-top:18px;
+  color:#102b4c;
+  font-family:"Plus Jakarta Sans",Inter,sans-serif;
+  font-size:17px;
+  line-height:1.1;
+  font-weight:800;
+  letter-spacing:.11em;
+}
+.ziesorra-rail-name span:last-child { color:#147fa0; }
+.ziesorra-rail-divider {
+  width:42px;
+  height:1px;
+  margin:18px 0 14px;
+  background:linear-gradient(90deg,#2563eb,#0891b2,#8b5cf6);
+}
+.ziesorra-rail-subtitle {
+  max-width:90px;
+  color:#70839a;
+  font-size:9px;
+  line-height:1.8;
+  font-weight:700;
+  letter-spacing:.16em;
+  text-align:center;
+  writing-mode:vertical-rl;
+  transform:rotate(180deg);
+}
+.ziesorra-rail-accent {
+  display:flex;
+  gap:5px;
+  margin-top:auto;
+  padding:9px 12px;
+  border:1px solid #dce8f6;
+  border-radius:999px;
+  background:rgba(255,255,255,.8);
+}
+.ziesorra-rail-accent span {
+  width:7px;
+  height:7px;
+  border-radius:50%;
+}
+.ziesorra-rail-accent span:nth-child(1){background:#2563eb}
+.ziesorra-rail-accent span:nth-child(2){background:#10b981}
+.ziesorra-rail-accent span:nth-child(3){background:#f59e0b}
+.ziesorra-utility-bar {
+  position:fixed;
+  z-index:85;
+  top:12px;
+  right:18px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.ziesorra-context-pill {
+  min-height:34px;
+  display:flex;
+  align-items:center;
+  padding:0 13px;
+  border:1px solid #d8e4f1;
+  border-radius:999px;
+  background:rgba(255,255,255,.92);
+  color:#45617f;
+  box-shadow:0 3px 10px rgba(11,37,69,.035);
+}
+.ziesorra-top-button {
+  min-height:36px;
+  padding:8px 15px;
+  border:1px solid #cbd9e8;
+  border-radius:10px;
+  background:#fff;
+  color:#0b2545;
+  box-shadow:0 3px 10px rgba(11,37,69,.035);
+}
+.app-shell {
+  width:auto;
+  margin-left:148px;
+  min-height:100vh;
+  padding:66px clamp(16px,2.4vw,34px) 30px;
+  align-items:start;
+}
+.page:not(#entry-page) {
+  width:100% !important;
+  max-width:1600px;
+  margin:0 auto !important;
+}
+.page:not(#entry-page) > .card {
+  min-height:calc(100vh - 96px);
+  box-shadow:0 12px 32px rgba(11,37,69,.07);
+}
+#entry-page { width:min(100%,520px); margin:0 auto; }
+#entry-page .entry-card {
+  border-top:4px solid #2563eb;
+  border-right:3px solid #dbeafe;
+}
+.welcome-card { border-top-color:#0d9488 !important; }
+.input-card { border-top-color:#2563eb !important; }
+.leger-card { border-top-color:#059669 !important; }
+.report-card { border-top-color:#d97706 !important; }
+.admin-card { border-top:0 !important; }
+.admin-stitch-header {
+  background:linear-gradient(112deg,#102b4c 0%,#174b82 54%,#0f766e 100%) !important;
+}
+.admin-stitch-hero {
+  background:linear-gradient(120deg,#eef6ff 0%,#f0fdfa 56%,#faf5ff 100%) !important;
+  border-color:#d7e5f4;
+}
+.admin-stat-card:nth-child(1){border-top:3px solid #2563eb !important;background:linear-gradient(180deg,#f5f9ff,#fff 58%) !important}
+.admin-stat-card:nth-child(2){border-top:3px solid #8b5cf6 !important;background:linear-gradient(180deg,#faf5ff,#fff 58%) !important}
+.admin-stat-card:nth-child(3){border-top:3px solid #10b981 !important;background:linear-gradient(180deg,#f0fdf4,#fff 58%) !important}
+.admin-stat-card:nth-child(4){border-top:3px solid #f59e0b !important;background:linear-gradient(180deg,#fffbeb,#fff 58%) !important}
+.admin-nav-button.active { background:linear-gradient(100deg,#6d28d9,#8b5cf6) !important; }
+.primary-button { background:linear-gradient(100deg,#0b2545,#174b82) !important; }
+.menu-card:nth-child(1){border-top:3px solid #2563eb !important;background:linear-gradient(180deg,#f5f9ff,#fff 38%) !important}
+.menu-card:nth-child(2){border-top:3px solid #10b981 !important;background:linear-gradient(180deg,#f0fdf4,#fff 38%) !important}
+.menu-card:nth-child(3){border-top:3px solid #f59e0b !important;background:linear-gradient(180deg,#fffbeb,#fff 38%) !important}
+.ziesorra-powered-by {
+  position:fixed;
+  right:16px;
+  bottom:12px;
+  z-index:80;
+  background:rgba(255,255,255,.94);
+}
+body:has(#entry-page:not(.hidden)) .ziesorra-powered-by,
+body:has(#admin-page:not(.hidden)) .ziesorra-powered-by { display:none; }
+
+@media(max-width:900px) {
+  .ziesorra-brand-rail { width:96px; padding:22px 8px 16px; }
+  .ziesorra-rail-logo { width:46px;height:46px;border-radius:14px; }
+  .ziesorra-rail-name { font-size:14px; }
+  .ziesorra-rail-subtitle { font-size:8px; }
+  .app-shell { margin-left:96px; padding:62px 12px 24px; }
+  .admin-stitch-header { padding:18px 20px; }
+}
+@media(max-width:600px) {
+  .ziesorra-brand-rail {
+    position:static;
+    width:auto;
+    height:auto;
+    min-height:58px;
+    flex-direction:row;
+    justify-content:flex-start;
+    gap:10px;
+    padding:8px 12px;
+    border-right:0;
+    border-bottom:1px solid #d7e4f2;
+    box-shadow:0 2px 10px rgba(22,65,112,.04);
+  }
+  .ziesorra-rail-logo { width:38px;height:38px;border-radius:11px; }
+  .ziesorra-rail-logo img { width:24px;height:24px; }
+  .ziesorra-rail-name { flex-direction:row; gap:5px; margin:0; font-size:13px; }
+  .ziesorra-rail-divider,.ziesorra-rail-subtitle,.ziesorra-rail-accent { display:none; }
+  .ziesorra-utility-bar { top:10px;right:10px; }
+  .ziesorra-context-pill { display:none; }
+  .ziesorra-top-button { min-height:34px;padding:7px 11px; }
+  .app-shell { margin-left:0;padding:12px 8px 22px;min-height:calc(100vh - 58px); }
+  .page:not(#entry-page) > .card { min-height:auto; }
+  #entry-page { width:min(100%,520px); }
+  .ziesorra-powered-by { position:static; width:fit-content; margin:8px 10px 10px auto; }
+}
