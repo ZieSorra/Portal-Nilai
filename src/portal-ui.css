@@ -2104,3 +2104,38 @@ body:has(#admin-page:not(.hidden)) .app-shell { padding-top:24px !important; }
   .login-field:nth-child(3),.login-field:nth-child(4),#entry-error,.login-submit{grid-column:auto}
   .login-brand-footer{font-size:.68rem}
 }
+
+
+/* Login tabs and inline password-only administrator access */
+.login-mode-tabs{
+  display:grid;grid-template-columns:1fr 1fr;gap:4px;
+  padding:4px;margin-bottom:25px;border-radius:10px;background:#eaf1ff;
+}
+.login-mode-tab{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  min-height:42px;padding:8px 10px;border:1px solid transparent;
+  border-radius:8px;background:transparent;color:#42556e;
+  font-size:.78rem;font-weight:700;cursor:pointer;
+}
+.login-mode-tab.active{
+  border-color:#d8e5fb;background:#fff;color:#0b2545;
+  box-shadow:0 2px 5px rgba(11,37,69,.07);
+}
+.login-mode-panel{min-width:0}
+.login-mode-panel.hidden{display:none!important}
+.login-admin-form{display:grid;gap:18px}
+.login-password-toggle{
+  position:absolute;right:9px;top:50%;transform:translateY(-50%);
+  width:34px;height:34px;border:0;border-radius:7px;
+  background:transparent;color:#526b85;cursor:pointer;
+}
+#entry-page .login-admin-form .login-password-wrap input{padding-right:48px!important}
+.login-admin-assurance{
+  padding:12px 13px;border-radius:10px;background:#edf4ff;
+  color:#46617f;font-size:.76rem;line-height:1.6;
+}
+.login-admin-assurance span{color:#0f8b9b;margin-right:5px}
+@media(max-width:700px){
+  .login-mode-tabs{margin-bottom:22px}
+  .login-mode-tab{font-size:.72rem;padding:8px 5px}
+}
