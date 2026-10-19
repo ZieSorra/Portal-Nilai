@@ -56,19 +56,58 @@
           <p id="quote-text"></p>
           <span id="quote-author"></span>
         </div>
-        <div class="menu-grid">
+        <div class="dashboard-section-heading">
+          <div>
+            <span class="dashboard-eyebrow">AKSES CEPAT</span>
+            <h3>Mulai pekerjaan Anda</h3>
+            <p>Pilih menu sesuai kebutuhan penilaian kelas.</p>
+          </div>
+        </div>
+        <div class="menu-grid dashboard-actions-grid">
           <button type="button" class="menu-card active" id="input-grade-btn">
+            <span class="dashboard-card-icon dashboard-icon-blue" aria-hidden="true">✎</span>
             <strong>Input Nilai</strong>
-            <span>Masukkan nilai secara manual atau melalui file.</span>
+            <span>Masukkan nilai secara manual atau unggah file CSV/Excel.</span>
+            <span class="dashboard-card-link">Buka input nilai <span aria-hidden="true">→</span></span>
           </button>
           <button type="button" class="menu-card active" id="leger-btn">
-            <strong>Leger</strong><span>Lihat Leger STS dan SAS.</span>
+            <span class="dashboard-card-icon dashboard-icon-teal" aria-hidden="true">▦</span>
+            <strong>Leger STS &amp; SAS</strong>
+            <span>Tinjau rekap nilai berdasarkan komponen penilaian.</span>
+            <span class="dashboard-card-link">Lihat leger <span aria-hidden="true">→</span></span>
           </button>
           <button type="button" class="menu-card active" id="report-btn">
-            <strong>Cetak Rapor</strong><span>Cetak Rapor STS dan Rapor Intern.</span>
+            <span class="dashboard-card-icon dashboard-icon-amber" aria-hidden="true">▤</span>
+            <strong>Cetak Rapor</strong>
+            <span>Siapkan dan cetak Rapor STS maupun Rapor Intern.</span>
+            <span class="dashboard-card-link">Buka cetak rapor <span aria-hidden="true">→</span></span>
           </button>
         </div>
-        <button id="back-button" class="text-button" type="button">Ganti kelas</button>
+        <div class="dashboard-lower-grid">
+          <section class="dashboard-workflow">
+            <div class="dashboard-panel-heading">
+              <span class="dashboard-panel-symbol" aria-hidden="true">✓</span>
+              <div>
+                <h3>Alur kerja penilaian</h3>
+                <p>Ikuti langkah berikut agar proses lebih teratur.</p>
+              </div>
+            </div>
+            <ol class="dashboard-steps">
+              <li><span>1</span><div><strong>Pilih mata pelajaran</strong><p>Tentukan mapel dan komponen nilai yang akan dikerjakan.</p></div></li>
+              <li><span>2</span><div><strong>Input atau impor nilai</strong><p>Isi nilai manual atau gunakan template CSV/Excel yang tersedia.</p></div></li>
+              <li><span>3</span><div><strong>Periksa leger</strong><p>Tinjau rekap STS atau SAS sebelum melanjutkan.</p></div></li>
+              <li><span>4</span><div><strong>Cetak rapor</strong><p>Pilih jenis rapor dan siswa, lalu periksa pratinjau cetak.</p></div></li>
+            </ol>
+          </section>
+          <aside class="dashboard-help-panel">
+            <div class="dashboard-help-mark" aria-hidden="true">i</div>
+            <h3>Tips penggunaan</h3>
+            <p>Pastikan konteks tahun ajaran, semester, dan kelas sudah benar sebelum menginput nilai.</p>
+            <div class="dashboard-tip-divider"></div>
+            <p>Gunakan tombol <strong>Ganti kelas</strong> jika ingin berpindah konteks penilaian.</p>
+            <button id="back-button" class="text-button dashboard-switch-button" type="button">Ganti kelas <span aria-hidden="true">→</span></button>
+          </aside>
+        </div>
       </div>
     </section>
 
