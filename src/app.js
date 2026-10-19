@@ -2819,6 +2819,30 @@ function setSelectOptions(select, options, placeholder) {
   }
 }
 
+function updatePortalChrome(context, activePage = "home") {
+  const year = document.querySelector("#chrome-year");
+  const semester = document.querySelector("#chrome-semester");
+  const className = document.querySelector("#chrome-class");
+  const validation = document.querySelector("#chrome-validation");
+  if (context) {
+    if (year) year.textContent = "T.A. " + context.academicYear;
+    if (semester) semester.textContent = "Semester " + context.semester;
+    if (className) className.textContent = "Kelas " + context.className;
+    if (validation) validation.textContent = "Kelas aktif";
+  } else {
+    if (year) year.textContent = "Tahun Ajaran";
+    if (semester) semester.textContent = "Semester";
+    if (className) className.textContent = "Kelas";
+    if (validation) validation.textContent = "Pilih sesi";
+  }
+  document.querySelectorAll("[data-portal-nav]").forEach((button) => {
+    const target = button.dataset.portalNav;
+    button.classList.toggle("active",
+      target === activePage ||
+      (activePage === "input" && target === "import"));
+  });
+}
+
 function showEntryPage() {
   entryPage.classList.remove("hidden");
   welcomePage.classList.add("hidden");
@@ -3275,6 +3299,23 @@ document.querySelector("#grade-file-input").addEventListener("change", async (ev
 document.querySelector("#confirm-import-button").addEventListener("click", confirmImport);
 document.querySelector("#cancel-import-button").addEventListener("click", clearImportPanel);
 document.querySelector("#download-template-button").addEventListener("click", downloadTemplate);
+
+document.querySelectorAll("[data-portal-nav]").forEach((button) => {
+  button.addEventListener("click", () => {
+    const target = button.dataset.portalNav;
+    if (target === "home") {
+      if (teacherContext) showWelcomePage(teacherContext);
+      else showEntryPage();
+    } else if (target === "input" || target === "import") {
+      inputGradeButton.click();
+    } else if (target === "leger") {
+      legerButton.click();
+    } else if (target === "report") {
+      reportButton.click();
+    }
+  });
+});
+document.querySelector("#chrome-admin-button")?.addEventListener("click", () => adminLink.click());
 
 inputGradeButton.addEventListener("click", openInputPage);
 legerButton.addEventListener("click", openLegerPage);
