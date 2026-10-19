@@ -12,33 +12,73 @@
 </head>
 <body>
 <div id="ziesorra-ui-chrome" class="ziesorra-ui-chrome"><header class="ziesorra-topbar"><div class="ziesorra-top-brand"><span class="ziesorra-top-logo"><img src="./assets/portal-nilai-logo.webp?v=20261019-01" alt="" /></span><span class="ziesorra-top-brand-text"><strong>PORTAL NILAI</strong><small>BY ZIESORRA</small></span></div><div class="ziesorra-session-chips"><span id="chrome-year">Tahun Ajaran</span><span id="chrome-semester">Semester</span><span id="chrome-class">Kelas</span></div><nav class="ziesorra-main-nav" aria-label="Navigasi utama"><button type="button" data-portal-nav="home" class="active">Beranda</button><button type="button" data-portal-nav="input">Input Nilai Manual</button><button type="button" data-portal-nav="import">Import CSV/Excel</button><button type="button" data-portal-nav="leger">Leger STS &amp; SAS</button><button type="button" data-portal-nav="report">Cetak Rapor</button></nav><div class="ziesorra-top-actions"><span class="ziesorra-validation-chip" id="chrome-validation">Kelas aktif</span><button type="button" class="ziesorra-top-button" id="chrome-admin-button">Admin Area</button></div></header><div class="ziesorra-powered-by">Powered by <strong>ZIESORRA</strong></div></div><main class="app-shell">
-    <section id="entry-page" class="page">
-      <div class="card entry-card">
-        <div class="brand">PORTAL NILAI</div>
-        <h1>Sistem Pengelolaan Nilai Siswa</h1>
-        <p class="muted">Pilih konteks penilaian untuk melanjutkan.</p>
-        <form id="teacher-form" novalidate>
-          <label>Tahun Ajaran
-            <select id="academic-year" required><option value="">Memuat...</option></select>
-          </label>
-          <label>Semester
-            <select id="semester" required>
-              <option value="">Pilih semester</option>
-              <option value="Ganjil">Ganjil</option>
-              <option value="Genap">Genap</option>
-            </select>
-          </label>
-          <label>Kelas
-            <select id="class" required><option value="">Memuat...</option></select>
-          </label>
-          <label>Kode Akses Guru
-            <input id="teacher-access-code" type="password" inputmode="text" maxlength="8" autocomplete="off" placeholder="Masukkan kode dari admin" required />
-            <small class="field-help">Kode akses diberikan oleh admin sekolah untuk kelas yang dipilih.</small>
-          </label>
-          <div id="entry-error" class="message error hidden"></div>
-          <button type="submit" class="primary-button">Masuk</button>
-        </form>
-        <button id="admin-link" class="text-button" type="button">saya admin</button>
+    <section id="entry-page" class="page login-page">
+      <div class="login-layout">
+        <aside class="login-brand-panel">
+          <div class="login-brand-glow login-glow-one"></div>
+          <div class="login-brand-glow login-glow-two"></div>
+          <div class="login-brand-content">
+            <div class="login-brand-lockup">
+              <span class="login-logo-frame"><img src="./assets/portal-nilai-logo.webp?v=20261019-01" alt="Logo Portal Nilai Ziesorra" /></span>
+              <span class="login-brand-names"><strong>PORTAL NILAI</strong><small>BY ZIESORRA</small></span>
+            </div>
+            <div class="login-brand-copy">
+              <span class="login-overline">SISTEM EVALUASI TERPADU</span>
+              <h1>Kelola nilai dengan lebih <em>mudah dan terarah.</em></h1>
+              <p>Satu ruang kerja untuk mengelola penilaian siswa, memeriksa leger, dan menyiapkan rapor secara terstruktur.</p>
+            </div>
+            <div class="login-feature-list">
+              <div class="login-feature"><span class="login-feature-icon" aria-hidden="true">✓</span><span><strong>Input nilai terpusat</strong><small>Input manual atau impor berkas nilai.</small></span></div>
+              <div class="login-feature"><span class="login-feature-icon" aria-hidden="true">▦</span><span><strong>Rekap lebih teratur</strong><small>Periksa leger STS dan SAS dalam satu tempat.</small></span></div>
+              <div class="login-feature"><span class="login-feature-icon" aria-hidden="true">▤</span><span><strong>Rapor siap ditinjau</strong><small>Pratinjau dan cetak sesuai kebutuhan.</small></span></div>
+            </div>
+          </div>
+          <div class="login-brand-footer"><span>Kurikulum Merdeka</span><span>Powered by <strong>ZIESORRA</strong></span></div>
+        </aside>
+        <div class="login-form-panel">
+          <div class="login-form-inner">
+            <div class="login-mobile-brand">
+              <img src="./assets/portal-nilai-logo.webp?v=20261019-01" alt="Logo Portal Nilai" />
+              <span><strong>PORTAL NILAI</strong><small>BY ZIESORRA</small></span>
+            </div>
+            <div class="login-form-heading">
+              <span class="login-form-eyebrow">SELAMAT DATANG</span>
+              <h2>Masuk ke Portal Nilai</h2>
+              <p>Pilih konteks penilaian untuk melanjutkan ke ruang kerja Anda.</p>
+            </div>
+            <form id="teacher-form" novalidate>
+              <div class="login-field">
+                <label for="academic-year">Tahun Ajaran <span>*</span></label>
+                <select id="academic-year" required><option value="">Memuat...</option></select>
+              </div>
+              <div class="login-field">
+                <label for="semester">Semester <span>*</span></label>
+                <select id="semester" required>
+                  <option value="">Pilih semester</option>
+                  <option value="Ganjil">Ganjil</option>
+                  <option value="Genap">Genap</option>
+                </select>
+              </div>
+              <div class="login-field">
+                <label for="class">Kelas <span>*</span></label>
+                <select id="class" required><option value="">Memuat...</option></select>
+              </div>
+              <div class="login-field">
+                <div class="login-label-row"><label for="teacher-access-code">Kode Akses Guru <span>*</span></label><span class="login-secure-label">Akses terbatas</span></div>
+                <div class="login-password-wrap">
+                  <span class="login-field-symbol" aria-hidden="true">⌑</span>
+                  <input id="teacher-access-code" type="password" inputmode="text" maxlength="8" autocomplete="off" placeholder="Masukkan kode dari admin" required />
+                </div>
+                <small class="field-help">Kode akses diberikan oleh admin sekolah untuk kelas yang dipilih.</small>
+              </div>
+              <div id="entry-error" class="message error hidden"></div>
+              <button type="submit" class="primary-button login-submit"><span>Masuk ke Portal Nilai</span><span aria-hidden="true">→</span></button>
+            </form>
+            <div class="login-admin-divider"><span>atau</span></div>
+            <button id="admin-link" class="login-admin-button" type="button"><span class="login-admin-symbol" aria-hidden="true">♙</span><span><strong>Masuk sebagai Admin</strong><small>Akses pengelolaan dan pengaturan sistem</small></span><span class="login-admin-arrow" aria-hidden="true">→</span></button>
+            <div class="login-security-note"><span aria-hidden="true">◇</span><span>Gunakan kode akses sesuai kelas yang ditugaskan kepada Anda.</span></div>
+          </div>
+        </div>
       </div>
     </section>
 
