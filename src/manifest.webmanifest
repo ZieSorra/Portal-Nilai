@@ -1,0 +1,29 @@
+{
+  "name": "Portal Nilai - Sistem Pengelolaan Nilai Siswa",
+  "short_name": "Portal Nilai",
+  "description": "Sistem pengelolaan nilai siswa, asesmen sumatif, STS, SAS, serta cetak rapor Kurikulum Merdeka dan muatan lokal terpadu.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f8f9ff",
+  "theme_color": "#0f2942",
+  "icons": [
+    {
+      "src": "./assets/portal-nilai-logo.webp",
+      "type": "image/webp",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/portal-nilai-logo.webp",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "education",
+    "productivity"
+  ],
+  "lang": "id",
+  "dir": "ltr"
+}
