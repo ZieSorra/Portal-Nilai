@@ -2139,3 +2139,22 @@ body:has(#admin-page:not(.hidden)) .app-shell { padding-top:24px !important; }
   .login-mode-tabs{margin-bottom:22px}
   .login-mode-tab{font-size:.72rem;padding:8px 5px}
 }
+
+
+/* Login brand contrast and centered, larger logo */
+.login-brand-panel{text-align:center}
+.login-brand-lockup{justify-content:center;gap:16px}
+.login-logo-frame{width:82px;height:82px;flex-basis:82px;border-radius:19px;box-shadow:0 10px 28px rgba(0,0,0,.22)}
+.login-logo-frame img{padding:1px}
+.login-brand-names{text-align:left}
+.login-brand-copy{text-align:center}
+.login-brand-copy h1{color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.12)}
+.login-brand-copy h1 em{color:#8ff3e5}
+.login-brand-copy p{color:#e0edf8;margin-left:auto;margin-right:auto}
+.login-overline{color:#8ff3e5}
+.login-feature-list{text-align:left;max-width:440px;width:100%;margin-left:auto;margin-right:auto}
+.login-feature strong{color:#fff}
+.login-feature small{color:#e0edf8}
+.login-brand-footer{color:#e0edf8}
+.login-brand-footer strong{color:#fff}
+@media(max-width:700px){.login-mobile-brand{justify-content:center}.login-mobile-brand img{width:58px;height:58px}}
