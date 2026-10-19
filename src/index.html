@@ -6,7 +6,7 @@
   <title>Portal Nilai — Sistem Pengelolaan Nilai Siswa</title>
   <link rel="icon" type="image/webp" href="./assets/portal-nilai-logo.webp?v=20261019-01" />
   <link rel="stylesheet" href="./styles.css?v=20261009-02" />
-  <link rel="stylesheet" href="./portal-ui.css?v=20261020-02" /><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./portal-ui.css?v=20261020-03" /><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
@@ -41,10 +41,15 @@
               <img src="./assets/portal-nilai-logo.webp?v=20261019-01" alt="Logo Portal Nilai" />
               <span><strong>PORTAL NILAI</strong><small>BY ZIESORRA</small></span>
             </div>
+            <div class="login-mode-tabs" role="tablist" aria-label="Jenis akses">
+              <button type="button" id="teacher-login-tab" class="login-mode-tab active" role="tab" aria-selected="true" aria-controls="teacher-login-panel"><span aria-hidden="true">♙</span> Masuk Guru / Wali Kelas</button>
+              <button type="button" id="admin-login-tab" class="login-mode-tab" role="tab" aria-selected="false" aria-controls="admin-login-panel"><span aria-hidden="true">♧</span> Masuk Admin</button>
+            </div>
+            <section id="teacher-login-panel" class="login-mode-panel" role="tabpanel" aria-labelledby="teacher-login-tab">
             <div class="login-form-heading">
               <span class="login-form-eyebrow">SELAMAT DATANG</span>
-              <h2>Masuk ke Portal Nilai</h2>
-              <p>Pilih konteks penilaian untuk melanjutkan ke ruang kerja Anda.</p>
+              <h2>Pilih Konteks Penilaian</h2>
+              <p>Tentukan tahun ajaran, semester, dan kelas binaan untuk melanjutkan.</p>
             </div>
             <form id="teacher-form" novalidate>
               <div class="login-field">
@@ -74,9 +79,29 @@
               <div id="entry-error" class="message error hidden"></div>
               <button type="submit" class="primary-button login-submit"><span>Masuk ke Portal Nilai</span><span aria-hidden="true">→</span></button>
             </form>
-            <div class="login-admin-divider"><span>atau</span></div>
-            <button id="admin-link" class="login-admin-button" type="button"><span class="login-admin-symbol" aria-hidden="true">♙</span><span><strong>Masuk sebagai Admin</strong><small>Akses pengelolaan dan pengaturan sistem</small></span><span class="login-admin-arrow" aria-hidden="true">→</span></button>
             <div class="login-security-note"><span aria-hidden="true">◇</span><span>Gunakan kode akses sesuai kelas yang ditugaskan kepada Anda.</span></div>
+            </section>
+            <section id="admin-login-panel" class="login-mode-panel hidden" role="tabpanel" aria-labelledby="admin-login-tab">
+              <div class="login-form-heading">
+                <span class="login-form-eyebrow">AKSES TERBATAS</span>
+                <h2>Administrator Workspace</h2>
+                <p>Kelola data master, konfigurasi penilaian, dan kontrol input nilai.</p>
+              </div>
+              <form id="admin-form" class="login-admin-form">
+                <div class="login-field">
+                  <div class="login-label-row"><label for="admin-password">Password Administrator <span>*</span></label><span class="login-secure-label">Sesi terenkripsi</span></div>
+                  <div class="login-password-wrap">
+                    <span class="login-field-symbol" aria-hidden="true">♙</span>
+                    <input id="admin-password" type="password" autocomplete="current-password" placeholder="Masukkan password admin" required />
+                    <button type="button" id="toggle-admin-password" class="login-password-toggle" aria-label="Tampilkan password">◉</button>
+                  </div>
+                </div>
+                <div class="login-admin-assurance"><span aria-hidden="true">◇</span> Akses administrator dibatasi untuk pengelola sistem.</div>
+                <div id="admin-error" class="message error hidden"></div>
+                <button type="submit" class="primary-button login-submit"><span>Buka Konsol Administrator</span><span aria-hidden="true">♙</span></button>
+              </form>
+              <div class="login-security-note"><span aria-hidden="true">◇</span><span>Gunakan password administrator yang telah ditetapkan.</span></div>
+            </section>
           </div>
         </div>
       </div>
@@ -738,24 +763,7 @@
       </div>
     </div>
 
-    <div id="admin-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="admin-title">
-      <div class="modal-panel">
-        <button id="close-admin" class="close-button" type="button" aria-label="Tutup">×</button>
-        <h2 id="admin-title">Akses Admin</h2>
-        <p class="muted">Masukkan password admin untuk melanjutkan.</p>
-        <form id="admin-form">
-          <label>Password
-            <input id="admin-password" type="password" autocomplete="current-password" required />
-          </label>
-          <div id="admin-error" class="message error hidden"></div>
-          <div class="modal-actions">
-            <button id="cancel-admin" type="button" class="secondary-button">Batal</button>
-            <button type="submit" class="primary-button">Masuk</button>
-          </div>
-        </form>
-      </div>
-    </div>
   </main>
-  <script type="module" src="./app.js?v=20261019-02"></script>
+  <script type="module" src="./app.js?v=20261020-03"></script>
 </body>
 </html>
