@@ -1672,3 +1672,233 @@ body:has(#admin-page:not(.hidden)) .app-shell { padding-top:24px !important; }
 @media(max-width:600px) {
   .ziesorra-top-brand { flex-basis:132px;min-width:132px; }
 }
+
+
+/* Dashboard refinement — denser layout without fabricated academic metrics */
+#welcome-page{
+  width:100%;
+  max-width:none;
+  padding:94px 28px 42px;
+}
+#welcome-page .welcome-card{
+  width:min(100%,1440px)!important;
+  min-height:0;
+  margin:0 auto;
+  padding:32px clamp(22px,3vw,44px)!important;
+  border:1px solid var(--pn-border);
+  border-top:4px solid var(--pn-blue)!important;
+  background:rgba(255,255,255,.98);
+  box-shadow:0 14px 36px rgba(11,37,69,.08);
+}
+#welcome-page .welcome-top{
+  align-items:center;
+  margin-bottom:18px;
+}
+#welcome-page .welcome-top h2{
+  margin:5px 0 0;
+  font-size:clamp(1.55rem,2.2vw,2rem);
+  letter-spacing:-.035em;
+}
+#welcome-page .context-summary{
+  display:flex;
+  flex-wrap:wrap;
+  gap:9px 18px;
+  align-items:center;
+  padding:13px 16px;
+  margin:0 0 18px;
+  border:1px solid #d7e4f2;
+  border-radius:12px;
+  background:linear-gradient(100deg,#f3f8ff,#f8fbff);
+  color:#43556b;
+  font-size:.9rem;
+  line-height:1.5;
+}
+#welcome-page .context-summary br{display:none}
+#welcome-page .context-summary strong{color:var(--pn-navy)}
+#welcome-page .quote{
+  margin:0 0 28px;
+  padding:20px 24px;
+  min-height:88px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  background:linear-gradient(115deg,#0b2545,#16466b);
+  box-shadow:0 10px 24px rgba(11,37,69,.12);
+}
+#welcome-page .quote p{
+  margin:0 0 8px;
+  color:#fff;
+  font-size:1rem;
+  line-height:1.65;
+  font-weight:600;
+}
+#welcome-page .quote span{color:#cbdcf0;font-size:.83rem}
+.dashboard-section-heading{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:18px;
+  margin:0 0 14px;
+}
+.dashboard-eyebrow{
+  color:var(--pn-cyan);
+  font-size:.68rem;
+  letter-spacing:.16em;
+  font-weight:800;
+}
+.dashboard-section-heading h3{
+  margin:4px 0 3px;
+  color:var(--pn-navy);
+  font-size:1.25rem;
+  letter-spacing:-.025em;
+}
+.dashboard-section-heading p,
+.dashboard-panel-heading p{
+  margin:0;
+  color:var(--pn-muted);
+  font-size:.86rem;
+  line-height:1.5;
+}
+#welcome-page .dashboard-actions-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:16px;
+  margin:0;
+}
+#welcome-page .menu-card{
+  min-height:210px;
+  padding:21px;
+  display:flex;
+  align-items:flex-start;
+  text-align:left;
+  gap:10px;
+  border:1px solid var(--pn-border);
+  border-top:3px solid var(--pn-blue);
+  border-radius:14px;
+  background:#fff;
+  box-shadow:0 5px 16px rgba(11,37,69,.035);
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+}
+#welcome-page .menu-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 13px 26px rgba(11,37,69,.09);
+}
+#welcome-page .menu-card:nth-child(2){border-top-color:var(--pn-teal)}
+#welcome-page .menu-card:nth-child(3){border-top-color:var(--pn-amber)}
+.dashboard-card-icon{
+  width:42px;height:42px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border-radius:12px;
+  font-size:1.45rem;font-weight:700;
+}
+.dashboard-icon-blue{background:#e9f1ff;color:#2458a6}
+.dashboard-icon-teal{background:#ddf7f1;color:#08786d}
+.dashboard-icon-amber{background:#fff1d9;color:#a75b05}
+#welcome-page .menu-card strong{
+  color:var(--pn-navy);
+  font-size:1.03rem;
+  line-height:1.35;
+}
+#welcome-page .menu-card>span:not(.dashboard-card-icon):not(.dashboard-card-link){
+  color:#637286;
+  font-size:.86rem;
+  font-weight:400;
+  line-height:1.6;
+}
+.dashboard-card-link{
+  margin-top:auto;
+  display:flex;
+  width:100%;
+  justify-content:space-between;
+  align-items:center;
+  padding-top:11px;
+  border-top:1px solid #edf1f6;
+  color:#2458a6;
+  font-size:.82rem;
+  font-weight:700;
+}
+.dashboard-lower-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1.65fr) minmax(250px,1fr);
+  gap:16px;
+  margin-top:20px;
+}
+.dashboard-workflow,.dashboard-help-panel{
+  padding:22px;
+  border:1px solid var(--pn-border);
+  border-radius:14px;
+  background:#fff;
+}
+.dashboard-panel-heading{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:17px;
+}
+.dashboard-panel-symbol{
+  width:40px;height:40px;flex:0 0 40px;
+  display:grid;place-items:center;
+  border-radius:12px;
+  background:#e4f7f0;
+  color:#08786d;
+  font-size:1.3rem;font-weight:800;
+}
+.dashboard-panel-heading h3,.dashboard-help-panel h3{
+  margin:0 0 4px;
+  color:var(--pn-navy);
+  font-size:1.04rem;
+}
+.dashboard-steps{
+  list-style:none;
+  padding:0;margin:0;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:17px 20px;
+}
+.dashboard-steps li{display:flex;gap:11px;align-items:flex-start}
+.dashboard-steps li>span{
+  display:grid;place-items:center;
+  width:28px;height:28px;flex:0 0 28px;
+  border-radius:9px;
+  background:#edf4ff;
+  color:#2458a6;
+  font-size:.8rem;font-weight:800;
+}
+.dashboard-steps strong{display:block;color:#25364b;font-size:.86rem;line-height:1.4}
+.dashboard-steps p,.dashboard-help-panel p{
+  margin:4px 0 0;
+  color:#68778a;
+  font-size:.8rem;
+  line-height:1.6;
+}
+.dashboard-help-panel{
+  background:linear-gradient(145deg,#f5f9ff,#fff);
+}
+.dashboard-help-mark{
+  width:34px;height:34px;display:grid;place-items:center;
+  margin-bottom:12px;border-radius:10px;
+  background:#e3edff;color:#2458a6;font-weight:800;
+}
+.dashboard-tip-divider{height:1px;background:#dfe8f2;margin:16px 0}
+.dashboard-switch-button{
+  display:inline-flex;align-items:center;gap:8px;
+  margin-top:14px;padding:9px 12px;
+  border-radius:9px;background:#eaf1ff;
+  color:#214f94;font-weight:700;
+}
+@media(max-width:1050px){
+  #welcome-page{padding:88px 18px 30px}
+  #welcome-page .dashboard-actions-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #welcome-page .menu-card:last-child{grid-column:1/-1}
+  .dashboard-lower-grid{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+  #welcome-page{padding:82px 12px 22px}
+  #welcome-page .welcome-card{padding:22px 16px!important}
+  #welcome-page .context-summary{align-items:flex-start;flex-direction:column;gap:4px}
+  #welcome-page .dashboard-actions-grid{grid-template-columns:1fr}
+  #welcome-page .menu-card:last-child{grid-column:auto}
+  #welcome-page .menu-card{min-height:185px}
+  .dashboard-steps{grid-template-columns:1fr}
+  .dashboard-workflow,.dashboard-help-panel{padding:17px}
+}
