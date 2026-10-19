@@ -2328,3 +2328,53 @@ body:has(#admin-page:not(.hidden)) .app-shell { padding-top:24px !important; }
   #input-page .input-actions{justify-content:stretch}
   #input-page .input-actions button{flex:1}
 }
+
+
+/* Input grades page: visual hierarchy aligned to the supplied reference */
+#input-page .input-metrics{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;margin:0 0 16px;
+}
+#input-page .input-metric-card{
+  position:relative;display:flex;flex-direction:column;gap:5px;
+  min-height:78px;padding:15px 48px 14px 16px;
+  border:1px solid #e4ebf4;border-radius:12px;background:#fff;
+}
+#input-page .input-metric-label{
+  color:#73849a;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+}
+#input-page .input-metric-card strong{
+  color:#102d49;font-size:20px;line-height:1.25;font-weight:800;
+  font-variant-numeric:tabular-nums;
+}
+#input-page .input-metric-card:nth-child(2) strong,
+#input-page .input-metric-card:nth-child(3) strong{color:#087f72}
+#input-page .input-metric-card:nth-child(4) strong{color:#c03939}
+#input-page .input-metric-icon{
+  position:absolute;right:13px;top:20px;display:grid;place-items:center;
+  width:30px;height:30px;border-radius:8px;background:#eaf1ff;color:#173d68;font-size:17px;font-weight:800;
+}
+#input-page .input-metric-good{background:#d8faf2;color:#087f72}
+#input-page .input-metric-alert{background:#ffe4e2;color:#c03939}
+#input-page .input-mode-note{box-shadow:none}
+#input-page .grade-table{min-width:720px}
+#input-page .grade-table th:first-child,
+#input-page .grade-table td:first-child{width:54px;text-align:center}
+#input-page .grade-table th:nth-child(2),
+#input-page .grade-table th:nth-child(3){width:100px}
+#input-page .grade-table th:nth-child(5){width:150px;text-align:center}
+#input-page .grade-table td:nth-child(5){text-align:center}
+#input-page .grade-table tbody tr:nth-child(even) td{background:#fcfdff}
+#input-page .grade-table tbody tr:hover td{background:#f1f7ff}
+#input-page .input-actions{
+  margin-top:16px;padding:14px 0 0;border-top:1px solid #e8eef5;
+}
+#input-page .input-actions .primary-button{
+  min-width:150px;box-shadow:0 4px 12px rgba(15,41,66,.15);
+}
+@media(max-width:760px){
+  #input-page .input-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  #input-page .input-metric-card{min-height:72px;padding:12px 42px 12px 12px}
+  #input-page .input-metric-card strong{font-size:17px}
+  #input-page .input-metric-icon{right:9px;top:18px;width:26px;height:26px}
+}
