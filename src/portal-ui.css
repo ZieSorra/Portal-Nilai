@@ -2522,3 +2522,85 @@ body:has(#admin-page:not(.hidden)) .app-shell { padding-top:24px !important; }
   #report-page #report-preview{display:block!important}
   #report-page .report-sheet{box-shadow:none!important}
 }
+
+
+/* Report page: true split workspace — roster left, A4 preview right */
+#report-page.report-workspace{padding:12px 16px 78px!important}
+#report-page .report-workspace-header{padding:0 4px 10px!important}
+#report-page .report-config-toolbar{margin-bottom:12px!important}
+#report-page .report-work-area{
+  display:grid;grid-template-columns:minmax(0,1.2fr) minmax(360px,.85fr);
+  align-items:start;gap:12px;
+}
+#report-page .report-student-worklist,
+#report-page .report-preview-column{
+  min-width:0;border:1px solid #e1e8f0;border-radius:10px;background:#fff;
+  box-shadow:0 3px 10px rgba(15,41,66,.045);overflow:hidden;
+}
+#report-page .report-worklist-toolbar{
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:10px;
+  border-bottom:1px solid #e7edf5;
+}
+#report-page .report-student-search{
+  display:flex;align-items:center;gap:6px;flex:1 1 160px;min-width:0;
+  padding:0 9px;border-radius:7px;background:#eef4ff;color:#647b94;
+}
+#report-page .report-student-search input{
+  width:100%;min-width:0;min-height:32px;border:0!important;outline:0!important;
+  box-shadow:none!important;background:transparent!important;font-size:10px!important;padding:5px 0!important;
+}
+#report-page .report-roster-count,#report-page .report-roster-status{font-size:9px;color:#647b94}
+#report-page .report-roster-table-wrap{width:100%;overflow:auto}
+#report-page .report-roster-table{width:100%;border-collapse:collapse;font-size:10px}
+#report-page .report-roster-table th{
+  padding:9px 8px;background:#edf3ff;color:#344b65;text-align:left;
+  font-size:9px;letter-spacing:.04em;text-transform:uppercase;border-bottom:1px solid #dce5f0;
+}
+#report-page .report-roster-table td{padding:8px;border-bottom:1px solid #edf1f6;color:#30475e;vertical-align:middle}
+#report-page .report-roster-table tbody tr.selected td{background:#f0f7ff}
+#report-page .report-roster-table tbody tr:hover td{background:#f7faff}
+#report-page .report-roster-student{
+  display:flex;flex-direction:column;align-items:flex-start;gap:3px;
+  width:100%;padding:0;border:0;background:transparent;text-align:left;cursor:pointer;
+}
+#report-page .report-roster-student strong{color:#142f4a;font-size:10px}
+#report-page .report-roster-student small{color:#7a8da2;font-size:8px}
+#report-page .report-roster-pill{
+  display:inline-block;padding:3px 6px;border-radius:999px;background:#e1f8f4;color:#087f72;
+  font-size:8px;font-weight:700;white-space:nowrap;
+}
+#report-page .report-roster-open{
+  width:27px;height:27px;border:0;border-radius:6px;background:#e5efff;color:#173d68;
+  font-weight:800;cursor:pointer;
+}
+#report-page .report-roster-empty{text-align:center;color:#75879b!important;padding:22px!important}
+#report-page .report-eligibility-note{
+  margin:10px;padding:11px 12px;border-radius:8px;background:#eff5ff;color:#35516e;
+}
+#report-page .report-eligibility-note strong{font-size:10px}
+#report-page .report-eligibility-note p{margin:5px 0 0;font-size:9px;line-height:1.5}
+#report-page .report-preview-heading{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px;
+  border-bottom:1px solid #e7edf5;
+}
+#report-page .report-preview-heading strong{display:block;color:#18334e;font-size:11px}
+#report-page .report-preview-heading small{display:block;color:#7a8da2;font-size:9px;margin-top:3px}
+#report-page .report-preview-heading button{flex-shrink:0;min-height:29px!important;padding:5px 8px!important;font-size:9px!important;background:#087f72!important;color:white!important;border:0!important}
+#report-page .report-preview-column #report-preview{display:block;padding:10px}
+#report-page .report-preview-column .report-sheet{
+  width:100%;max-width:none;margin:0;padding:10px;border-radius:6px;box-shadow:none;
+}
+#report-page .report-preview-column .report-sheet table{font-size:8px}
+#report-page .report-preview-column .report-sheet th,
+#report-page .report-preview-column .report-sheet td{padding:3px 4px}
+@media(max-width:1050px){
+  #report-page .report-work-area{grid-template-columns:minmax(0,1fr)}
+  #report-page .report-preview-column .report-sheet{max-width:720px;margin:0 auto;padding:18px}
+  #report-page .report-preview-column .report-sheet table{font-size:10px}
+}
+@media print{
+  #report-page .report-student-worklist,#report-page .report-preview-heading{display:none!important}
+  #report-page .report-work-area{display:block!important}
+  #report-page .report-preview-column{border:0!important;box-shadow:none!important}
+  #report-page .report-preview-column #report-preview{padding:0!important}
+}
