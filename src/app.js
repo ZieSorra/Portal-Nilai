@@ -1381,7 +1381,6 @@ function renderLegerTable() {
   const { students, units, grades, materials } = legerData;
   const isSTS = legerMode === "STS";
   updateLegerSummary();
-  updateLegerSummary();
 
   legerFormula.textContent = isSTS
     ? "Leger STS: setiap unit menampilkan Sumatif 1, Sumatif 2, dan STS."
