@@ -3487,7 +3487,12 @@ document.querySelectorAll("[data-portal-nav]").forEach((button) => {
     }
   });
 });
-document.querySelector("#chrome-admin-button")?.addEventListener("click", () => adminLoginTab.click());
+document.querySelector("#chrome-admin-button")?.addEventListener("click", () => {
+  showEntryPage();
+  setLoginMode("admin");
+  adminPassword.value = "";
+  clearError(adminError);
+});
 
 inputGradeButton.addEventListener("click", () => openInputPage("input"));
 legerButton.addEventListener("click", openLegerPage);
