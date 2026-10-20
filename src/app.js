@@ -1061,6 +1061,7 @@ function showReportPage() {
   reportPage.classList.remove("hidden");
   reportContext.textContent =
     teacherContext.className + " • " + teacherContext.semester + " • " + teacherContext.academicYear;
+  updatePortalChrome(teacherContext, "report");
 }
 
 async function openReportPage() {
@@ -1090,6 +1091,7 @@ function showLegerPage() {
     teacherContext.className + " • " +
     teacherContext.semester + " • " +
     teacherContext.academicYear;
+  updatePortalChrome(teacherContext, "leger");
 }
 
 function getAssessmentLabel(name) {
@@ -2954,6 +2956,7 @@ function updatePortalChrome(context, activePage = "home") {
 }
 
 function showEntryPage() {
+  updatePortalChrome(teacherContext, teacherContext ? "home" : "");
   entryPage.classList.remove("hidden");
   welcomePage.classList.add("hidden");
   inputPage.classList.add("hidden");
@@ -2980,7 +2983,7 @@ function showWelcomePage(context) {
   quoteAuthor.textContent = "— " + quote.author;
 }
 
-function showInputPage() {
+function showInputPage(activeNav = "input") {
   entryPage.classList.add("hidden");
   welcomePage.classList.add("hidden");
   inputPage.classList.remove("hidden");
@@ -2990,7 +2993,7 @@ function showInputPage() {
     teacherContext.className + " • " +
     teacherContext.semester + " • " +
     teacherContext.academicYear;
-  updatePortalChrome(teacherContext, "input");
+  updatePortalChrome(teacherContext, activeNav);
 }
 
 function escapeHtml(value) {
@@ -3374,14 +3377,14 @@ async function saveGrades() {
   }
 }
 
-async function openInputPage() {
+async function openInputPage(activeNav = "input") {
   teacherContext = getTeacherContext();
   if (!teacherContext) {
     showEntryPage();
     return;
   }
 
-  showInputPage();
+  showInputPage(activeNav);
   clearError(inputError);
   inputSuccess.classList.add("hidden");
 
@@ -3465,8 +3468,10 @@ document.querySelectorAll("[data-portal-nav]").forEach((button) => {
     if (target === "home") {
       if (teacherContext) showWelcomePage(teacherContext);
       else showEntryPage();
-    } else if (target === "input" || target === "import") {
-      inputGradeButton.click();
+    } else if (target === "input") {
+      openInputPage("input");
+    } else if (target === "import") {
+      openInputPage("import");
     } else if (target === "leger") {
       legerButton.click();
     } else if (target === "report") {
@@ -3476,7 +3481,7 @@ document.querySelectorAll("[data-portal-nav]").forEach((button) => {
 });
 document.querySelector("#chrome-admin-button")?.addEventListener("click", () => adminLoginTab.click());
 
-inputGradeButton.addEventListener("click", openInputPage);
+inputGradeButton.addEventListener("click", () => openInputPage("input"));
 legerButton.addEventListener("click", openLegerPage);
 reportButton.addEventListener("click", openReportPage);
 legerSearch?.addEventListener("input", filterLegerRows);
