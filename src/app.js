@@ -1381,6 +1381,7 @@ function renderLegerTable() {
   const { students, units, grades, materials } = legerData;
   const isSTS = legerMode === "STS";
   updateLegerSummary();
+  updateLegerSummary();
 
   legerFormula.textContent = isSTS
     ? "Leger STS: setiap unit menampilkan Sumatif 1, Sumatif 2, dan STS."
@@ -3457,7 +3458,7 @@ legerSearch?.addEventListener("input", filterLegerRows);
 legerSubjectFilter?.addEventListener("change", applyLegerSubjectFilter);
 legerExportButton?.addEventListener("click", () => {
   const rows = [Array.from(legerTableHead.querySelectorAll("tr")).map(row => Array.from(row.cells).map(cell => cell.textContent.trim()).join(",")), ...Array.from(legerTableBody.querySelectorAll("tr")).filter(row => !row.hidden).map(row => Array.from(row.cells).map(cell => '"' + cell.textContent.trim().replace(/"/g, '""') + '"').join(","))];
-  const csv = "\\ufeff" + rows.map(row => Array.isArray(row) ? row.join(",") : row).join("\\r\\n");
+  const csv = "\ufeff" + rows.map(row => Array.isArray(row) ? row.join(",") : row).join("\r\n");
   const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
