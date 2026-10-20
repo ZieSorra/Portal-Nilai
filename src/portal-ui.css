@@ -2658,3 +2658,112 @@ body:has(#admin-page:not(.hidden)) .app-shell { padding-top:24px !important; }
 @media(max-width:900px){#leger-page .leger-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#leger-page .leger-toolbar{align-items:stretch}#leger-page .leger-toolbar-left,#leger-page .leger-toolbar-actions{width:100%}#leger-page .leger-toolbar-actions button{flex:1}}
 @media(max-width:600px){#leger-page.leger-workspace{padding:0 10px 24px}#leger-page .leger-heading-row{align-items:flex-start}#leger-page .leger-title-group h2{font-size:21px}#leger-page .leger-heading-row>.secondary-button{font-size:10px;padding:7px}#leger-page .leger-mode-row{align-items:flex-start;flex-direction:column}#leger-page .leger-summary-grid{gap:8px}#leger-page .leger-summary-card{padding:12px}#leger-page .leger-summary-card strong{font-size:20px}#leger-page .leger-search{min-width:100%;flex-basis:100%}#leger-page .leger-filter-wrap{width:100%;justify-content:space-between}#leger-page .leger-filter-wrap select{max-width:65%}#leger-page .leger-table-statusbar{align-items:flex-start;flex-direction:column}#leger-page .leger-table-wrap{max-height:65vh}}
 @media print{#leger-page .leger-page-header,#leger-page .leger-summary-grid,#leger-page .leger-toolbar,#leger-page .leger-formula,#leger-page .leger-table-footer{display:none!important}#leger-page .leger-table-wrap{max-height:none;overflow:visible}#leger-page .leger-table{width:100%;font-size:8pt}#leger-page .leger-table th{position:static}}
+
+
+/* 2026-10-20 Admin workspace visual refinement */
+#admin-page .admin-card {
+  overflow: hidden;
+  padding: 0 !important;
+  border: 1px solid #dbe5ef !important;
+  border-radius: 18px !important;
+  background: #fff !important;
+  box-shadow: 0 12px 34px rgba(15, 41, 66, .07) !important;
+}
+#admin-page .admin-stitch-header {
+  min-height: 104px;
+  padding: 24px clamp(20px, 2.5vw, 34px);
+  background: linear-gradient(115deg, #0b2545 0%, #123b63 64%, #075e68 100%);
+}
+#admin-page .admin-stitch-title h2 {
+  font-size: clamp(21px, 1.7vw, 26px) !important;
+  line-height: 1.25;
+}
+#admin-page .admin-layout {
+  grid-template-columns: 248px minmax(0, 1fr) !important;
+  min-height: 680px;
+}
+#admin-page .admin-sidebar {
+  padding: 24px 14px 18px !important;
+  background: #f5f8fd !important;
+  border-right: 1px solid #e0e8f2 !important;
+}
+#admin-page .admin-nav-button {
+  width: 100%;
+  text-align: left;
+  font-weight: 600;
+  transition: background .18s ease, color .18s ease, transform .18s ease;
+}
+#admin-page .admin-nav-button:hover {
+  transform: translateX(2px);
+}
+#admin-page .admin-nav-button.active {
+  background: #102e4d !important;
+  color: #fff !important;
+  box-shadow: 0 4px 12px rgba(11, 37, 69, .13);
+}
+#admin-page .admin-content {
+  padding: clamp(20px, 2.3vw, 32px) !important;
+  background: #fbfcff !important;
+}
+#admin-page .admin-stitch-hero {
+  border-color: #dfe8f4;
+  background: linear-gradient(120deg, #f4f8ff 0%, #edf5ff 68%, #effbfa 100%);
+  box-shadow: inset 3px 0 0 #0891b2;
+}
+#admin-page .admin-stat-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 118px;
+  border-color: #e1e9f3 !important;
+  box-shadow: 0 5px 16px rgba(11, 37, 69, .035) !important;
+}
+#admin-page .admin-stat-card::after {
+  content: "";
+  position: absolute;
+  width: 72px;
+  height: 72px;
+  right: -27px;
+  bottom: -31px;
+  border-radius: 50%;
+  background: #edf5ff;
+}
+#admin-page .admin-section,
+#admin-page .admin-master-panel > .admin-section {
+  border: 1px solid #e1e9f3 !important;
+  background: #fff !important;
+}
+#admin-page .admin-tabs {
+  padding: 5px;
+  border: 1px solid #e1e9f3;
+  border-radius: 12px;
+  background: #f1f6fd;
+}
+#admin-page .admin-tab {
+  border-radius: 8px;
+}
+@media (max-width: 900px) {
+  #admin-page .admin-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+    min-height: 0;
+  }
+  #admin-page .admin-sidebar {
+    padding: 14px !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid #e0e8f2 !important;
+  }
+  #admin-page .admin-content {
+    padding: 18px !important;
+  }
+}
+@media (max-width: 560px) {
+  #admin-page .admin-stitch-header {
+    padding: 20px 16px;
+  }
+  #admin-page .admin-stitch-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  #admin-page .admin-stitch-badge {
+    flex: 1;
+  }
+}
