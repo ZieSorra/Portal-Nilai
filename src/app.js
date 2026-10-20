@@ -2968,6 +2968,7 @@ function showWelcomePage(context) {
   legerPage.classList.add("hidden");
   reportPage.classList.add("hidden");
 
+  updatePortalChrome(context, "home");
   classBadge.textContent = context.className;
   contextSummary.innerHTML =
     "<strong>Tahun Ajaran:</strong> " + escapeHtml(context.academicYear) + "<br>" +
@@ -2989,6 +2990,7 @@ function showInputPage() {
     teacherContext.className + " • " +
     teacherContext.semester + " • " +
     teacherContext.academicYear;
+  updatePortalChrome(teacherContext, "input");
 }
 
 function escapeHtml(value) {
@@ -3263,6 +3265,8 @@ function renderGradeRows(enabled) {
             aria-label="Nilai ${escapeHtml(student.name)}"
           />
         </td>
+        <td><span class="grade-row-status ${value === "" ? "status-empty" : Number(value) >= Number(document.querySelector("#input-kkm")?.value ?? 75) ? "status-passed" : "status-remedial"}" data-grade-status>${value === "" ? "Belum diisi" : Number(value) >= Number(document.querySelector("#input-kkm")?.value ?? 75) ? "Tuntas" : "Remedial"}</span></td>
+        <td><span class="grade-row-note" data-grade-note>${value === "" ? "Menunggu nilai diinput" : Number(value) >= Number(document.querySelector("#input-kkm")?.value ?? 75) ? "Memenuhi batas ketuntasan" : "Perlu penguatan materi"}</span></td>
       </tr>
     `;
   }).join("");
@@ -3418,8 +3422,30 @@ materialSelect.addEventListener("change", async () => {
   }
 });
 
+function updateGradeRowFeedback(input) {
+  const row = input.closest("tr");
+  if (!row) return;
+  const status = row.querySelector("[data-grade-status]");
+  const note = row.querySelector("[data-grade-note]");
+  const raw = input.value.trim();
+  const kkm = Number(document.querySelector("#input-kkm")?.value ?? 75);
+  if (!raw || !Number.isFinite(Number(raw))) {
+    status.textContent = "Belum diisi";
+    status.className = "grade-row-status status-empty";
+    note.textContent = "Menunggu nilai diinput";
+    return;
+  }
+  const passed = Number(raw) >= kkm;
+  status.textContent = passed ? "Tuntas" : "Remedial";
+  status.className = "grade-row-status " + (passed ? "status-passed" : "status-remedial");
+  note.textContent = passed ? "Memenuhi batas ketuntasan" : "Perlu penguatan materi";
+}
+
 document.querySelector("#grade-table-body").addEventListener("input", (event) => {
-  if (event.target.matches(".score-input")) updateInputMetrics();
+  if (event.target.matches(".score-input")) {
+    updateGradeRowFeedback(event.target);
+    updateInputMetrics();
+  }
 });
 
 saveGradesButton.addEventListener("click", saveGrades);
