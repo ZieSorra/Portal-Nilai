@@ -6,7 +6,7 @@
   <title>Portal Nilai — Sistem Pengelolaan Nilai Siswa</title>
   <link rel="icon" type="image/webp" href="./assets/portal-nilai-logo.webp?v=20261019-01" />
   <link rel="stylesheet" href="./styles.css?v=20261009-02" />
-  <link rel="stylesheet" href="./portal-ui.css?v=20261020-14" /><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./portal-ui.css?v=20261020-15" /><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
@@ -129,23 +129,29 @@
           </div>
         </div>
         <div class="menu-grid dashboard-actions-grid">
-          <button type="button" class="menu-card active" id="input-grade-btn">
+          <button type="button" class="menu-card active quick-action-card quick-action-blue" id="input-grade-btn">
             <span class="dashboard-card-icon dashboard-icon-blue" aria-hidden="true">✎</span>
-            <strong>Input Nilai</strong>
-            <span>Masukkan nilai secara manual atau unggah file CSV/Excel.</span>
-            <span class="dashboard-card-link">Buka input nilai <span aria-hidden="true">→</span></span>
+            <span class="quick-action-content">
+              <strong>Input Nilai</strong>
+              <span class="quick-action-description">Masukkan nilai secara manual atau unggah file CSV/Excel.</span>
+              <span class="dashboard-card-link">Buka input nilai <span aria-hidden="true">→</span></span>
+            </span>
           </button>
-          <button type="button" class="menu-card active" id="leger-btn">
+          <button type="button" class="menu-card active quick-action-card quick-action-teal" id="leger-btn">
             <span class="dashboard-card-icon dashboard-icon-teal" aria-hidden="true">▦</span>
-            <strong>Leger STS &amp; SAS</strong>
-            <span>Tinjau rekap nilai berdasarkan komponen penilaian.</span>
-            <span class="dashboard-card-link">Lihat leger <span aria-hidden="true">→</span></span>
+            <span class="quick-action-content">
+              <strong>Leger STS &amp; SAS</strong>
+              <span class="quick-action-description">Tinjau rekap nilai berdasarkan komponen penilaian.</span>
+              <span class="dashboard-card-link">Lihat leger <span aria-hidden="true">→</span></span>
+            </span>
           </button>
-          <button type="button" class="menu-card active" id="report-btn">
+          <button type="button" class="menu-card active quick-action-card quick-action-amber" id="report-btn">
             <span class="dashboard-card-icon dashboard-icon-amber" aria-hidden="true">▤</span>
-            <strong>Cetak Rapor</strong>
-            <span>Siapkan dan cetak Rapor STS maupun Rapor Intern.</span>
-            <span class="dashboard-card-link">Buka cetak rapor <span aria-hidden="true">→</span></span>
+            <span class="quick-action-content">
+              <strong>Cetak Rapor</strong>
+              <span class="quick-action-description">Siapkan dan cetak Rapor STS maupun Rapor Intern.</span>
+              <span class="dashboard-card-link">Buka cetak rapor <span aria-hidden="true">→</span></span>
+            </span>
           </button>
         </div>
         <div class="dashboard-lower-grid">
