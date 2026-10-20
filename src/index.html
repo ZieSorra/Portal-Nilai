@@ -6,7 +6,7 @@
   <title>Portal Nilai — Sistem Pengelolaan Nilai Siswa</title>
   <link rel="icon" type="image/webp" href="./assets/portal-nilai-logo.webp?v=20261019-01" />
   <link rel="stylesheet" href="./styles.css?v=20261009-02" />
-  <link rel="stylesheet" href="./portal-ui.css?v=20261020-13" /><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./portal-ui.css?v=20261020-14" /><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
@@ -240,11 +240,30 @@
         </div>
 
         <div class="input-metrics" aria-label="Ringkasan nilai saat ini">
-          <div class="input-metric-card"><span class="input-metric-label">Total Siswa</span><strong id="input-stat-total">—</strong><span class="input-metric-icon">♧</span></div>
-          <div class="input-metric-card"><span class="input-metric-label">Sudah Dinilai</span><strong id="input-stat-filled">—</strong><span class="input-metric-icon input-metric-good">✓</span></div>
-          <div class="input-metric-card"><span class="input-metric-label">Tuntas (≥ KKTP)</span><strong id="input-stat-passed">—</strong><span class="input-metric-icon">↗</span></div>
-          <div class="input-metric-card"><span class="input-metric-label">Perlu Remedial</span><strong id="input-stat-remedial">—</strong><span class="input-metric-icon input-metric-alert">!</span></div>
+          <article class="input-metric-card metric-total">
+            <div class="input-metric-heading"><span class="input-metric-label">Total Siswa</span><span class="input-metric-icon">♧</span></div>
+            <strong id="input-stat-total">—</strong><small class="input-metric-help">Siswa pada rombel aktif</small>
+          </article>
+          <article class="input-metric-card metric-filled">
+            <div class="input-metric-heading"><span class="input-metric-label">Sudah Dinilai</span><span class="input-metric-icon input-metric-good">✓</span></div>
+            <strong id="input-stat-filled">—</strong><small class="input-metric-help">Nilai telah diisi</small>
+          </article>
+          <article class="input-metric-card metric-passed">
+            <div class="input-metric-heading"><span class="input-metric-label">Tuntas (≥ KKTP)</span><span class="input-metric-icon">↗</span></div>
+            <strong id="input-stat-passed">—</strong><small class="input-metric-help">Memenuhi batas ketuntasan</small>
+          </article>
+          <article class="input-metric-card metric-remedial">
+            <div class="input-metric-heading"><span class="input-metric-label">Perlu Remedial</span><span class="input-metric-icon input-metric-alert">!</span></div>
+            <strong id="input-stat-remedial">—</strong><small class="input-metric-help">Nilai di bawah KKTP</small>
+          </article>
         </div>
+        <section class="input-progress-card" aria-label="Progres pengisian nilai">
+          <div class="input-progress-top">
+            <div><strong>Progres pengisian nilai</strong><small>Persentase siswa yang sudah memiliki nilai untuk komponen terpilih.</small></div>
+            <strong id="input-progress-label">0%</strong>
+          </div>
+          <div class="input-progress-track" role="progressbar" aria-label="Progres nilai terisi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="input-progress-track"><span id="input-progress-bar"></span></div>
+        </section>
 
         <div id="input-error" class="message error hidden"></div>
         <div id="input-success" class="message success hidden"></div>
