@@ -3231,14 +3231,14 @@ async function loadGrades() {
 
 function renderGradeRows(enabled) {
   if (!students.length) {
-    gradeTableBody.innerHTML = '<tr><td colspan="5" class="empty-state">Belum ada siswa.</td></tr>';
+    gradeTableBody.innerHTML = '<tr><td colspan="7" class="empty-state">Belum ada siswa.</td></tr>';
     saveGradesButton.disabled = true;
     updateInputMetrics();
     return;
   }
 
   if (!enabled) {
-    gradeTableBody.innerHTML = '<tr><td colspan="5" class="empty-state">Pilih komponen penilaian untuk menampilkan kolom nilai.</td></tr>';
+    gradeTableBody.innerHTML = '<tr><td colspan="7" class="empty-state">Pilih komponen penilaian untuk menampilkan kolom nilai.</td></tr>';
     saveGradesButton.disabled = true;
     return;
   }
