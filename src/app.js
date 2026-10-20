@@ -1416,6 +1416,8 @@ function renderLegerTable() {
         (student.nis ? '<div class="student-meta">' + escapeHtml(student.nis) + "</div>" : "") +
         "</td>" + cells + "</tr>";
     }).join("");
+    populateLegerSubjectFilter();
+    filterLegerRows();
     return;
   }
 
@@ -1452,6 +1454,8 @@ function renderLegerTable() {
       (student.nis ? '<div class="student-meta">' + escapeHtml(student.nis) + "</div>" : "") +
       "</td>" + cells + "</tr>";
   }).join("");
+  populateLegerSubjectFilter();
+  filterLegerRows();
 }
 
 async function loadLegerData() {
