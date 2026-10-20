@@ -3293,6 +3293,14 @@ function updateInputMetrics() {
   set("input-stat-filled", filled.length + " siswa");
   set("input-stat-passed", passed + " siswa");
   set("input-stat-remedial", remedial + " siswa");
+  const totalCount = values.length;
+  const completion = totalCount ? Math.round((filled.length / totalCount) * 100) : 0;
+  const progressLabel = document.getElementById("input-progress-label");
+  const progressBar = document.getElementById("input-progress-bar");
+  const progressTrack = document.getElementById("input-progress-track");
+  if (progressLabel) progressLabel.textContent = completion + "%";
+  if (progressBar) progressBar.style.width = completion + "%";
+  if (progressTrack) progressTrack.setAttribute("aria-valuenow", String(completion));
 }
 
 async function saveGrades() {
