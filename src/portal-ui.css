@@ -2767,3 +2767,83 @@ body:has(#admin-page:not(.hidden)) .app-shell { padding-top:24px !important; }
     flex: 1;
   }
 }
+
+
+/* 2026-10-20 Admin reference layout pass */
+#admin-page .admin-card { border-radius: 14px !important; }
+#admin-page .admin-stitch-header {
+  min-height: 82px;
+  padding: 16px 22px;
+  background: linear-gradient(110deg,#0b2545 0%,#123b63 68%,#075e68 100%);
+}
+#admin-page .admin-stitch-title .admin-eyebrow {
+  font-size: 9px;
+  letter-spacing: .12em;
+}
+#admin-page .admin-stitch-title h2 {
+  font-size: 21px !important;
+  letter-spacing: -.035em;
+}
+#admin-page .admin-stitch-title p { font-size: 11px; }
+#admin-page .admin-layout {
+  grid-template-columns: 168px minmax(0,1fr) !important;
+  min-height: 720px;
+}
+#admin-page .admin-sidebar {
+  padding: 14px 9px !important;
+  background: #edf3ff !important;
+  border-right: 1px solid #dce6f5 !important;
+}
+#admin-page .admin-nav-title {
+  padding: 0 8px 8px !important;
+  font-size: 8px !important;
+}
+#admin-page .admin-nav-group {
+  margin: 13px 8px 5px !important;
+  font-size: 8px !important;
+  letter-spacing: .1em;
+}
+#admin-page .admin-nav-button {
+  min-height: 31px !important;
+  padding: 6px 8px !important;
+  gap: 7px !important;
+  font-size: 10px !important;
+}
+#admin-page .admin-nav-button .material-symbols-outlined { font-size: 16px !important; }
+#admin-page .admin-nav-sub {
+  padding-left: 31px !important;
+  font-size: 9px !important;
+  line-height: 1.65;
+}
+#admin-page .admin-nav-footer { padding: 14px 8px 2px; }
+#admin-page .admin-content {
+  padding: 18px !important;
+  background: #f7f9ff !important;
+}
+#admin-page .admin-stitch-hero {
+  min-height: 72px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  box-shadow: none;
+}
+#admin-page .admin-stitch-hero h3 { font-size: 16px !important; }
+#admin-page .admin-stitch-hero p { font-size: 10px; }
+#admin-page .admin-stitch-hero>.material-symbols-outlined { font-size: 32px; }
+#admin-page .admin-stat-grid { gap: 10px !important; }
+#admin-page .admin-stat-card {
+  min-height: 90px;
+  padding: 12px 13px !important;
+  border-radius: 10px !important;
+}
+#admin-page .admin-stat-card span { font-size: 8px !important; }
+#admin-page .admin-stat-card strong { margin-top: 7px; font-size: 19px !important; }
+#admin-page .admin-section { padding: 16px !important; }
+#admin-page .admin-tabs { margin-bottom: 12px; }
+@media (max-width: 900px) {
+  #admin-page .admin-layout { grid-template-columns: minmax(0,1fr) !important; }
+  #admin-page .admin-sidebar { padding: 12px !important; }
+  #admin-page .admin-nav-button { display: inline-flex; width: auto; }
+  #admin-page .admin-nav-sub { display: none; }
+  #admin-page .admin-content { padding: 14px !important; }
+}
