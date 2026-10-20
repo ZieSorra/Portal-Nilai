@@ -2886,3 +2886,63 @@ body:has(#admin-page:not(.hidden)) .app-shell { padding-top:24px !important; }
 #admin-page .admin-dashboard-live i{width:6px;height:6px;border-radius:50%;background:#10b981}
 @media(max-width:1000px){#admin-page .admin-quick-grid{grid-template-columns:1fr}#admin-page .admin-quick-card{min-height:0}}
 @media(max-width:560px){#admin-page .admin-dashboard-section{padding:13px}#admin-page .admin-dashboard-note{align-items:flex-start;flex-wrap:wrap}#admin-page .admin-dashboard-live{margin-left:48px}}
+
+
+/* 2026-10-20 Input page spacing and hierarchy refinement */
+/* Use the viewport more efficiently and bring grade controls closer to the title */
+#input-page.input-workspace{max-width:1720px;padding:18px 20px 96px}
+#input-page .input-card{
+  padding:22px;
+  border-top-width:3px!important;
+  border-radius:15px;
+  box-shadow:0 8px 24px rgba(15,41,66,.045)
+}
+#input-page .input-workspace-header{
+  align-items:center;
+  gap:18px;
+  padding:0 0 16px;
+  margin-bottom:16px;
+}
+#input-page .input-eyebrow{margin-bottom:6px;font-size:9px}
+#input-page .input-workspace-header h2{font-size:clamp(24px,2vw,29px)}
+#input-page .input-workspace-header p{margin-top:5px;font-size:12px}
+#input-page .input-context-chip{
+  margin-top:9px;padding:6px 10px;
+  background:#edf5ff;border-color:#d5e5f8;color:#183e62;font-size:11px
+}
+#input-page .input-back-action{
+  min-height:35px!important;padding:7px 11px!important;
+  border-radius:8px!important;font-size:11px!important
+}
+#input-page .input-toolbar{
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(190px,.65fr);
+  gap:12px;padding:15px;margin-bottom:13px;border-radius:11px
+}
+#input-page .input-toolbar label{gap:6px;font-size:11px}
+#input-page .input-toolbar select,#input-page .input-toolbar input{min-height:39px;padding:8px 10px;font-size:12px}
+#input-page .input-mode-note{margin-bottom:13px;padding:12px 14px;border-radius:10px}
+#input-page .input-mode-note strong{font-size:12px}
+#input-page .input-mode-note span{font-size:11px}
+#input-page .input-metrics{gap:10px;margin-bottom:13px}
+#input-page .input-metric-card{min-height:76px;padding:12px 44px 12px 14px;border-radius:10px}
+#input-page .input-metric-label{font-size:9px}
+#input-page .input-metric-card strong{font-size:19px}
+#input-page .table-wrap{border-radius:10px}
+#input-page .grade-table th{padding:10px 12px;font-size:10px}
+#input-page .grade-table td{padding:9px 12px}
+#input-page .score-input{min-height:36px;font-size:13px}
+#input-page .input-actions{padding-top:12px}
+#input-page .input-actions .primary-button{min-height:38px!important;padding:9px 17px!important}
+@media(max-width:900px){
+  #input-page.input-workspace{padding:14px 12px 86px}
+  #input-page .input-card{padding:17px}
+  #input-page .input-toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:600px){
+  #input-page.input-workspace{padding:10px 8px 82px}
+  #input-page .input-card{padding:13px 10px}
+  #input-page .input-workspace-header{align-items:flex-start;flex-direction:column;gap:10px}
+  #input-page .input-back-action{align-self:flex-start}
+  #input-page .input-toolbar{grid-template-columns:minmax(0,1fr);padding:11px}
+  #input-page .input-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
