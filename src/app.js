@@ -44,6 +44,17 @@ const legerError = document.querySelector("#leger-error");
 const legerSuccess = document.querySelector("#leger-success");
 const legerTableHead = document.querySelector("#leger-table-head");
 const legerTableBody = document.querySelector("#leger-table-body");
+const legerSearch = document.querySelector("#leger-search");
+const legerSubjectFilter = document.querySelector("#leger-subject-filter");
+const legerSummaryStudents = document.querySelector("#leger-summary-students");
+const legerSummaryUnits = document.querySelector("#leger-summary-units");
+const legerSummaryMode = document.querySelector("#leger-summary-mode");
+const legerSummaryDescription = document.querySelector("#leger-summary-description");
+const legerTableTitle = document.querySelector("#leger-table-title");
+const legerTableSubtitle = document.querySelector("#leger-table-subtitle");
+const legerVisibleCount = document.querySelector("#leger-visible-count");
+const legerExportButton = document.querySelector("#leger-export-button");
+const legerPrintButton = document.querySelector("#leger-print-button");
 
 const reportBackButton = document.querySelector("#report-back-button");
 const reportTypeSelect = document.querySelector("#report-type");
@@ -1299,6 +1310,70 @@ function calculateDynamicSasColumn(column, studentGrades) {
     .filter(grade => column.gradeIds.has(grade.id))
     .map(grade => Number(grade.score));
   return average(scores);
+}
+function updateLegerSummary() {
+  if (!legerData) return;
+  if (legerSummaryStudents) legerSummaryStudents.textContent = String(legerData.students.length);
+  if (legerSummaryUnits) legerSummaryUnits.textContent = String(legerData.units.length);
+  if (legerSummaryMode) legerSummaryMode.textContent = legerMode;
+  if (legerSummaryDescription) legerSummaryDescription.textContent = legerMode === "STS" ? "Sumatif Tengah Semester" : "Sumatif Akhir Semester";
+  if (legerTableTitle) legerTableTitle.textContent = "Matriks Nilai Leger " + legerMode;
+  if (legerTableSubtitle) legerTableSubtitle.textContent = legerMode === "STS"
+    ? "Sumatif 1, Sumatif 2, dan STS per siswa"
+    : "Nilai akhir semester sesuai komponen penilaian aktif";
+}
+function filterLegerRows() {
+  const query = (legerSearch?.value ?? "").trim().toLocaleLowerCase("id-ID");
+  const rows = Array.from(legerTableBody.querySelectorAll("tr"));
+  let visible = 0;
+  rows.forEach(row => {
+    const text = row.textContent.toLocaleLowerCase("id-ID");
+    const match = !query || text.includes(query);
+    row.hidden = !match;
+    if (match) visible++;
+  });
+  if (legerVisibleCount) legerVisibleCount.textContent = `${visible} siswa ditampilkan dari ${legerData?.students.length ?? 0}`;
+}
+function populateLegerSubjectFilter() {
+  if (!legerSubjectFilter || !legerData) return;
+  const current = legerSubjectFilter.value || "all";
+  const options = ['<option value="all">Semua mata pelajaran</option>', ...legerData.units.map((unit,index) =>
+    `<option value="${index}">${escapeHtml(unit.label)}</option>`)];
+  legerSubjectFilter.innerHTML = options.join("");
+  if ([...legerSubjectFilter.options].some(option => option.value === current)) legerSubjectFilter.value = current;
+  applyLegerSubjectFilter();
+}
+function applyLegerSubjectFilter() {
+  if (!legerSubjectFilter) return;
+  const selected = legerSubjectFilter.value;
+  const headerRows = legerTableHead.querySelectorAll("tr");
+  if (!headerRows.length) return;
+  const bodyRows = legerTableBody.querySelectorAll("tr");
+  const unitCount = legerData?.units.length ?? 0;
+  const isSTS = legerMode === "STS";\n  updateLegerSummary();
+  const groups = Array.from(headerRows[0].querySelectorAll("th")).slice(2);
+  let columnStarts = [], cursor = 2;
+  groups.forEach((th,index) => {
+    const span = Number(th.getAttribute("colspan") || 1);
+    columnStarts.push({index,start:cursor,span});
+    cursor += span;
+    th.hidden = selected !== "all" && selected !== String(index);
+  });
+  const showBase = (row) => Array.from(row.cells).forEach((cell,index) => {
+    if (index < 2) cell.hidden = false;
+    else {
+      const group = columnStarts.find(item => index >= item.start && index < item.start + item.span);
+      cell.hidden = !!group && selected !== "all" && String(group.index) !== selected;
+    }
+  });
+  headerRows.forEach((row,rowIndex) => {
+    if (rowIndex === 0) return;
+    Array.from(row.cells).forEach((cell,index) => {
+      const groupIndex = Math.floor(index / (isSTS ? 3 : Math.max(1, Math.ceil((cursor-2)/Math.max(1,unitCount)))));
+      cell.hidden = selected !== "all" && String(groupIndex) !== selected;
+    });
+  });
+  bodyRows.forEach(showBase);
 }
 function renderLegerTable() {
   if (!legerData) return;
@@ -3373,6 +3448,19 @@ document.querySelector("#chrome-admin-button")?.addEventListener("click", () => 
 inputGradeButton.addEventListener("click", openInputPage);
 legerButton.addEventListener("click", openLegerPage);
 reportButton.addEventListener("click", openReportPage);
+legerSearch?.addEventListener("input", filterLegerRows);
+legerSubjectFilter?.addEventListener("change", applyLegerSubjectFilter);
+legerExportButton?.addEventListener("click", () => {
+  const rows = [Array.from(legerTableHead.querySelectorAll("tr")).map(row => Array.from(row.cells).map(cell => cell.textContent.trim()).join(",")), ...Array.from(legerTableBody.querySelectorAll("tr")).filter(row => !row.hidden).map(row => Array.from(row.cells).map(cell => '"' + cell.textContent.trim().replace(/"/g, '""') + '"').join(","))];
+  const csv = "\\ufeff" + rows.map(row => Array.isArray(row) ? row.join(",") : row).join("\\r\\n");
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url; link.download = "leger-" + legerMode.toLowerCase() + ".csv";
+  document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+});
+legerPrintButton?.addEventListener("click", () => window.print());
+
 legerBackButton.addEventListener("click", () => {
   if (teacherContext) showWelcomePage(teacherContext);
   else showEntryPage();
