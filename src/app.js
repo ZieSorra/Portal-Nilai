@@ -1350,7 +1350,7 @@ function applyLegerSubjectFilter() {
   if (!headerRows.length) return;
   const bodyRows = legerTableBody.querySelectorAll("tr");
   const unitCount = legerData?.units.length ?? 0;
-  const isSTS = legerMode === "STS";\n  updateLegerSummary();
+  const isSTS = legerMode === "STS";
   const groups = Array.from(headerRows[0].querySelectorAll("th")).slice(2);
   let columnStarts = [], cursor = 2;
   groups.forEach((th,index) => {
